@@ -13,6 +13,7 @@
 		DC5FDE232E16AA1C00FAB44F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC5FDE222E16AA1C00FAB44F /* Assets.xcassets */; };
 		DC5FDE262E16AA1C00FAB44F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC5FDE252E16AA1C00FAB44F /* Preview Assets.xcassets */; };
 		DC5FDE2D2E18808800FAB44F /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE2C2E18808800FAB44F /* CalendarView.swift */; };
+		DC5FDE2F2E1C449E00FAB44F /* DrawingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE2E2E1C449E00FAB44F /* DrawingView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +24,7 @@
 		DC5FDE222E16AA1C00FAB44F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DC5FDE252E16AA1C00FAB44F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		DC5FDE2C2E18808800FAB44F /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
+		DC5FDE2E2E1C449E00FAB44F /* DrawingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawingView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +59,7 @@
 			children = (
 				DC5FDE1C2E16AA1900FAB44F /* MyCalendarApp.swift */,
 				DC5FDE1E2E16AA1900FAB44F /* ContentView.swift */,
+				DC5FDE2E2E1C449E00FAB44F /* DrawingView.swift */,
 				DC5FDE202E16AA1900FAB44F /* Item.swift */,
 				DC5FDE222E16AA1C00FAB44F /* Assets.xcassets */,
 				DC5FDE242E16AA1C00FAB44F /* Preview Content */,
@@ -145,6 +148,7 @@
 			files = (
 				DC5FDE1F2E16AA1900FAB44F /* ContentView.swift in Sources */,
 				DC5FDE212E16AA1900FAB44F /* Item.swift in Sources */,
+				DC5FDE2F2E1C449E00FAB44F /* DrawingView.swift in Sources */,
 				DC5FDE2D2E18808800FAB44F /* CalendarView.swift in Sources */,
 				DC5FDE1D2E16AA1900FAB44F /* MyCalendarApp.swift in Sources */,
 			);
