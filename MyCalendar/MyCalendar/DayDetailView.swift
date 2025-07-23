@@ -52,7 +52,7 @@ struct DayDetailView: View {
             PhotosPicker(selection: $selectedPhoto, matching: .images) {
                 Label("Add Background Image", systemImage: "photo")
             }
-            .onChange(of: selectedPhoto) { newItem in
+            .onChange(of: selectedPhoto) { _, newItem in
                 Task {
                     if let data = try? await newItem?.loadTransferable(type: Data.self) {
                         entry.backgroundImageData = data
