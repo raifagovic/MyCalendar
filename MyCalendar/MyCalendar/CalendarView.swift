@@ -104,3 +104,11 @@ struct CalendarView: View {
 extension Date: Identifiable {
     public var id: Date { self }
 }
+
+extension DateFormatter {
+    static var monthAndYear: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy" // e.g., "July 2025"
+        return formatter
+    }
+}
