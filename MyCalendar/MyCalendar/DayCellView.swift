@@ -24,7 +24,7 @@ struct DayCellView: View {
             }
             
             // Layer 2: Drawing
-            if let drawingData = dayEntry?.drawingData {
+            if dayEntry?.drawingData != nil {
                 // You would need a way to render the saved drawing here.
                 // For simplicity, we'll show a placeholder. A full implementation
                 // would convert PKDrawing data back to an image.

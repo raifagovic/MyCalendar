@@ -48,7 +48,8 @@ struct DailySketchView: View {
 
     func saveDrawing(for date: Date) {
         do {
-            let data = try canvasView.drawing.dataRepresentation()
+            let data = canvasView.drawing.dataRepresentation()
+            
             try data.write(to: fileURL(for: date))
         } catch {
             print("Failed to save drawing: \(error)")
