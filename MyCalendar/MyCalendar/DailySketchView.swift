@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import PencilKit
 
 struct DailySketchView: View {
     @State private var canvasView = PKCanvasView()

@@ -18,8 +18,7 @@ struct CalendarView: View {
     private var days: [Date] {
         // This logic is good, but needs to handle empty days for the grid layout
         let calendar = Calendar.current
-        guard let monthInterval = calendar.dateInterval(of: .month, for: currentDate),
-              let monthFirstWeek = calendar.dateInterval(of: .weekOfMonth, for: monthInterval.start)
+        guard let monthInterval = calendar.dateInterval(of: .month, for: currentDate)
         else { return [] }
 
         var allDays: [Date] = []
