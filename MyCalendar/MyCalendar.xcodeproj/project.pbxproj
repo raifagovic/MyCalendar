@@ -10,7 +10,7 @@
 		DC3F999C2E310BC900E8B7BB /* EmoticonInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F999B2E310BC900E8B7BB /* EmoticonInfo.swift */; };
 		DC5FDE1D2E16AA1900FAB44F /* MyCalendarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE1C2E16AA1900FAB44F /* MyCalendarApp.swift */; };
 		DC5FDE1F2E16AA1900FAB44F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE1E2E16AA1900FAB44F /* ContentView.swift */; };
-		DC5FDE212E16AA1900FAB44F /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE202E16AA1900FAB44F /* Item.swift */; };
+		DC5FDE212E16AA1900FAB44F /* DayEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE202E16AA1900FAB44F /* DayEntry.swift */; };
 		DC5FDE232E16AA1C00FAB44F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC5FDE222E16AA1C00FAB44F /* Assets.xcassets */; };
 		DC5FDE262E16AA1C00FAB44F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC5FDE252E16AA1C00FAB44F /* Preview Assets.xcassets */; };
 		DC5FDE2D2E18808800FAB44F /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE2C2E18808800FAB44F /* CalendarView.swift */; };
@@ -23,7 +23,7 @@
 		DC5FDE192E16AA1900FAB44F /* MyCalendar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyCalendar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC5FDE1C2E16AA1900FAB44F /* MyCalendarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyCalendarApp.swift; sourceTree = "<group>"; };
 		DC5FDE1E2E16AA1900FAB44F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		DC5FDE202E16AA1900FAB44F /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
+		DC5FDE202E16AA1900FAB44F /* DayEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayEntry.swift; sourceTree = "<group>"; };
 		DC5FDE222E16AA1C00FAB44F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DC5FDE252E16AA1C00FAB44F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		DC5FDE2C2E18808800FAB44F /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
@@ -65,7 +65,7 @@
 				DC3F999B2E310BC900E8B7BB /* EmoticonInfo.swift */,
 				DC5FDE1E2E16AA1900FAB44F /* ContentView.swift */,
 				DC5FDE2E2E1C449E00FAB44F /* DrawingView.swift */,
-				DC5FDE202E16AA1900FAB44F /* Item.swift */,
+				DC5FDE202E16AA1900FAB44F /* DayEntry.swift */,
 				DC5FDE222E16AA1C00FAB44F /* Assets.xcassets */,
 				DC5FDE242E16AA1C00FAB44F /* Preview Content */,
 				DC5FDE2C2E18808800FAB44F /* CalendarView.swift */,
@@ -155,7 +155,7 @@
 				DC3F999C2E310BC900E8B7BB /* EmoticonInfo.swift in Sources */,
 				DC5FDE312E25B27C00FAB44F /* DailySketchView.swift in Sources */,
 				DC5FDE1F2E16AA1900FAB44F /* ContentView.swift in Sources */,
-				DC5FDE212E16AA1900FAB44F /* Item.swift in Sources */,
+				DC5FDE212E16AA1900FAB44F /* DayEntry.swift in Sources */,
 				DC5FDE2F2E1C449E00FAB44F /* DrawingView.swift in Sources */,
 				DC5FDE2D2E18808800FAB44F /* CalendarView.swift in Sources */,
 				DC5FDE1D2E16AA1900FAB44F /* MyCalendarApp.swift in Sources */,
