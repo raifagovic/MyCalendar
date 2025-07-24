@@ -56,6 +56,7 @@ struct DayCellView: View {
                 }
             }
         }
+        .border(Color.red)
         .frame(minHeight: 80) // Give cells a minimum height
         .background(Color.gray.opacity(0.1))
         .cornerRadius(8)

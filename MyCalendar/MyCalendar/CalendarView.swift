@@ -66,7 +66,7 @@ struct CalendarView: View {
                 }
 
                 // The calendar grid
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 4) {
                     ForEach(days.indices, id: \.self) { index in
                         let day = days[index]
                         
@@ -80,6 +80,7 @@ struct CalendarView: View {
                                 .onTapGesture {
                                     self.selectedDate = day
                                 }
+                                .border(Color.green)
                         }
                     }
                 }
