@@ -15,6 +15,10 @@ final class DayEntry {
     var backgroundImageData: Data?     // To store the background photo
     var drawingData: Data?             // To store the PKDrawing
     
+    var backgroundImageScale: CGFloat = 1.0 // 1.0 means no zoom
+    var backgroundImageOffsetX: CGFloat = 0.0 // 0.0 means centered
+    var backgroundImageOffsetY: CGFloat = 0.0 // 0.0 means centered
+    
     // This sets up a one-to-many relationship with EmoticonInfo
     @Relationship(deleteRule: .cascade, inverse: \EmoticonInfo.dayEntry)
     var emoticons: [EmoticonInfo] = []

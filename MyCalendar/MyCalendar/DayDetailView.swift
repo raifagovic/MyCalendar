@@ -6,39 +6,24 @@
 //
 
 import SwiftUI
-import PhotosUI // For the photo picker
+import PhotosUI
 import SwiftData
 
 struct DayDetailView: View {
     @Environment(\.modelContext) private var modelContext
     let date: Date
 
-    // Find the existing entry for this date or create a new one
     @Query private var entries: [DayEntry]
-    private var dayEntry: DayEntry
+    @State private var selectedPhoto: PhotosPickerItem?
 
     init(date: Date) {
         self.date = date
         let calendar = Calendar.current
         let startOfDay = calendar.startOfDay(for: date)
-        
-        // This query fetches the specific entry for the selected date
         _entries = Query(filter: #Predicate<DayEntry> { $0.date == startOfDay })
-        
-        // This part is tricky. Because @Query is initialized before `self` is available,
-        // we handle the creation logic inside the view body or through a helper.
-        // For simplicity, we'll assume it exists or create it on first action.
-        // A more robust solution might use a dedicated ViewModel.
-        
-        // This is a placeholder initialization. The actual logic is below.
-        dayEntry = DayEntry(date: startOfDay)
     }
 
-    // State for Photo Picker
-    @State private var selectedPhoto: PhotosPickerItem?
-
     var body: some View {
-        // Use the fetched entry if it exists
         let entry = entries.first ?? createAndReturnEntry()
         
         VStack {
@@ -46,16 +31,46 @@ struct DayDetailView: View {
                 .font(.largeTitle)
                 .padding()
 
-            // --- Your Editing UI Goes Here ---
-            
-            // Example: Photo Picker
-            PhotosPicker(selection: $selectedPhoto, matching: .images) {
-                Label("Add Background Image", systemImage: "photo")
-            }
-            .onChange(of: selectedPhoto) { _, newItem in
-                Task {
-                    if let data = try? await newItem?.loadTransferable(type: Data.self) {
-                        entry.backgroundImageData = data
+            // --- THIS IS THE UPDATED BACKGROUND IMAGE SECTION ---
+
+            if let imageData = entry.backgroundImageData, let uiImage = UIImage(data: imageData) {
+                // An image EXISTS, so show a preview and a Remove button.
+                VStack {
+                    Text("Current Background:")
+                        .font(.headline)
+                    
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 150) // Show a reasonably sized preview
+                        .cornerRadius(10)
+                        .padding(.bottom, 10)
+                    
+                    // The "Remove" button
+                    Button(role: .destructive) { // .destructive gives it a red color (on iOS)
+                        withAnimation {
+                            entry.backgroundImageData = nil
+                        }
+                    } label: {
+                        Label("Remove Background Image", systemImage: "trash")
+                    }
+                }
+                .padding()
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(15)
+
+            } else {
+                // NO image exists, so show the PhotosPicker to add one.
+                PhotosPicker(selection: $selectedPhoto, matching: .images) {
+                    Label("Add Background Image", systemImage: "photo")
+                }
+                .onChange(of: selectedPhoto) { _, newItem in
+                    Task {
+                        if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                            withAnimation {
+                                entry.backgroundImageData = data
+                            }
+                        }
                     }
                 }
             }
@@ -74,12 +89,13 @@ struct DayDetailView: View {
                 entry.emoticons.append(newEmoticon)
                 try? modelContext.save()
             }
+
             
             Spacer()
         }
+        .padding()
     }
     
-    // Helper function to create an entry if it doesn't exist.
     private func createAndReturnEntry() -> DayEntry {
         if let existingEntry = entries.first {
             return existingEntry
