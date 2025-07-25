@@ -15,63 +15,69 @@ struct DayCellView: View {
     @State private var selectedEmoticon: EmoticonInfo?
 
     var body: some View {
-        ZStack {
-            // Layer 1: Background Image
-            if let imageData = dayEntry?.backgroundImageData, let uiImage = UIImage(data: imageData) {
-                Image(uiImage: uiImage)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-            }
-            
-            // Layer 2: Drawing
-            if dayEntry?.drawingData != nil {
-                // You would need a way to render the saved drawing here.
-                // For simplicity, we'll show a placeholder. A full implementation
-                // would convert PKDrawing data back to an image.
-                Image(systemName: "pencil.tip")
-                    .foregroundColor(.gray.opacity(0.5))
-            }
-            
-            // Layer 3: Day Number and Emoticons
-            VStack {
-                Text("\(Calendar.current.component(.day, from: day))")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity, alignment: .topLeading)
-                    .padding(4)
-                
-                Spacer()
-                
-                // Display Emoticons
-                if let emoticons = dayEntry?.emoticons, !emoticons.isEmpty {
-                    HStack(spacing: 4) {
-                        ForEach(emoticons.prefix(3)) { emoticon in // Show a max of 3 previews
-                            Text(emoticon.character)
-                                .font(.caption)
-                                .onTapGesture {
-                                    self.selectedEmoticon = emoticon
-                                }
-                        }
+        // This is the "master" view. It's an invisible rectangle that defines the
+        // shape and size of our entire cell. Everything else will conform to it.
+        Rectangle()
+            .fill(Color.clear) // Make the base shape transparent
+            .frame(maxWidth: .infinity) // It will take the full width of the column
+            .frame(height: 100)        // Every cell will be EXACTLY 100 points tall
+
+            // BACKGROUND LAYER: The Image
+            // The .background modifier automatically clips its content to the shape
+            // of the view it's attached to (our Rectangle). This is the key.
+            .background(
+                Group { // Use a Group for conditional content
+                    if let imageData = dayEntry?.backgroundImageData, let uiImage = UIImage(data: imageData) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
                     }
-                    .padding(.bottom, 4)
                 }
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: 100)
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(8)
-        .clipped()
-        // The .popover modifier for showing the time "cloud"
-        .popover(item: $selectedEmoticon) { emoticon in
-            VStack {
-                if let time = emoticon.time {
-                    Text("Time: \(time, formatter: timeFormatter)")
-                } else {
-                    Text("No time set")
+            )
+
+            // FOREGROUND LAYER: The day number and emoticons
+            // The .overlay modifier draws this content on top of our Rectangle and its background.
+            .overlay(
+                VStack {
+                    Text("\(Calendar.current.component(.day, from: day))")
+                        .font(.headline)
+                        .padding(.top, 4)
+                        .padding(.leading, 6)
+                        .frame(maxWidth: .infinity, alignment: .topLeading) // Position top-left
+
+                    Spacer() // Pushes content to top and bottom
+
+                    if let emoticons = dayEntry?.emoticons, !emoticons.isEmpty {
+                        HStack(spacing: 4) {
+                            ForEach(emoticons.prefix(3)) { emoticon in
+                                Text(emoticon.character)
+                                    .font(.caption)
+                                    .onTapGesture {
+                                        self.selectedEmoticon = emoticon
+                                    }
+                            }
+                        }
+                        .padding(.bottom, 4)
+                    }
                 }
+            )
+
+            // FINAL MODIFIERS
+            // These are applied to the entire composition.
+            .background(Color.gray.opacity(0.1)) // A fallback color for empty days
+            .cornerRadius(8)
+            .clipped() // Ensures everything respects the rounded corners clipping
+            
+            .popover(item: $selectedEmoticon) { emoticon in
+                VStack {
+                    if let time = emoticon.time {
+                        Text("Time: \(time, formatter: timeFormatter)")
+                    } else {
+                        Text("No time set")
+                    }
+                }
+                .padding()
             }
-            .padding()
-        }
     }
     
     private var timeFormatter: DateFormatter {
