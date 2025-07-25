@@ -80,7 +80,6 @@ struct CalendarView: View {
                                 .onTapGesture {
                                     self.selectedDate = day
                                 }
-                                .border(Color.green)
                         }
                     }
                 }
