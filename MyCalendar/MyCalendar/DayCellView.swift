@@ -19,9 +19,7 @@ struct DayCellView: View {
         // shape and size of our entire cell. Everything else will conform to it.
         Rectangle()
             .fill(Color.clear) // Make the base shape transparent
-            .frame(maxWidth: .infinity) // It will take the full width of the column
-            .frame(height: 100)        // Every cell will be EXACTLY 100 points tall
-
+            .aspectRatio(AppConstants.calendarCellAspectRatio, contentMode: .fit)
             // BACKGROUND LAYER: The Image
             // The .background modifier automatically clips its content to the shape
             // of the view it's attached to (our Rectangle). This is the key.
