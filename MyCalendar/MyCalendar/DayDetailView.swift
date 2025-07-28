@@ -11,10 +11,15 @@ import SwiftData
 
 struct DayDetailView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
     let date: Date
 
     @Query private var entries: [DayEntry]
     @State private var selectedPhoto: PhotosPickerItem?
+    
+    @State private var currentScale: CGFloat = 1.0
+    @State private var currentOffsetX: CGFloat = 0.0
+    @State private var currentOffsetY: CGFloat = 0.0
 
     init(date: Date) {
         self.date = date
