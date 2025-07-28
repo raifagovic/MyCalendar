@@ -26,11 +26,18 @@ struct DayCellView: View {
             // The .background modifier automatically clips its content to the shape
             // of the view it's attached to (our Rectangle). This is the key.
             .background(
-                Group { // Use a Group for conditional content
+                Group {
                     if let imageData = dayEntry?.backgroundImageData, let uiImage = UIImage(data: imageData) {
                         Image(uiImage: uiImage)
                             .resizable()
-                            .aspectRatio(contentMode: .fill)
+                            // --- APPLY THE SAVED TRANSFORMS ---
+                            .scaleEffect(dayEntry?.backgroundImageScale ?? 1.0)
+                            .offset(
+                                x: dayEntry?.backgroundImageOffsetX ?? 0.0,
+                                y: dayEntry?.backgroundImageOffsetY ?? 0.0
+                            )
+                            // Use scaledToFill to ensure the image covers the frame
+                            .scaledToFill()
                     }
                 }
             )
