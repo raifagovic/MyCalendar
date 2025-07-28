@@ -30,35 +30,47 @@ struct DayDetailView: View {
 
     var body: some View {
             let entry = entries.first ?? createAndReturnEntry()
-            
-            NavigationStack { // Use a NavigationStack for a toolbar
-                VStack {
+
+            NavigationStack {
+                VStack(spacing: 0) {
                     if let imageData = entry.backgroundImageData {
-                        VStack {
-                            Text("Pan and pinch to frame your image")
-                                .font(.headline)
-                                .padding(.top)
-                            
-                            // The "viewport" for our cropper
+                        // --- THE NEW WYSIWYG CROPPER UI ---
+                        GeometryReader { geometry in
+                            let viewportWidth = geometry.size.width * 0.9 // Use 90% of screen width
+                            let viewportHeight = viewportWidth / AppConstants.calendarCellAspectRatio
+
                             ZStack {
-                                // The interactive cropper view
+                                // Layer 1: The movable image
                                 ImageCropperView(
                                     imageData: imageData,
                                     scale: $currentScale,
                                     offsetX: $currentOffsetX,
                                     offsetY: $currentOffsetY
                                 )
+
+                                // Layer 2: The darkening overlay
+                                Rectangle()
+                                    .fill(.black.opacity(0.6))
+
+                                // Layer 3: The "clear" viewport that punches a hole
+                                Rectangle()
+                                    .frame(width: viewportWidth, height: viewportHeight)
+                                    .blendMode(.destinationOut)
                             }
-                            .frame(height: 250) // The size of the crop window
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
-                            .padding(.horizontal)
+                            .compositingGroup() // Essential for blendMode to work correctly
+                            .clipped() // Clip the whole ZStack to its bounds
+                        }
+                        .padding(.vertical)
+
+                        // --- Action Buttons ---
+                        VStack {
+                            Text("Pan and pinch to frame your image")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
                             
-                            // --- REMOVE BUTTON ---
                             Button(role: .destructive) {
                                 withAnimation {
                                     entry.backgroundImageData = nil
-                                    // Reset crop data when image is removed
                                     entry.backgroundImageScale = 1.0
                                     entry.backgroundImageOffsetX = 0
                                     entry.backgroundImageOffsetY = 0
@@ -66,45 +78,48 @@ struct DayDetailView: View {
                             } label: {
                                 Label("Remove Background Image", systemImage: "trash")
                             }
-                            .padding()
+                            .padding(.top)
                         }
+                        .padding(.horizontal)
+
                     } else {
-                        // PhotosPicker to add an image
+                        // Placeholder for when no image is selected
+                        Spacer()
                         PhotosPicker(selection: $selectedPhoto, matching: .images) {
                             Label("Add Background Image", systemImage: "photo")
                         }
                         .onChange(of: selectedPhoto) { _, newItem in
                             Task {
                                 if let data = try? await newItem?.loadTransferable(type: Data.self) {
-                                    withAnimation {
-                                        entry.backgroundImageData = data
-                                    }
+                                    withAnimation { entry.backgroundImageData = data }
                                 }
                             }
                         }
+                        Spacer()
                     }
-                    
-                    Spacer()
                 }
-                .navigationTitle("Edit Day")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color(.systemGroupedBackground)) // A neutral background
+                .navigationTitle("Frame Your Image")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
-                    // Done button to dismiss the view
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") { dismiss() }
+                    }
                     ToolbarItem(placement: .confirmationAction) {
-                        Button("Done") {
+                        Button("Save") {
+                            // The onDisappear modifier will handle the actual saving
                             dismiss()
                         }
                     }
                 }
             }
             .onAppear {
-                // Load the saved crop data when the view appears
                 currentScale = entry.backgroundImageScale
                 currentOffsetX = entry.backgroundImageOffsetX
                 currentOffsetY = entry.backgroundImageOffsetY
             }
             .onDisappear {
-                // Save the final crop data when the view is dismissed
                 entry.backgroundImageScale = currentScale
                 entry.backgroundImageOffsetX = currentOffsetX
                 entry.backgroundImageOffsetY = currentOffsetY
