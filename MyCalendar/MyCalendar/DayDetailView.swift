@@ -34,51 +34,26 @@ struct DayDetailView: View {
         NavigationStack {
             VStack {
                 if let imageData = entry.backgroundImageData {
-                    // --- THE NEW, CONTAINED, "WHATSAPP STYLE" CROPPER ---
                     
                     Text("Pan and pinch to frame your image")
                         .font(.headline)
-                        .padding(.top)
+                        .padding(.vertical)
 
-                    // We use GeometryReader to get the available size for our editor.
-                    GeometryReader { geometry in
-                        // Define the size of our transparent "hole" based on the aspect ratio.
-                        // We make it 80% of the available width to leave some space.
-                        let viewportWidth = geometry.size.width * 0.8
-                        let viewportHeight = viewportWidth / AppConstants.calendarCellAspectRatio
-                        
-                        // Center the viewport within the available geometry.
-                        let viewportRect = CGRect(
-                            x: (geometry.size.width - viewportWidth) / 2,
-                            y: (geometry.size.height - viewportHeight) / 2,
-                            width: viewportWidth,
-                            height: viewportHeight
+                    // --- THE NEW, FIXED-SIZE, RELIABLE CROPPER ---
+                    ZStack {
+                        // Layer 1: The interactive image is the base of the ZStack.
+                        ImageCropperView(
+                            imageData: imageData,
+                            scale: $currentScale,
+                            offsetX: $currentOffsetX,
+                            offsetY: $currentOffsetY
                         )
-
-                        ZStack {
-                            // Layer 1: The interactive image. It sits at the bottom.
-                            ImageCropperView(
-                                imageData: imageData,
-                                scale: $currentScale,
-                                offsetX: $currentOffsetX,
-                                offsetY: $currentOffsetY
-                            )
-
-                            // Layer 2: The Dimming Overlay. We use our custom HoleShape.
-                            // The .evenOdd fill style is what makes the hole transparent.
-                            HoleShape(rect: viewportRect)
-                                .fill(Color.black.opacity(0.6), style: FillStyle(eoFill: true))
-
-                            // Layer 3: The White Border. We draw this separately for clarity.
-                            Rectangle()
-                                .stroke(Color.white, lineWidth: 2)
-                                .frame(width: viewportWidth, height: viewportHeight)
-                        }
                     }
-                    // Give the entire editor a reasonable, fixed height.
-                    // It will NOT take over the whole screen.
-                    .frame(height: 400)
-                    .padding(.horizontal)
+                    // This frame defines the entire interactive area. It is NOT fullscreen.
+                    .frame(width: 300, height: 400)
+                    .background(Color.black) // A black background in case image is small
+                    .cornerRadius(15)
+                    .clipped() // This is crucial: it contains the image within the frame.
 
                     // --- REMOVE BUTTON ---
                     Button(role: .destructive) {
@@ -94,7 +69,7 @@ struct DayDetailView: View {
                     .padding()
 
                 } else {
-                    // PhotosPicker to add an image... (this part remains the same)
+                    // PhotosPicker UI... (remains the same)
                     Spacer()
                     PhotosPicker(selection: $selectedPhoto, matching: .images) {
                         Label("Add Background Image", systemImage: "photo")
@@ -111,17 +86,16 @@ struct DayDetailView: View {
                     Spacer()
                 }
             }
-                .navigationTitle("Edit Day")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    // Done button to dismiss the view
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Done") {
-                            dismiss()
-                        }
+            .navigationTitle("Frame Image")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        dismiss()
                     }
                 }
             }
+        }
             .onAppear {
                 // Load the saved crop data when the view appears
                 currentScale = entry.backgroundImageScale
