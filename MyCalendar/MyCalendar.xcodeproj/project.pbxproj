@@ -12,7 +12,6 @@
 		DC3F99A02E31104800E8B7BB /* DayDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F999F2E31104800E8B7BB /* DayDetailView.swift */; };
 		DC3F99A22E3353D600E8B7BB /* ImageCropperView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F99A12E3353D600E8B7BB /* ImageCropperView.swift */; };
 		DC3F99A42E37BD3200E8B7BB /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F99A32E37BD3200E8B7BB /* AppConstants.swift */; };
-		DC3F99A82E38DC7E00E8B7BB /* HoleShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F99A72E38DC7E00E8B7BB /* HoleShape.swift */; };
 		DC5FDE1D2E16AA1900FAB44F /* MyCalendarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE1C2E16AA1900FAB44F /* MyCalendarApp.swift */; };
 		DC5FDE1F2E16AA1900FAB44F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE1E2E16AA1900FAB44F /* ContentView.swift */; };
 		DC5FDE212E16AA1900FAB44F /* DayEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE202E16AA1900FAB44F /* DayEntry.swift */; };
@@ -29,7 +28,6 @@
 		DC3F999F2E31104800E8B7BB /* DayDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayDetailView.swift; sourceTree = "<group>"; };
 		DC3F99A12E3353D600E8B7BB /* ImageCropperView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCropperView.swift; sourceTree = "<group>"; };
 		DC3F99A32E37BD3200E8B7BB /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
-		DC3F99A72E38DC7E00E8B7BB /* HoleShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoleShape.swift; sourceTree = "<group>"; };
 		DC5FDE192E16AA1900FAB44F /* MyCalendar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyCalendar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC5FDE1C2E16AA1900FAB44F /* MyCalendarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyCalendarApp.swift; sourceTree = "<group>"; };
 		DC5FDE1E2E16AA1900FAB44F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -84,7 +82,6 @@
 				DC3F999F2E31104800E8B7BB /* DayDetailView.swift */,
 				DC3F99A12E3353D600E8B7BB /* ImageCropperView.swift */,
 				DC3F99A32E37BD3200E8B7BB /* AppConstants.swift */,
-				DC3F99A72E38DC7E00E8B7BB /* HoleShape.swift */,
 			);
 			path = MyCalendar;
 			sourceTree = "<group>";
@@ -178,7 +175,6 @@
 				DC3F999E2E310F4200E8B7BB /* DayCellView.swift in Sources */,
 				DC5FDE2D2E18808800FAB44F /* CalendarView.swift in Sources */,
 				DC5FDE1D2E16AA1900FAB44F /* MyCalendarApp.swift in Sources */,
-				DC3F99A82E38DC7E00E8B7BB /* HoleShape.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
