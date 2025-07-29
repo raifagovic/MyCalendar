@@ -45,7 +45,6 @@ struct ImageCropperView: View {
         if let uiImage = UIImage(data: imageData) {
             Image(uiImage: uiImage)
                 .resizable()
-                .scaledToFit()
                 // Apply the combined scale (final scale * live gesture scale)
                 .scaleEffect(scale * gestureScale)
                 // Apply the combined offset
