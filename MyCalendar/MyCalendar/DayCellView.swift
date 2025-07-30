@@ -50,8 +50,7 @@ struct DayCellView: View {
                     Text("\(Calendar.current.component(.day, from: day))")
                         .font(.headline)
                         .padding(.top, 4)
-                        .padding(.leading, 6)
-                        .frame(maxWidth: .infinity, alignment: .topLeading) // Position top-left
+                        .frame(maxWidth: .infinity, alignment: .top) // Position top-left
 
                     Spacer() // Pushes content to top and bottom
 
