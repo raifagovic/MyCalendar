@@ -48,39 +48,56 @@ struct CalendarView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        VStack(spacing: 0) { // Use spacing: 0 to connect the header and the grid
+            
+            // --- THIS IS OUR NEW CUSTOM "APPLE STYLE" HEADER ---
             VStack {
-                // Header with month and navigation
+                // Month Title and Navigation Buttons
                 HStack {
+                    Text(currentDate, formatter: DateFormatter.monthAndYear)
+                        .font(.title)
+                        .fontWeight(.bold)
+                    
+                    Spacer()
+                    
                     Button(action: { changeMonth(by: -1) }) {
                         Image(systemName: "chevron.left")
                     }
-                    Spacer()
-                    Text(currentDate, formatter: DateFormatter.monthAndYear)
-                        .font(.title)
-                    Spacer()
+                    .font(.title2)
+                    
                     Button(action: { changeMonth(by: 1) }) {
                         Image(systemName: "chevron.right")
                     }
+                    .font(.title2)
                 }
-                .padding()
+                .padding(.horizontal)
+                .padding(.top, 10) // Add some space from the top edge
 
-                // Day of the week headers
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7)) {
-                    ForEach(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], id: \.self) {
-                        Text($0).font(.caption).bold()
+                // Weekday Symbols (M, T, W, T, F, S, S)
+                HStack {
+                    ForEach(weekdaySymbols, id: \.self) { symbol in
+                        Text(symbol)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                            // This makes each symbol take up equal space
+                            .frame(maxWidth: .infinity)
                     }
                 }
+                .padding(.vertical, 8)
+            }
+            .background(.regularMaterial) // This applies the essential blur effect!
 
-                // The calendar grid
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 4) {
+            // --- The Main Calendar Grid in a ScrollView ---
+            ScrollView {
+                // The LazyVGrid for the actual days
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 12) {
                     ForEach(days.indices, id: \.self) { index in
                         let day = days[index]
                         
-                        if day == Date.distantPast { // Empty placeholder cell
+                        if day == Date.distantPast {
                             Rectangle().fill(Color.clear)
                         } else {
-                            // Find the data for this day
                             let entryForDay = dayEntries.first { Calendar.current.isDate($0.date, inSameDayAs: day) }
                             
                             DayCellView(day: day, dayEntry: entryForDay)
@@ -90,14 +107,17 @@ struct CalendarView: View {
                         }
                     }
                 }
-                .padding(.horizontal, 8)
-            }
-            .sheet(item: $selectedDate) { date in
-                // Presenting the detail view when a date is selected
-                DayDetailView(date: date)
+                .padding(.horizontal, 4)
+                .padding(.top, 5) // A little space between the header and the grid
             }
         }
+        .sheet(item: $selectedDate) { date in
+            DayDetailView(date: date)
+        }
+        // We remove .navigationStack because we are building our own header.
+        // The .sheet modifier is now attached to the main VStack.
     }
+
     
     private func changeMonth(by amount: Int) {
         if let newDate = Calendar.current.date(byAdding: .month, value: amount, to: currentDate) {
