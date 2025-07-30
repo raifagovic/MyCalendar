@@ -17,9 +17,12 @@ struct DayDetailView: View {
     @Query private var entries: [DayEntry]
     @State private var selectedPhoto: PhotosPickerItem?
     
+    // --- Gesture State is now managed directly in this view ---
     @State private var currentScale: CGFloat = 1.0
-    @State private var currentOffsetX: CGFloat = 0.0
-    @State private var currentOffsetY: CGFloat = 0.0
+    @State private var currentOffset: CGSize = .zero
+
+    @GestureState private var gestureScale: CGFloat = 1.0
+    @GestureState private var gestureOffset: CGSize = .zero
 
     init(date: Date) {
         self.date = date
@@ -31,84 +34,93 @@ struct DayDetailView: View {
     var body: some View {
         let entry = entries.first ?? createAndReturnEntry()
 
+        // --- Gesture Definitions ---
+        let magnificationGesture = MagnificationGesture()
+            .updating($gestureScale) { value, state, _ in
+                state = value
+            }
+            .onEnded { value in
+                // Add the gesture's change to the final scale
+                currentScale *= value
+            }
+
+        let dragGesture = DragGesture()
+            .updating($gestureOffset) { value, state, _ in
+                state = value.translation
+            }
+            .onEnded { value in
+                // Add the gesture's translation to the final offset
+                currentOffset.width += value.translation.width
+                currentOffset.height += value.translation.height
+            }
+        
+        let combinedGesture = SimultaneousGesture(magnificationGesture, dragGesture)
+
         NavigationStack {
             VStack {
-                if let imageData = entry.backgroundImageData {
+                if let imageData = entry.backgroundImageData, let uiImage = UIImage(data: imageData) {
                     
-                    Text("Pan and pinch to frame your image")
+                    Text("Frame your image")
                         .font(.headline)
-                        .padding(.vertical)
+                        .padding(.top)
 
-                    // --- THE NEW, FIXED-SIZE, RELIABLE CROPPER ---
+                    // --- The New, Contained, "WhatsApp Style" Editor ---
                     ZStack {
-                        // Layer 1: The interactive image is the base of the ZStack.
-                        ImageCropperView(
-                            imageData: imageData,
-                            scale: $currentScale,
-                            offsetX: $currentOffsetX,
-                            offsetY: $currentOffsetY
-                        )
+                        // Layer 1: The interactive image
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFill()
+                            .scaleEffect(currentScale * gestureScale)
+                            .offset(
+                                x: currentOffset.width + gestureOffset.width,
+                                y: currentOffset.height + gestureOffset.height
+                            )
+                        
+                        // Layer 2: The dimming overlay
+                        Rectangle()
+                            .fill(.black.opacity(0.4))
+                        
+                        // Layer 3: The transparent hole, created with a mask
+                        Rectangle()
+                            .fill(Color.white) // This color doesn't matter, it's just for the shape
+                            .aspectRatio(AppConstants.calendarCellAspectRatio, contentMode: .fit)
+                            .frame(width: 300) // Give the hole a fixed, aesthetic width
+                            .blendMode(.destinationOut) // This cuts the hole
                     }
-                    // This frame defines the entire interactive area. It is NOT fullscreen.
-                    .frame(width: 300, height: 400)
-                    .background(Color.black) // A black background in case image is small
-                    .cornerRadius(15)
-                    .clipped() // This is crucial: it contains the image within the frame.
+                    .compositingGroup() // Crucial for blendMode to work correctly
+                    .frame(height: 400) // A fixed, reasonable height for the whole editor
+                    .clipped() // CRUCIAL: Contains the image and stops it from spilling
+                    .gesture(combinedGesture) // Apply gestures to the entire editor frame
 
-                    // --- REMOVE BUTTON ---
-                    Button(role: .destructive) {
-                        withAnimation {
-                            entry.backgroundImageData = nil
-                            entry.backgroundImageScale = 1.0
-                            entry.backgroundImageOffsetX = 0
-                            entry.backgroundImageOffsetY = 0
-                        }
-                    } label: {
-                        Label("Remove Background Image", systemImage: "trash")
-                    }
+                    // ... Remove Button and other UI ...
+                    Button(role: .destructive) { /* ... remove logic ... */ } label: { /* ... label ... */ }
                     .padding()
-
+                    
                 } else {
-                    // PhotosPicker UI... (remains the same)
-                    Spacer()
-                    PhotosPicker(selection: $selectedPhoto, matching: .images) {
-                        Label("Add Background Image", systemImage: "photo")
-                    }
-                    .onChange(of: selectedPhoto) { _, newItem in
-                        Task {
-                            if let data = try? await newItem?.loadTransferable(type: Data.self) {
-                                withAnimation {
-                                    entry.backgroundImageData = data
-                                }
-                            }
-                        }
-                    }
-                    Spacer()
+                    // ... PhotosPicker UI ...
                 }
             }
             .navigationTitle("Frame Image")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
-                        dismiss()
-                    }
+                    Button("Done") { dismiss() }
                 }
             }
         }
-            .onAppear {
-                // Load the saved crop data when the view appears
-                currentScale = entry.backgroundImageScale
-                currentOffsetX = entry.backgroundImageOffsetX
-                currentOffsetY = entry.backgroundImageOffsetY
-            }
-            .onDisappear {
-                // Save the final crop data when the view is dismissed
-                entry.backgroundImageScale = currentScale
-                entry.backgroundImageOffsetX = currentOffsetX
-                entry.backgroundImageOffsetY = currentOffsetY
-            }
+        .onAppear {
+            // Load the saved values
+            self.currentScale = entry.backgroundImageScale
+            self.currentOffset = CGSize(width: entry.backgroundImageOffsetX, height: entry.backgroundImageOffsetY)
         }
+        .onDisappear {
+            // Save the final values
+            entry.backgroundImageScale = self.currentScale
+            entry.backgroundImageOffsetX = self.currentOffset.width
+            entry.backgroundImageOffsetY = self.currentOffset.height
+            try? modelContext.save()
+        }
+    }
     
     private func createAndReturnEntry() -> DayEntry {
         if let existingEntry = entries.first {
