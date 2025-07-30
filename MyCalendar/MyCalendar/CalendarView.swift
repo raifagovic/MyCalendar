@@ -39,6 +39,13 @@ struct CalendarView: View {
         
         return allDays
     }
+    
+    private var weekdaySymbols: [String] {
+        // This uses the user's current calendar (e.g., Sunday or Monday first)
+        let formatter = DateFormatter()
+        // "M", "T", "W", etc.
+        return formatter.veryShortWeekdaySymbols
+    }
 
     var body: some View {
         NavigationStack {

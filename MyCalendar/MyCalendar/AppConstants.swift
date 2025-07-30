@@ -12,5 +12,5 @@ import CoreGraphics
 struct AppConstants {
     // A cell that is taller than it is wide.
     // Example: width = 75, height = 100. Ratio = 75/100 = 0.75
-    static let calendarCellAspectRatio: CGFloat = 3.0 / 5.0
+    static let calendarCellAspectRatio: CGFloat = 3.0 / 6.0
 }
