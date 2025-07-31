@@ -15,29 +15,56 @@ struct CalendarView: View {
     @State private var currentDate = Date()
     @State private var selectedDate: Date?
 
-    private var days: [Date] {
-        // This logic is good, but needs to handle empty days for the grid layout
+    // This gives us the row-by-row control we need for the dividers.
+    private var weeks: [[Date]] {
         let calendar = Calendar.current
-        guard let monthInterval = calendar.dateInterval(of: .month, for: currentDate)
-        else { return [] }
-
-        var allDays: [Date] = []
-        let firstDayOfWeek = calendar.component(.weekday, from: monthInterval.start)
-        let emptyDays = (firstDayOfWeek - calendar.firstWeekday + 7) % 7
+        guard let monthInterval = calendar.dateInterval(of: .month, for: currentDate) else { return [] }
         
-        // Add empty placeholders for days before the 1st
-        for _ in 0..<emptyDays {
-            allDays.append(Date.distantPast) // Use a placeholder
+        // --- Step 1: Get a flat list of all days to display in the grid ---
+        var allDaysInGrid: [Date] = []
+        let firstDayOfMonth = monthInterval.start
+        let firstWeekday = calendar.component(.weekday, from: firstDayOfMonth)
+        let emptyDaysInPrefix = (firstWeekday - calendar.firstWeekday + 7) % 7
+        
+        // Add placeholder dates for the days from the previous month
+        for _ in 0..<emptyDaysInPrefix {
+            allDaysInGrid.append(Date.distantPast)
         }
         
-        // Add the actual days of the month
-        let range = calendar.range(of: .day, in: .month, for: currentDate)!
-        let daysInMonth = range.compactMap {
-            calendar.date(byAdding: .day, value: $0 - 1, to: monthInterval.start)
+        // Add all the actual dates for the current month
+        if let daysInMonthRange = calendar.range(of: .day, in: .month, for: currentDate) {
+            let daysInMonth = daysInMonthRange.compactMap { day -> Date? in
+                calendar.date(byAdding: .day, value: day - 1, to: firstDayOfMonth)
+            }
+            allDaysInGrid.append(contentsOf: daysInMonth)
         }
-        allDays.append(contentsOf: daysInMonth)
         
-        return allDays
+        // --- Step 2: Chunk the flat list into an array of weeks ---
+        var resultWeeks: [[Date]] = []
+        var currentWeek: [Date] = []
+        
+        for day in allDaysInGrid {
+            currentWeek.append(day)
+            if currentWeek.count == 7 {
+                resultWeeks.append(currentWeek)
+                currentWeek = []
+            }
+        }
+        
+        // Ensure the last week also has 7 days, filling with placeholders if needed
+        if !currentWeek.isEmpty {
+            while currentWeek.count < 7 {
+                currentWeek.append(Date.distantPast)
+            }
+            resultWeeks.append(currentWeek)
+        }
+        
+        // Ensure we always have 6 weeks for a consistent layout
+        while resultWeeks.count < 6 {
+            resultWeeks.append(Array(repeating: Date.distantPast, count: 7))
+        }
+        
+        return resultWeeks
     }
     
     private var weekdaySymbols: [String] {
