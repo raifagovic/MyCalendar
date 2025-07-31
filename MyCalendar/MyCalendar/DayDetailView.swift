@@ -17,7 +17,7 @@ struct DayDetailView: View {
     @Query private var entries: [DayEntry]
     @State private var selectedPhoto: PhotosPickerItem?
     
-    // --- Gesture State is now managed directly in this view ---
+    // --- Gesture State ---
     @State private var currentScale: CGFloat = 1.0
     @State private var currentOffset: CGSize = .zero
 
@@ -40,7 +40,6 @@ struct DayDetailView: View {
                 state = value
             }
             .onEnded { value in
-                // Add the gesture's change to the final scale
                 currentScale *= value
             }
 
@@ -49,7 +48,6 @@ struct DayDetailView: View {
                 state = value.translation
             }
             .onEnded { value in
-                // Add the gesture's translation to the final offset
                 currentOffset.width += value.translation.width
                 currentOffset.height += value.translation.height
             }
@@ -58,13 +56,14 @@ struct DayDetailView: View {
 
         NavigationStack {
             VStack {
+                // --- We conditionally show either the editor or the "Add" button ---
                 if let imageData = entry.backgroundImageData, let uiImage = UIImage(data: imageData) {
                     
+                    // MARK: - Image Editor UI
                     Text("Frame your image")
                         .font(.headline)
                         .padding(.top)
 
-                    // --- The New, Contained, "WhatsApp Style" Editor ---
                     ZStack {
                         // Layer 1: The interactive image
                         Image(uiImage: uiImage)
@@ -80,24 +79,66 @@ struct DayDetailView: View {
                         Rectangle()
                             .fill(.black.opacity(0.4))
                         
-                        // Layer 3: The transparent hole, created with a mask
+                        // Layer 3: The transparent hole
                         Rectangle()
-                            .fill(Color.white) // This color doesn't matter, it's just for the shape
+                            .fill(Color.white)
                             .aspectRatio(AppConstants.calendarCellAspectRatio, contentMode: .fit)
-                            .frame(width: 300) // Give the hole a fixed, aesthetic width
-                            .blendMode(.destinationOut) // This cuts the hole
+                            .frame(width: 300)
+                            .blendMode(.destinationOut)
                     }
-                    .compositingGroup() // Crucial for blendMode to work correctly
-                    .frame(height: 400) // A fixed, reasonable height for the whole editor
-                    .clipped() // CRUCIAL: Contains the image and stops it from spilling
-                    .gesture(combinedGesture) // Apply gestures to the entire editor frame
+                    .compositingGroup()
+                    .frame(height: 400)
+                    .clipped()
+                    .gesture(combinedGesture)
 
-                    // ... Remove Button and other UI ...
-                    Button(role: .destructive) { /* ... remove logic ... */ } label: { /* ... label ... */ }
+                    // MARK: - Remove Button (Restored)
+                    Button(role: .destructive) {
+                        withAnimation {
+                            entry.backgroundImageData = nil
+                            // Also reset the transform data
+                            entry.backgroundImageScale = 1.0
+                            entry.backgroundImageOffsetX = 0.0
+                            entry.backgroundImageOffsetY = 0.0
+                        }
+                    } label: {
+                        Label("Remove Background Image", systemImage: "trash")
+                    }
                     .padding()
                     
                 } else {
-                    // ... PhotosPicker UI ...
+                    // MARK: - Add Image UI (Restored)
+                    Spacer()
+                    // The PhotosPicker for adding a new image
+                    PhotosPicker(selection: $selectedPhoto, matching: .images, photoLibrary: .shared()) {
+                        VStack(spacing: 10) {
+                            Image(systemName: "photo.on.rectangle.angled")
+                                .font(.system(size: 50))
+                            Text("Add Background Image")
+                                .font(.headline)
+                        }
+                        .foregroundColor(.accentColor)
+                    }
+                    .onChange(of: selectedPhoto) { _, newItem in
+                        Task {
+                            guard let data = try? await newItem?.loadTransferable(type: Data.self),
+                                  let uiImage = UIImage(data: data) else { return }
+                            
+                            // --- Calculate sensible starting scale ---
+                            let editorWidth: CGFloat = 300
+                            let editorHeight: CGFloat = 400
+                            let scaleX = editorWidth / uiImage.size.width
+                            let scaleY = editorHeight / uiImage.size.height
+                            let initialScale = max(scaleX, scaleY) // Fill the frame
+                            
+                            withAnimation {
+                                entry.backgroundImageData = data
+                                entry.backgroundImageScale = initialScale
+                                entry.backgroundImageOffsetX = 0
+                                entry.backgroundImageOffsetY = 0
+                            }
+                        }
+                    }
+                    Spacer()
                 }
             }
             .navigationTitle("Frame Image")
@@ -109,12 +150,10 @@ struct DayDetailView: View {
             }
         }
         .onAppear {
-            // Load the saved values
             self.currentScale = entry.backgroundImageScale
             self.currentOffset = CGSize(width: entry.backgroundImageOffsetX, height: entry.backgroundImageOffsetY)
         }
         .onDisappear {
-            // Save the final values
             entry.backgroundImageScale = self.currentScale
             entry.backgroundImageOffsetX = self.currentOffset.width
             entry.backgroundImageOffsetY = self.currentOffset.height
