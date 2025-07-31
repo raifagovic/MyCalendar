@@ -71,7 +71,6 @@ struct DayCellView: View {
 
             // FINAL MODIFIERS
             // These are applied to the entire composition.
-            .background(Color.gray.opacity(0.1)) // A fallback color for empty days
             .cornerRadius(8)
             .clipped() // Ensures everything respects the rounded corners clipping
             
