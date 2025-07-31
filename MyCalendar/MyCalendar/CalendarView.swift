@@ -87,6 +87,10 @@ struct CalendarView: View {
                 .padding(.vertical, 8)
             }
             .background(.regularMaterial) // This applies the essential blur effect!
+            
+            Divider()
+                .background(Color.gray.opacity(0.5))
+
 
             // --- The Main Calendar Grid in a ScrollView ---
             ScrollView {
@@ -121,6 +125,14 @@ struct CalendarView: View {
     private func changeMonth(by amount: Int) {
         if let newDate = Calendar.current.date(byAdding: .month, value: amount, to: currentDate) {
             currentDate = newDate
+        }
+    }
+    
+    // Helper function to check if a week should have a divider
+    private func weekContainsDateInCurrentMonth(week: [Date]) -> Bool {
+        return week.contains { day in
+            guard day != Date.distantPast else { return false }
+            return Calendar.current.isDate(day, equalTo: currentDate, toGranularity: .month)
         }
     }
 }
