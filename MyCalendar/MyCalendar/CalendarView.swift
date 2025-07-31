@@ -101,7 +101,7 @@ struct CalendarView: View {
                 .padding(.top, 10)
                 
                 // Weekday Symbols Header
-                HStack {
+                HStack(spacing: 0) {
                     ForEach(weekdaySymbols, id: \.self) { symbol in
                         Text(symbol)
                             .font(.subheadline)
