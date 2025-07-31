@@ -75,10 +75,10 @@ struct CalendarView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) { // Use spacing: 0 to connect the header and the grid
+        VStack(spacing: 0) { // spacing: 0 connects the header, divider, and grid
             
-            // --- THIS IS OUR NEW CUSTOM "APPLE STYLE" HEADER ---
-            VStack {
+            // --- Custom "Apple Style" Blurred Header ---
+            VStack(spacing: 0) {
                 // Month Title and Navigation Buttons
                 HStack {
                     Text(currentDate, formatter: DateFormatter.monthAndYear)
@@ -98,56 +98,57 @@ struct CalendarView: View {
                     .font(.title2)
                 }
                 .padding(.horizontal)
-                .padding(.top, 10) // Add some space from the top edge
-
-                // Weekday Symbols (M, T, W, T, F, S, S)
+                .padding(.top, 10)
+                
+                // Weekday Symbols Header
                 HStack {
                     ForEach(weekdaySymbols, id: \.self) { symbol in
                         Text(symbol)
                             .font(.subheadline)
                             .fontWeight(.medium)
                             .foregroundColor(.secondary)
-                            // This makes each symbol take up equal space
                             .frame(maxWidth: .infinity)
                     }
                 }
                 .padding(.vertical, 8)
             }
-            .background(.regularMaterial) // This applies the essential blur effect!
+            .background(.regularMaterial)
             
-            Divider()
-                .background(Color.gray.opacity(0.5))
-
-
-            // --- The Main Calendar Grid in a ScrollView ---
-            ScrollView {
-                // The LazyVGrid for the actual days
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 12) {
-                    ForEach(days.indices, id: \.self) { index in
-                        let day = days[index]
-                        
-                        if day == Date.distantPast {
-                            Rectangle().fill(Color.clear)
-                        } else {
-                            let entryForDay = dayEntries.first { Calendar.current.isDate($0.date, inSameDayAs: day) }
-                            
-                            DayCellView(day: day, dayEntry: entryForDay)
-                                .onTapGesture {
-                                    self.selectedDate = day
-                                }
+            // The first divider that is always under the main header
+            Divider().background(Color.gray.opacity(0.5))
+            
+            // --- The new Calendar Grid, built from a VStack of weeks ---
+            VStack(spacing: 0) {
+                ForEach(weeks.indices, id: \.self) { index in
+                    let week = weeks[index]
+                    
+                    // A single week row
+                    HStack(spacing: 0) {
+                        ForEach(week, id: \.self) { day in
+                            if day == Date.distantPast {
+                                Rectangle().fill(Color.clear)
+                            } else {
+                                DayCellView(day: day, dayEntry: dayEntries.first { Calendar.current.isDate($0.date, inSameDayAs: day) })
+                                    .onTapGesture {
+                                        self.selectedDate = day
+                                    }
+                            }
                         }
                     }
+                    
+                    // The intelligent divider logic: only show if the week is relevant.
+                    if weekContainsDateInCurrentMonth(week: week) {
+                        Divider().background(Color.gray.opacity(0.5))
+                    }
                 }
-                .padding(.top, 5) // A little space between the header and the grid
             }
         }
+        .background(Color.black) // Set the overall background to black
+        .edgesIgnoringSafeArea(.bottom)
         .sheet(item: $selectedDate) { date in
             DayDetailView(date: date)
         }
-        // We remove .navigationStack because we are building our own header.
-        // The .sheet modifier is now attached to the main VStack.
     }
-
     
     private func changeMonth(by amount: Int) {
         if let newDate = Calendar.current.date(byAdding: .month, value: amount, to: currentDate) {
