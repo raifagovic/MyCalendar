@@ -51,7 +51,8 @@ struct DayCellView: View {
                         .font(.headline)
                         .padding(.top, 4)
                         .frame(maxWidth: .infinity, alignment: .top) // Position top-left
-
+                        .foregroundColor(Calendar.current.isDateInToday(day) ? .red : .white)
+                    
                     Spacer() // Pushes content to top and bottom
 
                     if let emoticons = dayEntry?.emoticons, !emoticons.isEmpty {
