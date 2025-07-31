@@ -107,7 +107,6 @@ struct CalendarView: View {
                         }
                     }
                 }
-                .padding(.horizontal, 4)
                 .padding(.top, 5) // A little space between the header and the grid
             }
         }
