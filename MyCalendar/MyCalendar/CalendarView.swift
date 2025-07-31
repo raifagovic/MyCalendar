@@ -9,163 +9,79 @@ import SwiftUI
 import SwiftData
 
 struct CalendarView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query(sort: \DayEntry.date) private var dayEntries: [DayEntry] // Fetch all saved entries
+    @Query(sort: \DayEntry.date) private var dayEntries: [DayEntry]
     
-    @State private var currentDate = Date()
+    @State private var months: [Date] = []
     @State private var selectedDate: Date?
 
-    // This gives us the row-by-row control we need for the dividers.
-    private var weeks: [[Date]] {
-        let calendar = Calendar.current
-        guard let monthInterval = calendar.dateInterval(of: .month, for: currentDate) else { return [] }
-        
-        // --- Step 1: Get a flat list of all days to display in the grid ---
-        var allDaysInGrid: [Date] = []
-        let firstDayOfMonth = monthInterval.start
-        let firstWeekday = calendar.component(.weekday, from: firstDayOfMonth)
-        let emptyDaysInPrefix = (firstWeekday - calendar.firstWeekday + 7) % 7
-        
-        // Add placeholder dates for the days from the previous month
-        for _ in 0..<emptyDaysInPrefix {
-            allDaysInGrid.append(Date.distantPast)
-        }
-        
-        // Add all the actual dates for the current month
-        if let daysInMonthRange = calendar.range(of: .day, in: .month, for: currentDate) {
-            let daysInMonth = daysInMonthRange.compactMap { day -> Date? in
-                calendar.date(byAdding: .day, value: day - 1, to: firstDayOfMonth)
-            }
-            allDaysInGrid.append(contentsOf: daysInMonth)
-        }
-        
-        // --- Step 2: Chunk the flat list into an array of weeks ---
-        var resultWeeks: [[Date]] = []
-        var currentWeek: [Date] = []
-        
-        for day in allDaysInGrid {
-            currentWeek.append(day)
-            if currentWeek.count == 7 {
-                resultWeeks.append(currentWeek)
-                currentWeek = []
-            }
-        }
-        
-        // Ensure the last week also has 7 days, filling with placeholders if needed
-        if !currentWeek.isEmpty {
-            while currentWeek.count < 7 {
-                currentWeek.append(Date.distantPast)
-            }
-            resultWeeks.append(currentWeek)
-        }
-        
-        // Ensure we always have 6 weeks for a consistent layout
-        while resultWeeks.count < 6 {
-            resultWeeks.append(Array(repeating: Date.distantPast, count: 7))
-        }
-        
-        return resultWeeks
-    }
-    
-    private var weekdaySymbols: [String] {
-        // This uses the user's current calendar (e.g., Sunday or Monday first)
-        let formatter = DateFormatter()
-        // "M", "T", "W", etc.
-        return formatter.veryShortWeekdaySymbols
-    }
-
     var body: some View {
-        VStack(spacing: 0) { // spacing: 0 connects the header, divider, and grid
-            
-            // --- Custom "Apple Style" Blurred Header ---
-            VStack(spacing: 0) {
-                // Month Title and Navigation Buttons
-                HStack {
-                    Text(currentDate, formatter: DateFormatter.monthAndYear)
-                        .font(.title)
-                        .fontWeight(.bold)
-                    
-                    Spacer()
-                    
-                    Button(action: { changeMonth(by: -1) }) {
-                        Image(systemName: "chevron.left")
-                    }
-                    .font(.title2)
-                    
-                    Button(action: { changeMonth(by: 1) }) {
-                        Image(systemName: "chevron.right")
-                    }
-                    .font(.title2)
-                }
-                .padding(.horizontal)
-                .padding(.top, 10)
-                
-                // Weekday Symbols Header
-                HStack(spacing: 0) {
-                    ForEach(weekdaySymbols, id: \.self) { symbol in
-                        Text(symbol)
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundColor(.secondary)
-                            .frame(maxWidth: .infinity)
+        NavigationStack {
+            // ScrollViewReader allows us to programmatically jump to a specific month
+            ScrollViewReader { proxy in
+                ScrollView {
+                    // LazyVStack is crucial for performance. It only renders visible months.
+                    LazyVStack(spacing: 0) {
+                        ForEach(months, id: \.self) { month in
+                            MonthView(monthDate: month, dayEntries: dayEntries, selectedDate: $selectedDate)
+                                // We give each month an ID so the ScrollViewReader can find it
+                                .id(month.startOfMonth)
+                        }
                     }
                 }
-                .padding(.vertical, 8)
-            }
-            .background(.regularMaterial)
-            
-            // The first divider that is always under the main header
-            Divider().background(Color.gray.opacity(0.5))
-            
-            // --- The new Calendar Grid, built from a VStack of weeks ---
-            VStack(spacing: 0) {
-                ForEach(weeks.indices, id: \.self) { index in
-                    let week = weeks[index]
-                    
-                    // A single week row
-                    HStack(spacing: 0) {
-                        ForEach(week, id: \.self) { day in
-                            if day == Date.distantPast {
-                                Rectangle().fill(Color.clear)
-                            } else {
-                                DayCellView(day: day, dayEntry: dayEntries.first { Calendar.current.isDate($0.date, inSameDayAs: day) })
-                                    .onTapGesture {
-                                        self.selectedDate = day
-                                    }
+                .navigationTitle("Calendar")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    // The "Today" button uses the proxy to scroll to the current month
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Today") {
+                            withAnimation {
+                                proxy.scrollTo(Date().startOfMonth, anchor: .top)
                             }
                         }
                     }
-                    
-                    // The intelligent divider logic: only show if the week is relevant.
-                    if weekContainsDateInCurrentMonth(week: week) {
-                        Divider().background(Color.gray.opacity(0.5))
+                }
+                .onAppear {
+                    // When the view appears, generate our list of months
+                    if months.isEmpty {
+                        months = generateMonths()
+                    }
+                    // And immediately jump to the current month
+                    DispatchQueue.main.async {
+                        proxy.scrollTo(Date().startOfMonth, anchor: .top)
                     }
                 }
             }
         }
-        .background(Color.black) // Set the overall background to black
-        .edgesIgnoringSafeArea(.bottom)
         .sheet(item: $selectedDate) { date in
             DayDetailView(date: date)
         }
     }
     
-    private func changeMonth(by amount: Int) {
-        if let newDate = Calendar.current.date(byAdding: .month, value: amount, to: currentDate) {
-            currentDate = newDate
+    // Generates a list of months, e.g., 10 years past and 10 years future
+    private func generateMonths() -> [Date] {
+        var result: [Date] = []
+        let calendar = Calendar.current
+        let today = Date()
+        
+        for i in -120...120 { // -10 years to +10 years
+            if let month = calendar.date(byAdding: .month, value: i, to: today) {
+                result.append(month.startOfMonth)
+            }
         }
-    }
-    
-    // Helper function to check if a week should have a divider
-    private func weekContainsDateInCurrentMonth(week: [Date]) -> Bool {
-        return week.contains { day in
-            guard day != Date.distantPast else { return false }
-            return Calendar.current.isDate(day, equalTo: currentDate, toGranularity: .month)
-        }
+        return result
     }
 }
 
-// Add this extension to make Date identifiable for the .sheet modifier
+// Helper extensions to make working with dates easier
+extension Date {
+    var startOfMonth: Date {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month], from: self)
+        return calendar.date(from: components) ?? self
+    }
+}
+
+// Keep these extensions
 extension Date: Identifiable {
     public var id: Date { self }
 }
@@ -173,7 +89,7 @@ extension Date: Identifiable {
 extension DateFormatter {
     static var monthAndYear: DateFormatter {
         let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM yyyy" // e.g., "July 2025"
+        formatter.dateFormat = "MMMM yyyy"
         return formatter
     }
 }
