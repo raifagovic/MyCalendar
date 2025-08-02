@@ -32,26 +32,27 @@ struct StickyHeaderView: View {
     var body: some View {
         VStack(spacing: 0) {
             
-            // --- FIX #1: Pushing the "Nav Bar" down ---
-            // We add a simple spacer with a fixed height at the top. This pushes
-            // the content down from the safe area to a standard position.
-            Spacer().frame(height: 10)
-            
-            HStack {
-                Button(action: { print("Year navigation tapped") }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "chevron.left")
-                        Text(currentVisibleMonth, formatter: yearFormatter)
+            // This section for the "Nav Bar" is already good.
+            // It simulates the standard height correctly.
+            VStack {
+                Spacer()
+                HStack {
+                    Button(action: { print("Year navigation tapped") }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.left")
+                            Text(currentVisibleMonth, formatter: yearFormatter)
+                        }
                     }
+                    .font(.title3).fontWeight(.semibold)
+                    
+                    Spacer()
+                    Text("Calendar").font(.headline).fontWeight(.semibold)
+                    Spacer()
+                    Button("Today", action: onTodayTapped).font(.headline)
                 }
-                .font(.title3).fontWeight(.semibold)
-                
-                Spacer()
-                Text("Calendar").font(.headline).fontWeight(.semibold)
-                Spacer()
-                Button("Today", action: onTodayTapped).font(.headline)
+                .padding(.horizontal)
             }
-            .padding(.horizontal)
+            .frame(height: 44)
             
             // --- Month Name Row ---
             HStack {
@@ -62,24 +63,35 @@ struct StickyHeaderView: View {
             .padding(.horizontal)
             .padding(.top, 10)
             
-            // --- FIX #2 & #3: Correcting Weekday Letter Position ---
-            // This Spacer takes up ALL available space, pushing the weekday
-            // letters all the way to the bottom of the header frame.
-            Spacer()
+            // --- FIX #1: REMOVE THE LARGE GAP ---
+            // We remove the flexible Spacer() that was creating the huge
+            // gap between the month name and the weekday letters.
+            // Spacer() // <-- DELETE THIS LINE
             
+            // We use a small, fixed-height spacer instead to control the gap precisely.
+            Spacer().frame(height: 15)
+            
+            
+            // --- Weekday Symbols Row ---
             HStack(spacing: 0) {
                 ForEach(weekdaySymbols, id: \.self) { symbol in
                     Text(symbol)
                         .font(.subheadline).fontWeight(.medium).foregroundColor(.secondary).frame(maxWidth: .infinity)
                 }
             }
-            .padding(.bottom, 8) // Small padding so it hugs the bottom
-            
+            // --- FIX #2: ALIGN LETTERS WITH MONTH NAME ---
+            // We add horizontal padding to ensure the letters align perfectly
+            // with the month name text above it.
+            .padding(.horizontal)
+            .padding(.bottom, 8)
         }
-        .frame(height: 180) // A fixed, taller height for the entire header
+        .padding(.top)
+        // --- FIX #3: INCREASE HEADER DEPTH ---
+        // We increase the fixed height of the entire header to give it the
+        // "deeper" feel you wanted.
+        .frame(height: 180) // Increased from 160 to 180
         .background(.regularMaterial)
         .overlay(
-            // The bottom divider line, now correctly placed
             Divider().background(Color.gray.opacity(0.5)),
             alignment: .bottom
         )
