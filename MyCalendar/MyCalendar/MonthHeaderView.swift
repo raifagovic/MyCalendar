@@ -10,34 +10,22 @@ import SwiftUI
 struct MonthHeaderView: View {
     let monthDate: Date
     
-    private var weekdaySymbols: [String] {
+    // A new formatter for the three-letter abbreviation
+    private var threeLetterMonthFormatter: DateFormatter {
         let formatter = DateFormatter()
-        return formatter.veryShortWeekdaySymbols
+        formatter.dateFormat = "MMM" // "JUL", "AUG", etc.
+        return formatter
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Month Title
-            HStack {
-                Text(monthDate, formatter: DateFormatter.monthAndYear)
-                    .font(.title)
-                    .fontWeight(.bold)
-                Spacer()
-            }
-            .padding(.horizontal)
-            .padding(.top, 10)
-
-            // Weekday Symbols Header
-            HStack(spacing: 0) {
-                ForEach(weekdaySymbols, id: \.self) { symbol in
-                    Text(symbol)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(.secondary)
-                        .frame(maxWidth: .infinity)
-                }
-            }
-            .padding(.vertical, 8)
+        HStack {
+            Text(monthDate, formatter: threeLetterMonthFormatter)
+                .font(.title2)
+                .fontWeight(.bold)
+                .textCase(.uppercase) // Makes it "JUL" instead of "Jul"
+            Spacer()
         }
+        .padding(.horizontal)
+        .padding(.vertical, 8)
     }
 }
