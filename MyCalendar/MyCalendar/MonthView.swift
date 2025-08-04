@@ -1,5 +1,3 @@
-//  MonthView.swift
-
 //
 //  MonthView.swift
 //  MyCalendar
@@ -15,7 +13,7 @@ struct MonthView: View {
     let dayEntries: [DayEntry]
     @Binding var selectedDate: Date?
 
-    // These computed properties remain the same and are correct.
+    // The 'weeks' computed property does not need any changes.
     private var weeks: [[CalendarDay]] {
         // ... (logic is unchanged)
         let calendar = Calendar.current
@@ -58,62 +56,59 @@ struct MonthView: View {
         return resultWeeks
     }
 
-    private var lastWeekOfMonthIndex: Int? {
-        weeks.lastIndex { week in
-            weekContainsDateInCurrentMonth(week: week)
+    // --- CHANGE 1: Helper to find the first day ---
+    private var firstDayOfCurrentMonth: CalendarDay? {
+        weeks.flatMap { $0 }.first { day in
+            guard day.date != .distantPast else { return false }
+            return Calendar.current.isDate(day.date, equalTo: monthDate, toGranularity: .month) &&
+                   Calendar.current.component(.day, from: day.date) == 1
         }
+    }
+    
+    // --- CHANGE 2: Formatter for the abbreviation ---
+    private var monthAbbreviationFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM"
+        return formatter
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            MonthHeaderView(monthDate: monthDate)
-            
-            Divider().background(Color.gray.opacity(0.5))
-            
-            // --- CHANGE 1: Revert from Grid back to VStack ---
-            // This provides a much more stable layout container.
-            VStack(spacing: 0) {
-                ForEach(weeks.indices, id: \.self) { weekIndex in
-                    let week = weeks[weekIndex]
-                    
-                    // The week of days is a simple, robust HStack.
+            // --- THIS IS THE CORRECTED LINE ---
+            ForEach(weeks.indices, id: \.self) { weekIndex in
+                let week = weeks[weekIndex]
+                
+                // The divider logic is correct
+                if weekContainsDateInCurrentMonth(week: week) {
                     HStack(spacing: 0) {
                         ForEach(week) { day in
-                            if day.date == Date.distantPast {
-                                Rectangle().fill(Color.clear)
+                            if day.date != .distantPast {
+                                Rectangle()
+                                    .fill(Color.gray.opacity(0.5))
+                                    .frame(height: 1)
                             } else {
-                                DayCellView(day: day.date, dayEntry: dayEntries.first { Calendar.current.isDate($0.date, inSameDayAs: day.date) })
-                                    .onTapGesture {
-                                        self.selectedDate = day.date
-                                    }
+                                Rectangle()
+                                    .fill(Color.clear)
+                                    .frame(height: 1)
                             }
                         }
                     }
-
-                    // --- CHANGE 2: The divider logic is now inside the stable VStack ---
-                    let isLastWeek = (weekIndex == lastWeekOfMonthIndex)
-                    if weekContainsDateInCurrentMonth(week: week) && !isLastWeek {
-                        
-                        // The divider is its own HStack, guaranteeing it won't interfere
-                        // with the layout of the day cells.
-                        HStack(spacing: 0) {
-                            if weeks.indices.contains(weekIndex + 1) {
-                                let nextWeek = weeks[weekIndex + 1]
-                                
-                                ForEach(nextWeek) { dayInNextWeek in
-                                    // If the day in the next row is a real date,
-                                    // draw a segment of the divider line.
-                                    if dayInNextWeek.date != .distantPast {
-                                        Rectangle()
-                                            .fill(Color.gray.opacity(0.5))
-                                            .frame(height: 1)
-                                    } else {
-                                        // Otherwise, fill the space with clear.
-                                        Rectangle()
-                                            .fill(Color.clear)
-                                            .frame(height: 1)
-                                    }
-                                }
+                }
+                
+                // The day cell logic is correct
+                HStack(spacing: 0) {
+                    ForEach(week) { day in
+                        if day.date == Date.distantPast {
+                            Rectangle().fill(Color.clear)
+                        } else {
+                            DayCellView(
+                                day: day.date,
+                                dayEntry: dayEntries.first { Calendar.current.isDate($0.date, inSameDayAs: day.date) },
+                                isFirstDayOfMonth: day.id == firstDayOfCurrentMonth?.id,
+                                monthAbbreviation: monthDate.formatted(monthAbbreviationFormatter)
+                            )
+                            .onTapGesture {
+                                self.selectedDate = day.date
                             }
                         }
                     }
@@ -124,7 +119,7 @@ struct MonthView: View {
     
     private func weekContainsDateInCurrentMonth(week: [CalendarDay]) -> Bool {
         return week.contains { day in
-            guard day.date != Date.distantPast else { return false }
+            guard day.date != .distantPast else { return false }
             return Calendar.current.isDate(day.date, equalTo: monthDate, toGranularity: .month)
         }
     }
