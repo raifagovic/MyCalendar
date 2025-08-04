@@ -12,11 +12,12 @@ import SwiftData
 
 struct MonthView: View {
     let monthDate: Date
-    let dayEntries: [DayEntry] // Pass in the fetched entries
+    let dayEntries: [DayEntry]
     @Binding var selectedDate: Date?
 
-    // No changes needed to this computed property
+    // These computed properties remain the same and are correct.
     private var weeks: [[CalendarDay]] {
+        // ... (logic is unchanged)
         let calendar = Calendar.current
         guard let monthInterval = calendar.dateInterval(of: .month, for: monthDate) else { return [] }
         var allDays: [CalendarDay] = []
@@ -57,10 +58,8 @@ struct MonthView: View {
         return resultWeeks
     }
 
-    // --- CHANGE 1: Add a computed property to find the index of the last week of the month ---
     private var lastWeekOfMonthIndex: Int? {
         weeks.lastIndex { week in
-            // This reuses our existing logic to find a week that contains a date in the current month
             weekContainsDateInCurrentMonth(week: week)
         }
     }
@@ -71,11 +70,13 @@ struct MonthView: View {
             
             Divider().background(Color.gray.opacity(0.5))
             
+            // --- CHANGE 1: Revert from Grid back to VStack ---
+            // This provides a much more stable layout container.
             VStack(spacing: 0) {
-                // --- CHANGE 2: Loop over the indices of the weeks array ---
                 ForEach(weeks.indices, id: \.self) { weekIndex in
                     let week = weeks[weekIndex]
                     
+                    // The week of days is a simple, robust HStack.
                     HStack(spacing: 0) {
                         ForEach(week) { day in
                             if day.date == Date.distantPast {
@@ -89,17 +90,38 @@ struct MonthView: View {
                         }
                     }
 
-                    // --- CHANGE 3: The new and improved logic for drawing the divider ---
+                    // --- CHANGE 2: The divider logic is now inside the stable VStack ---
                     let isLastWeek = (weekIndex == lastWeekOfMonthIndex)
                     if weekContainsDateInCurrentMonth(week: week) && !isLastWeek {
-                        Divider().background(Color.gray.opacity(0.5))
+                        
+                        // The divider is its own HStack, guaranteeing it won't interfere
+                        // with the layout of the day cells.
+                        HStack(spacing: 0) {
+                            if weeks.indices.contains(weekIndex + 1) {
+                                let nextWeek = weeks[weekIndex + 1]
+                                
+                                ForEach(nextWeek) { dayInNextWeek in
+                                    // If the day in the next row is a real date,
+                                    // draw a segment of the divider line.
+                                    if dayInNextWeek.date != .distantPast {
+                                        Rectangle()
+                                            .fill(Color.gray.opacity(0.5))
+                                            .frame(height: 1)
+                                    } else {
+                                        // Otherwise, fill the space with clear.
+                                        Rectangle()
+                                            .fill(Color.clear)
+                                            .frame(height: 1)
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
     
-    // This helper function remains unchanged but is used by our new computed property
     private func weekContainsDateInCurrentMonth(week: [CalendarDay]) -> Bool {
         return week.contains { day in
             guard day.date != Date.distantPast else { return false }
@@ -107,3 +129,6 @@ struct MonthView: View {
         }
     }
 }
+
+
+
