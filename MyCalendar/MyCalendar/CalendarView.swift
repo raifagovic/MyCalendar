@@ -38,6 +38,11 @@ struct CalendarView: View {
                         ForEach(months, id: \.self) { month in
                             MonthView(monthDate: month, dayEntries: dayEntries, selectedDate: $selectedDate)
                                 .id(month.startOfMonth)
+                                .onAppear { // <-- REMOVE THIS MODIFIER
+                                            // This tracks which month is at the top of the list.
+                                            // We can use this to update the header's month name.
+                                            self.currentVisibleMonth = month
+                                        }
                         }
                     }
                 }
