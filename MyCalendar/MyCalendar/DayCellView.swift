@@ -9,51 +9,58 @@ import SwiftUI
 
 struct DayCellView: View {
     let day: Date
-    let dayEntry: DayEntry? // The data for this day, if it exists
+    let dayEntry: DayEntry?
     
-    // State to manage the popover for a single emoticon
+    // --- CHANGE 1: Add new properties ---
+    let isFirstDayOfMonth: Bool
+    let monthAbbreviation: String
+    
     @State private var selectedEmoticon: EmoticonInfo?
 
     var body: some View {
-        // This is the "master" view. It's an invisible rectangle that defines the
-        // shape and size of our entire cell. Everything else will conform to it.
         Rectangle()
-            .fill(Color.clear) // Make the base shape transparent
-//            .frame(maxWidth: .infinity) // It will take the full width of the column
-//            .frame(height: 100)        // Every cell will be EXACTLY 100 points tall
+            .fill(Color.clear)
             .aspectRatio(AppConstants.calendarCellAspectRatio, contentMode: .fit)
-        
-            // BACKGROUND LAYER: The Image
-            // The .background modifier automatically clips its content to the shape
-            // of the view it's attached to (our Rectangle). This is the key.
             .background(
                 Group {
                     if let imageData = dayEntry?.backgroundImageData, let uiImage = UIImage(data: imageData) {
                         Image(uiImage: uiImage)
                             .resizable()
-                            // --- APPLY THE SAVED TRANSFORMS ---
-                            .scaledToFill() // Ensures the image always covers the frame area
+                            .scaledToFill()
                             .scaleEffect(dayEntry?.backgroundImageScale ?? 1.0)
                             .offset(
                                 x: dayEntry?.backgroundImageOffsetX ?? 0.0,
                                 y: dayEntry?.backgroundImageOffsetY ?? 0.0
                             )
-            
                     }
                 }
             )
-
-            // FOREGROUND LAYER: The day number and emoticons
-            // The .overlay modifier draws this content on top of our Rectangle and its background.
             .overlay(
-                VStack {
+                // --- CHANGE 2: The main content VStack ---
+                VStack(spacing: 2) { // Add a little spacing
+                    
+                    // --- CHANGE 3: Conditionally display the month abbreviation ---
+                    if isFirstDayOfMonth {
+                        Text(monthAbbreviation)
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .foregroundColor(.red) // Make it stand out
+                            .textCase(.uppercase)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    } else {
+                        // If it's not the first day, we add a clear rectangle
+                        // to ensure the day number aligns vertically with other weeks.
+                        Rectangle()
+                            .fill(Color.clear)
+                            .frame(height: 14) // Approximate height of the text
+                    }
+                    
                     Text("\(Calendar.current.component(.day, from: day))")
                         .font(.headline)
-                        .padding(.top, 4)
-                        .frame(maxWidth: .infinity, alignment: .top) // Position top-left
+                        .frame(maxWidth: .infinity, alignment: .center) // Center the day number
                         .foregroundColor(Calendar.current.isDateInToday(day) ? .red : .white)
                     
-                    Spacer() // Pushes content to top and bottom
+                    Spacer(minLength: 0)
 
                     if let emoticons = dayEntry?.emoticons, !emoticons.isEmpty {
                         HStack(spacing: 4) {
@@ -68,13 +75,10 @@ struct DayCellView: View {
                         .padding(.bottom, 4)
                     }
                 }
+                .padding(.top, 4) // Add padding to the top of the VStack
             )
-
-            // FINAL MODIFIERS
-            // These are applied to the entire composition.
             .cornerRadius(8)
-            .clipped() // Ensures everything respects the rounded corners clipping
-            
+            .clipped()
             .popover(item: $selectedEmoticon) { emoticon in
                 VStack {
                     if let time = emoticon.time {
