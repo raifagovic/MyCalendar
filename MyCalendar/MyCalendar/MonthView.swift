@@ -79,15 +79,16 @@ struct MonthView: View {
                     dayEntries: dayEntries,
                     selectedDate: $selectedDate,
                     firstDayOfCurrentMonth: firstDayOfCurrentMonth,
-                    monthAbbreviation: monthDate.formatted(monthAbbreviationFormatter),
+                    
+                    // --- THIS IS THE CORRECTED LINE ---
+                    monthAbbreviation: monthAbbreviationFormatter.string(from: monthDate),
+                    
                     monthDate: monthDate
                 )
             }
         }
     }
 }
-
-// --- The private WeekRowView struct and its helper function have been REMOVED from this file ---
 
 
 
