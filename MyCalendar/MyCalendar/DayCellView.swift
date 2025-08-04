@@ -1,3 +1,4 @@
+
 //
 //  DayCellView.swift
 //  MyCalendar
@@ -11,9 +12,9 @@ struct DayCellView: View {
     let day: Date
     let dayEntry: DayEntry?
     
-    // --- CHANGE 1: Add new properties ---
-    let isFirstDayOfMonth: Bool
-    let monthAbbreviation: String
+    // --- CHANGE 1: Remove properties that are no longer needed ---
+    // let isFirstDayOfMonth: Bool
+    // let monthAbbreviation: String
     
     @State private var selectedEmoticon: EmoticonInfo?
 
@@ -36,31 +37,15 @@ struct DayCellView: View {
                 }
             )
             .overlay(
-                // --- CHANGE 2: The main content VStack ---
-                VStack(spacing: 2) { // Add a little spacing
-                    
-                    // --- CHANGE 3: Conditionally display the month abbreviation ---
-                    if isFirstDayOfMonth {
-                        Text(monthAbbreviation)
-                            .font(.caption)
-                            .fontWeight(.bold)
-                            .foregroundColor(.red) // Make it stand out
-                            .textCase(.uppercase)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                    } else {
-                        // If it's not the first day, we add a clear rectangle
-                        // to ensure the day number aligns vertically with other weeks.
-                        Rectangle()
-                            .fill(Color.clear)
-                            .frame(height: 14) // Approximate height of the text
-                    }
-                    
+                // --- CHANGE 2: Simplified VStack. No more conditional logic for the month. ---
+                VStack {
                     Text("\(Calendar.current.component(.day, from: day))")
                         .font(.headline)
+                        .padding(.top, 4)
                         .frame(maxWidth: .infinity, alignment: .center) // Center the day number
                         .foregroundColor(Calendar.current.isDateInToday(day) ? .red : .white)
                     
-                    Spacer(minLength: 0)
+                    Spacer() // Pushes content to top and bottom
 
                     if let emoticons = dayEntry?.emoticons, !emoticons.isEmpty {
                         HStack(spacing: 4) {
@@ -75,7 +60,6 @@ struct DayCellView: View {
                         .padding(.bottom, 4)
                     }
                 }
-                .padding(.top, 4) // Add padding to the top of the VStack
             )
             .cornerRadius(8)
             .clipped()

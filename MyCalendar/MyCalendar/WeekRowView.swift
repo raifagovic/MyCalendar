@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import SwiftData // Needed for DayEntry
+import SwiftData
 
 struct WeekRowView: View {
     let week: [CalendarDay]
@@ -19,7 +19,7 @@ struct WeekRowView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // The divider logic for the week
+            // The logic for drawing the divider line itself
             if weekContainsDateInCurrentMonth(week: week) {
                 HStack(spacing: 0) {
                     ForEach(week) { day in
@@ -34,9 +34,31 @@ struct WeekRowView: View {
                         }
                     }
                 }
+                // --- CHANGE: ADD THE OVERLAY TO THE DIVIDER HSTACK ---
+                .overlay(
+                    // This HStack acts as a guide to position our text
+                    HStack(spacing: 0) {
+                        ForEach(week) { day in
+                            // If this column contains the first day of the month...
+                            if day.id == firstDayOfCurrentMonth?.id {
+                                // ...draw the abbreviation text here.
+                                Text(monthAbbreviation)
+                                    .font(.caption)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.red)
+                                    .textCase(.uppercase)
+                                    .padding(.bottom, 2) // Push text slightly above the line
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                            } else {
+                                // Otherwise, fill the space with a clear view.
+                                Color.clear
+                            }
+                        }
+                    }
+                )
             }
             
-            // The row of day cells
+            // The row of day cells (no changes needed here)
             HStack(spacing: 0) {
                 ForEach(week) { day in
                     if day.date == Date.distantPast {
@@ -44,9 +66,7 @@ struct WeekRowView: View {
                     } else {
                         DayCellView(
                             day: day.date,
-                            dayEntry: dayEntries.first { Calendar.current.isDate($0.date, inSameDayAs: day.date) },
-                            isFirstDayOfMonth: day.id == firstDayOfCurrentMonth?.id,
-                            monthAbbreviation: monthAbbreviation
+                            dayEntry: dayEntries.first { Calendar.current.isDate($0.date, inSameDayAs: day.date) }
                         )
                         .onTapGesture {
                             self.selectedDate = day.date
@@ -57,7 +77,6 @@ struct WeekRowView: View {
         }
     }
 
-    // Helper function specific to this view
     private func weekContainsDateInCurrentMonth(week: [CalendarDay]) -> Bool {
         return week.contains { day in
             guard day.date != Date.distantPast else { return false }
