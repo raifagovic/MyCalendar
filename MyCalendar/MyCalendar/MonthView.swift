@@ -100,7 +100,7 @@ struct MonthView: View {
                         // The month text, aligned perfectly
                         HStack(spacing: 0) {
                             ForEach(week) { day in
-                                if day.id == firstDayOfCurrentMonth?.id {
+                                if day.date != .distantPast && Calendar.current.component(.day, from: day.date) == 1 {
                                     Text(monthAbbreviationFormatter.string(from: monthDate))
                                         .font(.caption)
                                         .fontWeight(.bold)
