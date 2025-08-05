@@ -106,7 +106,8 @@ struct MonthView: View {
                                         .fontWeight(.bold)
                                         .foregroundColor(.red)
                                         .textCase(.uppercase)
-                                        .padding(.bottom, 2)
+//                                        .padding(.bottom, 15)
+                                        .offset(y: -10)
                                         .frame(maxWidth: .infinity, alignment: .center)
                                 } else {
                                     Color.clear
