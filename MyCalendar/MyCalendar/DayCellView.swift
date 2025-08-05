@@ -12,10 +12,6 @@ struct DayCellView: View {
     let day: Date
     let dayEntry: DayEntry?
     
-    // --- CHANGE 1: Remove properties that are no longer needed ---
-    // let isFirstDayOfMonth: Bool
-    // let monthAbbreviation: String
-    
     @State private var selectedEmoticon: EmoticonInfo?
 
     var body: some View {
@@ -37,7 +33,6 @@ struct DayCellView: View {
                 }
             )
             .overlay(
-                // --- CHANGE 2: Simplified VStack. No more conditional logic for the month. ---
                 VStack {
                     Text("\(Calendar.current.component(.day, from: day))")
                         .font(.headline)

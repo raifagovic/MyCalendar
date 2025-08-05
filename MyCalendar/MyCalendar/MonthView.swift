@@ -71,19 +71,54 @@ struct MonthView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            
+            // --- CHANGE 1: THE NEW SMART HEADER ---
+            // Find the very first week that contains a day from our month.
+            if let firstWeek = weeks.first(where: { week in week.contains { $0.date != .distantPast && Calendar.current.isDate($0.date, equalTo: monthDate, toGranularity: .month) } }) {
+                
+                // Use a ZStack for layering the line and the text
+                ZStack {
+                    // Layer 1: The partial divider line
+                    HStack(spacing: 0) {
+                        ForEach(firstWeek) { day in
+                            Rectangle()
+                                .fill(day.date != .distantPast ? Color.gray.opacity(0.5) : Color.clear)
+                                .frame(height: 1)
+                        }
+                    }
+                    
+                    // Layer 2: The Month Abbreviation Text
+                    HStack(spacing: 0) {
+                        ForEach(firstWeek) { day in
+                            if day.id == firstDayOfCurrentMonth?.id {
+                                Text(monthAbbreviationFormatter.string(from: monthDate))
+                                    .font(.caption)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.red)
+                                    .textCase(.uppercase)
+                                    .padding(.bottom, 2) // Lifts text slightly above the line
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                            } else {
+                                Color.clear
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // --- CHANGE 2: THE LOOP FOR ALL WEEKS ---
             ForEach(weeks.indices, id: \.self) { weekIndex in
                 let week = weeks[weekIndex]
+                
+                // Pass a flag to WeekRowView to tell it if it's the first week
+                let isFirstContentWeek = (week.first { $0.id == firstDayOfCurrentMonth?.id } != nil)
                 
                 WeekRowView(
                     week: week,
                     dayEntries: dayEntries,
                     selectedDate: $selectedDate,
-                    firstDayOfCurrentMonth: firstDayOfCurrentMonth,
-                    
-                    // --- THIS IS THE CORRECTED LINE ---
-                    monthAbbreviation: monthAbbreviationFormatter.string(from: monthDate),
-                    
-                    monthDate: monthDate
+                    isFirstWeekOfMonth: isFirstContentWeek,
+                    monthDate: monthDate // Pass monthDate for helper logic
                 )
             }
         }
