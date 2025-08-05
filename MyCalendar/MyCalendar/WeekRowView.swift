@@ -1,4 +1,3 @@
-
 //
 //  WeekRowView.swift
 //  MyCalendar
@@ -13,52 +12,26 @@ struct WeekRowView: View {
     let week: [CalendarDay]
     let dayEntries: [DayEntry]
     @Binding var selectedDate: Date?
-    let firstDayOfCurrentMonth: CalendarDay?
-    let monthAbbreviation: String
+    
+    // --- CHANGE 1: Simplified properties ---
+    let isFirstWeekOfMonth: Bool
     let monthDate: Date
 
     var body: some View {
         VStack(spacing: 0) {
-            // The logic for drawing the divider line itself
-            if weekContainsDateInCurrentMonth(week: week) {
+            // --- CHANGE 2: Simplified Divider Logic ---
+            // Only draw a divider if this is NOT the first week, but still a week with content.
+            if !isFirstWeekOfMonth && weekContainsDateInCurrentMonth(week: week) {
                 HStack(spacing: 0) {
                     ForEach(week) { day in
-                        if day.date != .distantPast {
-                            Rectangle()
-                                .fill(Color.gray.opacity(0.5))
-                                .frame(height: 1)
-                        } else {
-                            Rectangle()
-                                .fill(Color.clear)
-                                .frame(height: 1)
-                        }
+                        Rectangle()
+                            .fill(day.date != .distantPast ? Color.gray.opacity(0.5) : Color.clear)
+                            .frame(height: 1)
                     }
                 }
-                // --- CHANGE: ADD THE OVERLAY TO THE DIVIDER HSTACK ---
-                .overlay(
-                    // This HStack acts as a guide to position our text
-                    HStack(spacing: 0) {
-                        ForEach(week) { day in
-                            // If this column contains the first day of the month...
-                            if day.id == firstDayOfCurrentMonth?.id {
-                                // ...draw the abbreviation text here.
-                                Text(monthAbbreviation)
-                                    .font(.caption)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.red)
-                                    .textCase(.uppercase)
-                                    .padding(.bottom, 2) // Push text slightly above the line
-                                    .frame(maxWidth: .infinity, alignment: .center)
-                            } else {
-                                // Otherwise, fill the space with a clear view.
-                                Color.clear
-                            }
-                        }
-                    }
-                )
             }
             
-            // The row of day cells (no changes needed here)
+            // The row of day cells (this is now its main job)
             HStack(spacing: 0) {
                 ForEach(week) { day in
                     if day.date == Date.distantPast {
@@ -79,7 +52,7 @@ struct WeekRowView: View {
 
     private func weekContainsDateInCurrentMonth(week: [CalendarDay]) -> Bool {
         return week.contains { day in
-            guard day.date != Date.distantPast else { return false }
+            guard day.date != .distantPast else { return false }
             return Calendar.current.isDate(day.date, equalTo: monthDate, toGranularity: .month)
         }
     }
