@@ -106,10 +106,10 @@ struct MonthView: View {
                             ForEach(week) { day in
                                 if day.date != .distantPast && Calendar.current.component(.day, from: day.date) == 1 {
                                     Text(monthAbbreviationFormatter.string(from: monthDate))
-                                        .font(.callout)
+                                        .font(.title3)
                                         .fontWeight(.bold)
                                         .foregroundColor(isCurrentMonth ? .red : .primary)
-                                        .offset(y: -10)
+                                        .offset(y: -15)
                                         .frame(maxWidth: .infinity, alignment: .center)
                                 } else {
                                     Color.clear
