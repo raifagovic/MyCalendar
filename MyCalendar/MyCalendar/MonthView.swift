@@ -76,6 +76,10 @@ struct MonthView: View {
         }
     }
     
+    private var isCurrentMonth: Bool {
+        Calendar.current.isDate(monthDate, equalTo: Date(), toGranularity: .month)
+    }
+    
     var body: some View {
         VStack(spacing: 0) {
             // --- CHANGE 2: THE NEW, CONSOLIDATED LOGIC ---
@@ -104,7 +108,7 @@ struct MonthView: View {
                                     Text(monthAbbreviationFormatter.string(from: monthDate))
                                         .font(.callout)
                                         .fontWeight(.bold)
-                                        .foregroundColor(.red)
+                                        .foregroundColor(isCurrentMonth ? .red : .primary)
                                         .offset(y: -10)
                                         .frame(maxWidth: .infinity, alignment: .center)
                                 } else {
