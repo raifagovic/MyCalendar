@@ -102,11 +102,9 @@ struct MonthView: View {
                             ForEach(week) { day in
                                 if day.date != .distantPast && Calendar.current.component(.day, from: day.date) == 1 {
                                     Text(monthAbbreviationFormatter.string(from: monthDate))
-                                        .font(.caption)
+                                        .font(.callout)
                                         .fontWeight(.bold)
                                         .foregroundColor(.red)
-                                        .textCase(.uppercase)
-//                                        .padding(.bottom, 15)
                                         .offset(y: -10)
                                         .frame(maxWidth: .infinity, alignment: .center)
                                 } else {
