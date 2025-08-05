@@ -14,7 +14,7 @@ struct MonthView: View {
     @Binding var selectedDate: Date?
 
     private var weeks: [[CalendarDay]] {
-        // ... (this logic is unchanged and correct)
+        // This logic is correct and does not change.
         let calendar = Calendar.current
         guard let monthInterval = calendar.dateInterval(of: .month, for: monthDate) else { return [] }
         var allDays: [CalendarDay] = []
@@ -69,30 +69,67 @@ struct MonthView: View {
         return formatter
     }
 
+    // --- CHANGE 1: Find the index of the first week that has real days for our month ---
+    private var firstContentWeekIndex: Int? {
+        weeks.firstIndex { week in
+            week.contains { $0.date != .distantPast && Calendar.current.isDate($0.date, equalTo: monthDate, toGranularity: .month) }
+        }
+    }
+    
     var body: some View {
         VStack(spacing: 0) {
-            
-            if let firstWeek = weeks.first(where: { week in week.contains { $0.date != .distantPast && Calendar.current.isDate($0.date, equalTo: monthDate, toGranularity: .month) } }) {
-                
-                MonthHeaderRowView(
-                    firstWeek: firstWeek,
-                    firstDayOfCurrentMonth: firstDayOfCurrentMonth,
-                    monthAbbreviation: monthAbbreviationFormatter.string(from: monthDate)
-                )
-            }
-            
+            // --- CHANGE 2: THE NEW, CONSOLIDATED LOGIC ---
             ForEach(weeks.indices, id: \.self) { weekIndex in
                 let week = weeks[weekIndex]
-                
-                let isFirstContentWeek = (week.first { $0.id == firstDayOfCurrentMonth?.id } != nil)
 
-                WeekRowView(
-                    week: week,
-                    dayEntries: dayEntries,
-                    selectedDate: $selectedDate,
-                    isFirstWeekOfMonth: isFirstContentWeek,
-                    monthDate: monthDate
-                )
+                // ** DIVIDER LOGIC **
+                // We decide what to draw *above* the current week.
+                
+                // Case 1: Is this the very first week with content?
+                if weekIndex == firstContentWeekIndex {
+                    // If so, draw the special header with the line and the text.
+                    ZStack {
+                        // The divider line
+                        HStack(spacing: 0) {
+                            ForEach(week) { day in
+                                Rectangle()
+                                    .fill(day.date != .distantPast ? Color.gray.opacity(0.5) : Color.clear)
+                                    .frame(height: 1)
+                            }
+                        }
+                        // The month text, aligned perfectly
+                        HStack(spacing: 0) {
+                            ForEach(week) { day in
+                                if day.id == firstDayOfCurrentMonth?.id {
+                                    Text(monthAbbreviationFormatter.string(from: monthDate))
+                                        .font(.caption)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.red)
+                                        .textCase(.uppercase)
+                                        .padding(.bottom, 2)
+                                        .frame(maxWidth: .infinity, alignment: .center)
+                                } else {
+                                    Color.clear
+                                }
+                            }
+                        }
+                    }
+                }
+                // Case 2: Is this a *later* week that has content?
+                else if weekIndex > (firstContentWeekIndex ?? -1) && week.contains(where: { $0.date != .distantPast }) {
+                    // If so, draw a simple divider line.
+                    HStack(spacing: 0) {
+                        ForEach(week) { day in
+                            Rectangle()
+                                .fill(day.date != .distantPast ? Color.gray.opacity(0.5) : Color.clear)
+                                .frame(height: 1)
+                        }
+                    }
+                }
+                
+                // ** WEEK CONTENT **
+                // After handling the divider, always draw the row of days.
+                WeekRowView(week: week, dayEntries: dayEntries, selectedDate: $selectedDate)
             }
         }
     }
