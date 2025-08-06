@@ -31,17 +31,24 @@ struct StickyHeaderView: View {
     var body: some View {
         VStack(spacing: 0) {
             
-            // This "Nav Bar" part will now stay anchored at the top.
+            // "Nav Bar"
             VStack {
                 Spacer()
                 HStack {
                     Button(action: { print("Year navigation tapped") }) {
                         HStack(spacing: 4) {
+                            // --- CHANGE 1: Give the Image its OWN font size ---
+                            // This keeps the chevron large.
                             Image(systemName: "chevron.left")
+                                .font(.title3.weight(.semibold))
+                            
+                            // --- CHANGE 2: Give the Text its OWN, SMALLER font size ---
                             Text(currentVisibleMonth, formatter: yearFormatter)
+                                .font(.headline.weight(.semibold)) // .headline is smaller than .title3
                         }
                     }
-                    .font(.title3).fontWeight(.semibold)
+                    // --- CHANGE 3: Remove the old modifier from the HStack ---
+                    // .font(.title3).fontWeight(.semibold) // <-- This line is removed
                     
                     Spacer()
                     Text("Calendar").font(.headline).fontWeight(.semibold)
@@ -52,7 +59,7 @@ struct StickyHeaderView: View {
             }
             .frame(height: 44)
             
-            // The month name will also stay near the top.
+            // Month Name
             HStack {
                 Text(currentVisibleMonth, formatter: monthFormatter)
                     .font(.largeTitle).fontWeight(.bold)
@@ -61,23 +68,23 @@ struct StickyHeaderView: View {
             .padding(.horizontal)
             .padding(.top, 10)
             
-            // --- THE CRUCIAL FIX ---
-            // Replace the fixed-height spacer with a flexible one.
-            // This spacer will now expand and shrink, absorbing all height changes.
-            Spacer(minLength: 0) // <-- This is the corrected line.
+            // Flexible space
+            Spacer(minLength: 0)
             
-            // This Weekday Symbols row will now be pushed to the bottom of the frame.
+            // Weekday Symbols
             HStack(spacing: 0) {
                 ForEach(weekdaySymbols, id: \.self) { symbol in
                     Text(symbol)
-                        .font(.subheadline).fontWeight(.medium).foregroundColor(.secondary).frame(maxWidth: .infinity)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity)
                 }
             }
             .padding(.bottom, 8)
         }
         .padding(.top)
-        // Now, when you change this frame height, only the flexible Spacer will change.
-        .frame(height: 150) // Try 150, 180, 200 - it will behave as you expect!
+        .frame(height: 150)
         .background(.regularMaterial)
         .overlay(
             Divider().background(Color.gray.opacity(0.5)),
