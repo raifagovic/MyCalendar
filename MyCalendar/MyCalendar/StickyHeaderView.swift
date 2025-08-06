@@ -31,33 +31,32 @@ struct StickyHeaderView: View {
     var body: some View {
         VStack(spacing: 0) {
             
-            // "Nav Bar"
-            VStack {
-                Spacer()
-                HStack {
-                    Button(action: { print("Year navigation tapped") }) {
-                        HStack(spacing: 4) {
-                            // --- CHANGE 1: Give the Image its OWN font size ---
-                            // This keeps the chevron large.
-                            Image(systemName: "chevron.left")
-                                .font(.title3.weight(.semibold))
-                            
-                            // --- CHANGE 2: Give the Text its OWN, SMALLER font size ---
-                            Text(currentVisibleMonth, formatter: yearFormatter)
-                                .font(.headline.weight(.semibold)) // .headline is smaller than .title3
-                        }
+            // --- THE FIX: ADD A SPACER AT THE VERY TOP ---
+            // This spacer creates the gap between the status bar area and
+            // the navigation buttons, pushing the buttons down.
+            Spacer().frame(height: 10)
+            
+            // "Nav Bar" content row
+            HStack {
+                Button(action: { print("Year navigation tapped") }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                            .font(.title3.weight(.semibold))
+                        
+                        Text(currentVisibleMonth, formatter: yearFormatter)
+                            .font(.headline.weight(.semibold))
                     }
-                    // --- CHANGE 3: Remove the old modifier from the HStack ---
-                    // .font(.title3).fontWeight(.semibold) // <-- This line is removed
-                    
-                    Spacer()
-                    Text("Calendar").font(.headline).fontWeight(.semibold)
-                    Spacer()
-                    Button("Today", action: onTodayTapped).font(.headline)
                 }
-                .padding(.horizontal)
+                
+                Spacer()
+                Text("Calendar").font(.headline).fontWeight(.semibold)
+                Spacer()
+                Button("Today", action: onTodayTapped).font(.headline)
             }
+            .padding(.horizontal)
+            // We give this row a consistent height for alignment.
             .frame(height: 44)
+
             
             // Month Name
             HStack {
@@ -68,7 +67,7 @@ struct StickyHeaderView: View {
             .padding(.horizontal)
             .padding(.top, 10)
             
-            // Flexible space
+            // Flexible space that handles the overall header height
             Spacer(minLength: 0)
             
             // Weekday Symbols
@@ -83,7 +82,7 @@ struct StickyHeaderView: View {
             }
             .padding(.bottom, 8)
         }
-        .padding(.top)
+        .padding(.top) // This padding respects the device's safe area (notch/status bar)
         .frame(height: 150)
         .background(.regularMaterial)
         .overlay(
