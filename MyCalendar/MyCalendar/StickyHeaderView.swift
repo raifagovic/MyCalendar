@@ -69,7 +69,7 @@ struct StickyHeaderView: View {
             // Spacer() // <-- DELETE THIS LINE
             
             // We use a small, fixed-height spacer instead to control the gap precisely.
-            Spacer().frame(height: 15)
+            Spacer().frame(height: 5)
             
             
             // --- Weekday Symbols Row ---
@@ -79,11 +79,7 @@ struct StickyHeaderView: View {
                         .font(.subheadline).fontWeight(.medium).foregroundColor(.secondary).frame(maxWidth: .infinity)
                 }
             }
-            // --- FIX #2: ALIGN LETTERS WITH MONTH NAME ---
-            // We add horizontal padding to ensure the letters align perfectly
-            // with the month name text above it.
-            .padding(.horizontal)
-            .padding(.bottom, 8)
+            .padding(.bottom, 10)
         }
         .padding(.top)
         // --- FIX #3: INCREASE HEADER DEPTH ---
