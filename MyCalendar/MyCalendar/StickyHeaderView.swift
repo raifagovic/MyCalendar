@@ -8,9 +8,8 @@
 import SwiftUI
 
 struct StickyHeaderView: View {
-    // We will pass the currently visible month's date to this view
     let currentVisibleMonth: Date
-    let onTodayTapped: () -> Void // A closure for the "Today" button action
+    let onTodayTapped: () -> Void
     
     private var weekdaySymbols: [String] {
         let formatter = DateFormatter()
@@ -25,15 +24,14 @@ struct StickyHeaderView: View {
     
     private var monthFormatter: DateFormatter {
         let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM" // Full month name, e.g., "July"
+        formatter.dateFormat = "MMMM"
         return formatter
     }
     
     var body: some View {
         VStack(spacing: 0) {
             
-            // This section for the "Nav Bar" is already good.
-            // It simulates the standard height correctly.
+            // This "Nav Bar" part will now stay anchored at the top.
             VStack {
                 Spacer()
                 HStack {
@@ -54,7 +52,7 @@ struct StickyHeaderView: View {
             }
             .frame(height: 44)
             
-            // --- Month Name Row ---
+            // The month name will also stay near the top.
             HStack {
                 Text(currentVisibleMonth, formatter: monthFormatter)
                     .font(.largeTitle).fontWeight(.bold)
@@ -63,29 +61,23 @@ struct StickyHeaderView: View {
             .padding(.horizontal)
             .padding(.top, 10)
             
-            // --- FIX #1: REMOVE THE LARGE GAP ---
-            // We remove the flexible Spacer() that was creating the huge
-            // gap between the month name and the weekday letters.
-            // Spacer() // <-- DELETE THIS LINE
+            // --- THE CRUCIAL FIX ---
+            // Replace the fixed-height spacer with a flexible one.
+            // This spacer will now expand and shrink, absorbing all height changes.
+            Spacer(minLength: 0) // <-- This is the corrected line.
             
-            // We use a small, fixed-height spacer instead to control the gap precisely.
-            Spacer().frame(height: 5)
-            
-            
-            // --- Weekday Symbols Row ---
+            // This Weekday Symbols row will now be pushed to the bottom of the frame.
             HStack(spacing: 0) {
                 ForEach(weekdaySymbols, id: \.self) { symbol in
                     Text(symbol)
                         .font(.subheadline).fontWeight(.medium).foregroundColor(.secondary).frame(maxWidth: .infinity)
                 }
             }
-            .padding(.bottom, 10)
+            .padding(.bottom, 8)
         }
         .padding(.top)
-        // --- FIX #3: INCREASE HEADER DEPTH ---
-        // We increase the fixed height of the entire header to give it the
-        // "deeper" feel you wanted.
-        .frame(height: 180) // Increased from 160 to 180
+        // Now, when you change this frame height, only the flexible Spacer will change.
+        .frame(height: 150) // Try 150, 180, 200 - it will behave as you expect!
         .background(.regularMaterial)
         .overlay(
             Divider().background(Color.gray.opacity(0.5)),
