@@ -31,10 +31,7 @@ struct StickyHeaderView: View {
     var body: some View {
         VStack(spacing: 0) {
             
-            // --- THE FIX: ADD A SPACER AT THE VERY TOP ---
-            // This spacer creates the gap between the status bar area and
-            // the navigation buttons, pushing the buttons down.
-            Spacer().frame(height: 10)
+            Spacer().frame(height: 40)
             
             // "Nav Bar" content row
             HStack {
@@ -54,8 +51,6 @@ struct StickyHeaderView: View {
                 Button("Today", action: onTodayTapped).font(.headline)
             }
             .padding(.horizontal)
-            // We give this row a consistent height for alignment.
-            .frame(height: 44)
 
             
             // Month Name
