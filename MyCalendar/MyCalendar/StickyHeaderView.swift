@@ -13,7 +13,18 @@ struct StickyHeaderView: View {
     
     private var weekdaySymbols: [String] {
         let formatter = DateFormatter()
-        return formatter.veryShortWeekdaySymbols
+        // This gives us the localized symbols, but always starting with Sunday.
+        let symbols = formatter.veryShortWeekdaySymbols
+        
+        let calendar = Calendar.current
+        // calendar.firstWeekday is 1 for Sunday, 2 for Monday, etc.
+        // We need a 0-based index for our array.
+        let firstWeekdayIndex = calendar.firstWeekday - 1
+        
+        // Here we use your exact logic to slice and reorder the array.
+        let orderedSymbols = Array(symbols[firstWeekdayIndex...]) + Array(symbols[..<firstWeekdayIndex])
+        
+        return orderedSymbols
     }
     
     private var yearFormatter: DateFormatter {
