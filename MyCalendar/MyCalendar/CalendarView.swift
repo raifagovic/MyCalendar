@@ -34,10 +34,6 @@ struct CalendarView: View {
                         ForEach(months, id: \.self) { month in
                             MonthView(monthDate: month, dayEntries: dayEntries, selectedDate: $selectedDate)
                                 .id(month.startOfMonth)
-                                // --- CHANGE 2: REMOVE THE OLD .onAppear ---
-                                // .onAppear { self.currentVisibleMonth = month } // <-- DELETE THIS
-                                
-                                // --- CHANGE 3: The new position-sensing logic ---
                                 .background(
                                     GeometryReader { geometry in
                                         Color.clear
@@ -61,9 +57,9 @@ struct CalendarView: View {
                 
                 let closestMonth = frames
                     // Consider only months whose top edge is near or above the top of the screen
-                    .filter { $0.value.minY < topEdge }
+                //                    .filter { $0.value.minY < topEdge }
                     // Find the one whose top edge is closest to the top
-                    .min(by: { abs($0.value.minY) < abs($1.value.minY) })
+                    .min(by: { abs($0.value.minY - topEdge) < abs($1.value.minY - topEdge) })
                 
                 if let newVisibleMonth = closestMonth?.key {
                     // Only update the state if the visible month has actually changed
