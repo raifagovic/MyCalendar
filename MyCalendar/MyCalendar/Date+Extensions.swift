@@ -9,7 +9,7 @@
 import Foundation
 
 // This extension adds useful computed properties to the built-in Date type.
-extension Date {
+extension Date: Identifiable {
     
     var startOfMonth: Date {
         let calendar = Calendar.current
