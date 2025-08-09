@@ -14,18 +14,17 @@ struct CalendarView: View {
     @State private var months: [Date] = []
     @State private var selectedDate: Date?
     
-    // NEW: This state variable will track the top-most visible month
     @State private var currentVisibleMonth: Date = Date()
+
+    // --- CHANGE 1: Define a name for our coordinate space ---
+    private let coordinateSpaceName = "calendarScroll"
 
     var body: some View {
         ScrollViewReader { proxy in
             // The ScrollView is now the root view.
             ScrollView {
-                // LazyVStack contains our scrolling months
                 LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
                     
-                    // We now define our header as a "Section" inside the LazyVStack.
-                    // The .pinnedViews modifier makes it stick to the top.
                     Section(header: StickyHeaderView(
                         currentVisibleMonth: currentVisibleMonth,
                         onTodayTapped: {
@@ -34,28 +33,53 @@ struct CalendarView: View {
                             }
                         }
                     )) {
-                        // This is the content of the section, i.e., all the months.
                         ForEach(months, id: \.self) { month in
                             MonthView(monthDate: month, dayEntries: dayEntries, selectedDate: $selectedDate)
                                 .id(month.startOfMonth)
-                                .onAppear { // <-- REMOVE THIS MODIFIER
-                                            // This tracks which month is at the top of the list.
-                                            // We can use this to update the header's month name.
-                                            self.currentVisibleMonth = month
-                                        }
+                                // --- CHANGE 2: REMOVE THE OLD .onAppear ---
+                                // .onAppear { self.currentVisibleMonth = month } // <-- DELETE THIS
+                                
+                                // --- CHANGE 3: The new position-sensing logic ---
+                                .background(
+                                    GeometryReader { geometry in
+                                        Color.clear
+                                            .preference(
+                                                key: VisibleMonthPreferenceKey.self,
+                                                // We send a dictionary with this month's date and its frame
+                                                value: [month: geometry.frame(in: .named(coordinateSpaceName))]
+                                            )
+                                    }
+                                )
                         }
                     }
                 }
             }
-            // This modifier makes the content go under the status bar, BUT tells
-            // SwiftUI to arrange the layout respecting the safe area.
+            // --- CHANGE 4: Apply the coordinate space and listener to the ScrollView ---
+            .coordinateSpace(name: coordinateSpaceName)
+            .onPreferenceChange(VisibleMonthPreferenceKey.self) { frames in
+                // This code runs every time the user scrolls and a frame changes.
+                // We find the month whose top edge is closest to the top of the scroll view.
+                let topEdge: CGFloat = 20 // A small offset to account for the header area
+                
+                let closestMonth = frames
+                    // Consider only months whose top edge is near or above the top of the screen
+                    .filter { $0.value.minY < topEdge }
+                    // Find the one whose top edge is closest to the top
+                    .min(by: { abs($0.value.minY) < abs($1.value.minY) })
+                
+                if let newVisibleMonth = closestMonth?.key {
+                    // Only update the state if the visible month has actually changed
+                    if newVisibleMonth != self.currentVisibleMonth {
+                        self.currentVisibleMonth = newVisibleMonth
+                    }
+                }
+            }
             .ignoresSafeArea(edges: .top)
             .background(Color.black)
             .onAppear {
                 if months.isEmpty {
                     months = generateMonths()
                 }
-                // Immediately jump to the current month on launch.
                 DispatchQueue.main.async {
                     proxy.scrollTo(Date().startOfMonth, anchor: .top)
                 }
@@ -67,44 +91,17 @@ struct CalendarView: View {
     }
 
     private func generateMonths() -> [Date] {
+        // ... (this function does not need to change)
         var result: [Date] = []
         let calendar = Calendar.current
         let today = Date()
-        
-        // Generate a range of months, for example:
-        // 120 months into the past (10 years)
-        // 120 months into the future (10 years)
         let monthRange = -120...120
         
         for i in monthRange {
             if let month = calendar.date(byAdding: .month, value: i, to: today) {
-                // We use startOfMonth to ensure each date represents the beginning of a unique month
                 result.append(month.startOfMonth)
             }
         }
-        // The list of months might not be sorted if generated this way, so we sort it.
         return result.sorted()
-    }
-}
-
-// Helper extensions to make working with dates easier
-extension Date {
-    var startOfMonth: Date {
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.year, .month], from: self)
-        return calendar.date(from: components) ?? self
-    }
-}
-
-// Keep these extensions
-extension Date: Identifiable {
-    public var id: Date { self }
-}
-
-extension DateFormatter {
-    static var monthAndYear: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM yyyy"
-        return formatter
     }
 }
