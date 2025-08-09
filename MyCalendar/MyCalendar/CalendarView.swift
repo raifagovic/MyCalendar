@@ -15,8 +15,6 @@ struct CalendarView: View {
     @State private var selectedDate: Date?
     
     @State private var currentVisibleMonth: Date = Date()
-
-    // --- CHANGE 1: Define a name for our coordinate space ---
     private let coordinateSpaceName = "calendarScroll"
 
     var body: some View {
