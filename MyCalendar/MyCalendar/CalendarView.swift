@@ -48,18 +48,10 @@ struct CalendarView: View {
                     }
                 }
             }
-            // --- CHANGE 4: Apply the coordinate space and listener to the ScrollView ---
             .coordinateSpace(name: coordinateSpaceName)
             .onPreferenceChange(VisibleMonthPreferenceKey.self) { frames in
-                // This code runs every time the user scrolls and a frame changes.
-                // We find the month whose top edge is closest to the top of the scroll view.
-                let topEdge: CGFloat = 20 // A small offset to account for the header area
                 
-                let closestMonth = frames
-                    // Consider only months whose top edge is near or above the top of the screen
-                //                    .filter { $0.value.minY < topEdge }
-                    // Find the one whose top edge is closest to the top
-                    .min(by: { abs($0.value.minY - topEdge) < abs($1.value.minY - topEdge) })
+                let closestMonth = frames.min(by: { abs($0.value.minY) < abs($1.value.minY) })
                 
                 if let newVisibleMonth = closestMonth?.key {
                     // Only update the state if the visible month has actually changed
