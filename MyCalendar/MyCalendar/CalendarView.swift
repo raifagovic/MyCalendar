@@ -26,8 +26,12 @@ struct CalendarView: View {
                     Section(header: StickyHeaderView(
                         currentVisibleMonth: currentVisibleMonth,
                         onTodayTapped: {
-                            withAnimation {
-                                proxy.scrollTo(Date().startOfMonth, anchor: .top)
+                            // --- THE FIX: ADD A SMALL DELAY ---
+                            // This gives the LazyVStack a moment to ensure the target month is rendered.
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
+                                withAnimation {
+                                    proxy.scrollTo(Date().startOfMonth, anchor: .top)
+                                }
                             }
                         }
                     )) {
