@@ -78,8 +78,8 @@ struct MonthView: View {
         VStack(spacing: 0) {
             
             Color.clear
-                            .frame(height: 0)
-                            .id(monthDate.startOfMonth)
+                .frame(height: 0)
+                .id(monthDate.startOfMonth)
 
             ForEach(weeks.indices, id: \.self) { weekIndex in
                 let week = weeks[weekIndex]
