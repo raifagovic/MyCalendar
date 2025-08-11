@@ -74,12 +74,9 @@ struct MonthView: View {
     }
     
     var body: some View {
-        // --- THIS BODY IS NOW VERY SIMPLE AND WILL COMPILE CORRECTLY ---
         VStack(spacing: 0) {
             
-            Color.clear
-                .frame(height: 0)
-                .id(monthDate.startOfMonth)
+            
 
             ForEach(weeks.indices, id: \.self) { weekIndex in
                 let week = weeks[weekIndex]
