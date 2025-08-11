@@ -37,7 +37,6 @@ struct CalendarView: View {
                     )) {
                         ForEach(months, id: \.self) { month in
                             MonthView(monthDate: month, dayEntries: dayEntries, selectedDate: $selectedDate)
-                                .id(month.startOfMonth)
                                 .background(
                                     GeometryReader { geometry in
                                         Color.clear
