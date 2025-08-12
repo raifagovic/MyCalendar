@@ -26,17 +26,16 @@ struct CalendarView: View {
                     Section(header: StickyHeaderView(
                         currentVisibleMonth: currentVisibleMonth,
                         onTodayTapped: {
-                            // --- THE FIX: ADD A SMALL DELAY ---
-                            // This gives the LazyVStack a moment to ensure the target month is rendered.
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-                                withAnimation {
-                                    proxy.scrollTo(Date().startOfMonth, anchor: .top)
-                                }
+                            // --- CHANGE 1: SCROLL TO THE NEW, DEDICATED ANCHOR ---
+                            withAnimation {
+                                proxy.scrollTo(ScrollableAnchor.todayTarget, anchor: .top)
                             }
+
                         }
                     )) {
                         ForEach(months, id: \.self) { month in
                             MonthView(monthDate: month, dayEntries: dayEntries, selectedDate: $selectedDate)
+                                .id(ScrollableAnchor.month(month))
                                 .background(
                                     GeometryReader { geometry in
                                         Color.clear
@@ -70,7 +69,7 @@ struct CalendarView: View {
                     months = generateMonths()
                 }
                 DispatchQueue.main.async {
-                    proxy.scrollTo(Date().startOfMonth, anchor: .top)
+                    proxy.scrollTo(ScrollableAnchor.todayTarget, anchor: .top)
                 }
             }
         }
