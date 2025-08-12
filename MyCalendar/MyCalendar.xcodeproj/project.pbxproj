@@ -18,6 +18,7 @@
 		DC3F99B22E4120FF00E8B7BB /* WeekRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F99B12E4120FF00E8B7BB /* WeekRowView.swift */; };
 		DC3F99B62E47492100E8B7BB /* VisibleMonthPreferenceKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F99B52E47492100E8B7BB /* VisibleMonthPreferenceKey.swift */; };
 		DC3F99B82E476FA900E8B7BB /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F99B72E476FA900E8B7BB /* Date+Extensions.swift */; };
+		DC3F99BC2E4BDFCD00E8B7BB /* YearView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F99BB2E4BDFCD00E8B7BB /* YearView.swift */; };
 		DC5FDE1D2E16AA1900FAB44F /* MyCalendarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE1C2E16AA1900FAB44F /* MyCalendarApp.swift */; };
 		DC5FDE1F2E16AA1900FAB44F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE1E2E16AA1900FAB44F /* ContentView.swift */; };
 		DC5FDE212E16AA1900FAB44F /* DayEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE202E16AA1900FAB44F /* DayEntry.swift */; };
@@ -40,6 +41,7 @@
 		DC3F99B12E4120FF00E8B7BB /* WeekRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekRowView.swift; sourceTree = "<group>"; };
 		DC3F99B52E47492100E8B7BB /* VisibleMonthPreferenceKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisibleMonthPreferenceKey.swift; sourceTree = "<group>"; };
 		DC3F99B72E476FA900E8B7BB /* Date+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extensions.swift"; sourceTree = "<group>"; };
+		DC3F99BB2E4BDFCD00E8B7BB /* YearView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearView.swift; sourceTree = "<group>"; };
 		DC5FDE192E16AA1900FAB44F /* MyCalendar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyCalendar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC5FDE1C2E16AA1900FAB44F /* MyCalendarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyCalendarApp.swift; sourceTree = "<group>"; };
 		DC5FDE1E2E16AA1900FAB44F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -100,6 +102,7 @@
 				DC3F99B12E4120FF00E8B7BB /* WeekRowView.swift */,
 				DC3F99B52E47492100E8B7BB /* VisibleMonthPreferenceKey.swift */,
 				DC3F99B72E476FA900E8B7BB /* Date+Extensions.swift */,
+				DC3F99BB2E4BDFCD00E8B7BB /* YearView.swift */,
 			);
 			path = MyCalendar;
 			sourceTree = "<group>";
@@ -195,6 +198,7 @@
 				DC5FDE212E16AA1900FAB44F /* DayEntry.swift in Sources */,
 				DC3F99B02E40EE7400E8B7BB /* CalendarDay.swift in Sources */,
 				DC3F99AE2E3BDB8800E8B7BB /* StickyHeaderView.swift in Sources */,
+				DC3F99BC2E4BDFCD00E8B7BB /* YearView.swift in Sources */,
 				DC5FDE2F2E1C449E00FAB44F /* DrawingView.swift in Sources */,
 				DC3F999E2E310F4200E8B7BB /* DayCellView.swift in Sources */,
 				DC5FDE2D2E18808800FAB44F /* CalendarView.swift in Sources */,
