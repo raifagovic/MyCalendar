@@ -65,7 +65,6 @@ struct WeekRowView: View {
                         }
                     }
                 }
-                .id(isCurrentMonth ? ScrollableAnchor.todayTarget : nil)
             }
             // Case 2: Is this a *later* week that has content?
             else if week.contains(where: { $0.date != .distantPast }) {
