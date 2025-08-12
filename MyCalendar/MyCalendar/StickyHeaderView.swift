@@ -10,6 +10,7 @@ import SwiftUI
 struct StickyHeaderView: View {
     let currentVisibleMonth: Date
     let onTodayTapped: () -> Void
+    let onYearTapped: () -> Void
     
     private var weekdaySymbols: [String] {
         let formatter = DateFormatter()
@@ -50,7 +51,7 @@ struct StickyHeaderView: View {
             
             // "Nav Bar" content row
             HStack {
-                Button(action: { print("Year navigation tapped") }) {
+                Button(action: onYearTapped) {
                     HStack(spacing: 4) {
                         Image(systemName: "chevron.left")
                             .font(.title3.weight(.semibold))
