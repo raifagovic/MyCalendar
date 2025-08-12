@@ -73,11 +73,12 @@ struct MonthView: View {
         }
     }
     
+    private var isCurrentMonth: Bool {
+        Calendar.current.isDate(monthDate, equalTo: Date(), toGranularity: .month)
+    }
+    
     var body: some View {
         VStack(spacing: 0) {
-            
-            
-
             ForEach(weeks.indices, id: \.self) { weekIndex in
                 let week = weeks[weekIndex]
                 
@@ -92,6 +93,7 @@ struct MonthView: View {
                 )
             }
         }
+        .padding(.top, isCurrentMonth ? 150 : 0)
     }
 }
 
