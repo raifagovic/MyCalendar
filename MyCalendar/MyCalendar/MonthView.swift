@@ -93,7 +93,7 @@ struct MonthView: View {
                 )
             }
         }
-        .padding(.top, isCurrentMonth ? 150 : 0)
+        .padding(.top, isCurrentMonth ? 135 : 0)
     }
 }
 
