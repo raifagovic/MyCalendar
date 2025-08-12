@@ -19,6 +19,11 @@ struct WeekRowView: View {
     let isFirstContentWeek: Bool
     let firstDayOfCurrentMonth: CalendarDay?
     
+    // --- ADD THIS HELPER ---
+    private var isCurrentMonth: Bool {
+        Calendar.current.isDate(monthDate, equalTo: Date(), toGranularity: .month)
+    }
+    
     // This helper needs to be here now
     private var monthAbbreviationFormatter: DateFormatter {
         let formatter = DateFormatter()
@@ -60,6 +65,7 @@ struct WeekRowView: View {
                         }
                     }
                 }
+                .id(isCurrentMonth ? ScrollableAnchor.todayTarget : nil)
             }
             // Case 2: Is this a *later* week that has content?
             else if week.contains(where: { $0.date != .distantPast }) {
