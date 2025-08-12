@@ -28,14 +28,13 @@ struct CalendarView: View {
                         onTodayTapped: {
                             // --- CHANGE 1: SCROLL TO THE NEW, DEDICATED ANCHOR ---
                             withAnimation {
-                                proxy.scrollTo(ScrollableAnchor.todayTarget, anchor: .top)
-                            }
+                                proxy.scrollTo(Date().startOfMonth, anchor: .top)                            }
 
                         }
                     )) {
                         ForEach(months, id: \.self) { month in
                             MonthView(monthDate: month, dayEntries: dayEntries, selectedDate: $selectedDate)
-                                .id(ScrollableAnchor.month(month))
+                                .id(month.startOfMonth)
                                 .background(
                                     GeometryReader { geometry in
                                         Color.clear
@@ -68,8 +67,8 @@ struct CalendarView: View {
                 if months.isEmpty {
                     months = generateMonths()
                 }
-                DispatchQueue.main.async {
-                    proxy.scrollTo(ScrollableAnchor.todayTarget, anchor: .top)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
+                    proxy.scrollTo(Date().startOfMonth, anchor: .top)
                 }
             }
         }
@@ -79,17 +78,20 @@ struct CalendarView: View {
     }
 
     private func generateMonths() -> [Date] {
-        // ... (this function does not need to change)
         var result: [Date] = []
         let calendar = Calendar.current
-        let today = Date()
+        // We get the start of THIS month to use as our center point.
+        let today = Date().startOfMonth
+        
+        // This generates 10 years past and 10 years future correctly.
         let monthRange = -120...120
         
         for i in monthRange {
             if let month = calendar.date(byAdding: .month, value: i, to: today) {
-                result.append(month.startOfMonth)
+                result.append(month)
             }
         }
-        return result.sorted()
+        // No need to sort, as this generation method is already ordered.
+        return result
     }
 }
