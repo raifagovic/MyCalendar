@@ -10,16 +10,17 @@ import SwiftUI
 struct YearView: View {
     let year: Date
     let onMonthTapped: (Date) -> Void
-    // --- It now also needs to know what to do when "Today" is tapped ---
     let onTodayTapped: () -> Void
     
+    // --- THE FIX: Change from 2 to 3 GridItems ---
     private let columns = [
-        GridItem(.flexible(), spacing: 20),
-        GridItem(.flexible(), spacing: 20)
+        GridItem(.flexible(), spacing: 10), // Reduced spacing for a tighter grid
+        GridItem(.flexible(), spacing: 10),
+        GridItem(.flexible(), spacing: 10)
     ]
     
+    // ... (the rest of the file is unchanged) ...
     private var years: [Date] {
-        // ... this logic does not change ...
         let calendar = Calendar.current
         var result: [Date] = []
         let component = calendar.dateComponents([.year], from: year)
@@ -40,33 +41,24 @@ struct YearView: View {
     }
 
     var body: some View {
-        // --- THIS IS THE NEW, STICKY HEADER ARCHITECTURE ---
         ScrollViewReader { proxy in
             ScrollView {
-                // We use a LazyVStack with pinned headers.
                 LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
-                    // We wrap everything in a Section.
                     Section(header: YearHeaderView(year: year, onTodayTapped: onTodayTapped)) {
-                        // This VStack holds all the years.
                         VStack(spacing: 30) {
                             ForEach(years) { yearDate in
-                                // The header for each individual year (e.g., "2025")
-                                Text(yearDate, formatter: yearFormatter)
-                                    .font(.title)
-                                    .fontWeight(.bold)
-                                    .padding(.top)
-                                
-                                // The grid of 12 mini-months
-                                LazyVGrid(columns: columns, spacing: 20) {
-                                    ForEach(0..<12) { monthOffset in
-                                        if let monthDate = Calendar.current.date(byAdding: .month, value: monthOffset, to: yearDate) {
-                                            MiniMonthView(monthDate: monthDate) {
-                                                onMonthTapped(monthDate)
+                                Section(header: Text(yearDate, formatter: yearFormatter).font(.title).fontWeight(.bold).padding(.top)) {
+                                    LazyVGrid(columns: columns, spacing: 20) { // Keep spacing here for rows
+                                        ForEach(0..<12) { monthOffset in
+                                            if let monthDate = Calendar.current.date(byAdding: .month, value: monthOffset, to: yearDate) {
+                                                MiniMonthView(monthDate: monthDate) {
+                                                    onMonthTapped(monthDate)
+                                                }
                                             }
                                         }
                                     }
                                 }
-                                .id(yearDate) // ID for scrolling to this year
+                                .id(yearDate)
                             }
                         }
                         .padding(.horizontal)
@@ -74,8 +66,6 @@ struct YearView: View {
                 }
             }
             .onAppear {
-                // On appear, jump to the correct year.
-                // We use a small delay to ensure the view is ready.
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
                     proxy.scrollTo(year, anchor: .top)
                 }
