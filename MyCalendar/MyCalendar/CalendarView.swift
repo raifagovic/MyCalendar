@@ -15,61 +15,91 @@ struct CalendarView: View {
     @State private var selectedDate: Date?
     
     @State private var currentVisibleMonth: Date = Date()
+    // --- ADD THE NEW STATE VARIABLE ---
+    @State private var isShowingYearView = false
+    
     private let coordinateSpaceName = "calendarScroll"
 
     var body: some View {
+        // --- The ScrollViewReader must now wrap the content switcher ---
         ScrollViewReader { proxy in
-            // The ScrollView is now the root view.
-            ScrollView {
-                LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
+            
+            // This is our main content switcher
+            if isShowingYearView {
+                // --- SHOW THE YEAR VIEW ---
+                YearView(year: currentVisibleMonth) { selectedMonth in
+                    // This is the code that runs when a month is tapped in the YearView
                     
-                    Section(header: StickyHeaderView(
-                        currentVisibleMonth: currentVisibleMonth,
-                        onTodayTapped: {
-                            // --- CHANGE 1: SCROLL TO THE NEW, DEDICATED ANCHOR ---
-                            withAnimation {
-                                proxy.scrollTo(Date().startOfMonth, anchor: .top)                            }
-
-                        }
-                    )) {
-                        ForEach(months, id: \.self) { month in
-                            MonthView(monthDate: month, dayEntries: dayEntries, selectedDate: $selectedDate)
-                                .id(month.startOfMonth)
-                                .background(
-                                    GeometryReader { geometry in
-                                        Color.clear
-                                            .preference(
-                                                key: VisibleMonthPreferenceKey.self,
-                                                // We send a dictionary with this month's date and its frame
-                                                value: [month: geometry.frame(in: .named(coordinateSpaceName))]
-                                            )
-                                    }
-                                )
+                    // 1. Set the new month as the one we want to see
+                    self.currentVisibleMonth = selectedMonth
+                    
+                    // 2. Animate back to the month grid view
+                    withAnimation(.spring()) {
+                        isShowingYearView = false
+                    }
+                    
+                    // 3. Scroll to that new month to ensure it's visible
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
+                        proxy.scrollTo(selectedMonth.startOfMonth, anchor: .top)
+                    }
+                }
+                // Define how the YearView animates in and out
+                .transition(.asymmetric(insertion: .scale(scale: 0.8).combined(with: .opacity), removal: .scale.combined(with: .opacity)))
+            } else {
+                // --- SHOW THE MONTH GRID VIEW (Your existing code) ---
+                ScrollView {
+                    LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
+                        
+                        Section(header: StickyHeaderView(
+                            currentVisibleMonth: currentVisibleMonth,
+                            onTodayTapped: {
+                                withAnimation {
+                                    proxy.scrollTo(Date().startOfMonth, anchor: .top)
+                                }
+                            },
+                            // Pass the action to the header button
+                            onYearTapped: {
+                                withAnimation(.spring()) {
+                                    isShowingYearView = true
+                                }
+                            }
+                        )) {
+                            ForEach(months, id: \.self) { month in
+                                MonthView(monthDate: month, dayEntries: dayEntries, selectedDate: $selectedDate)
+                                    .id(month.startOfMonth)
+                                    .background(
+                                        GeometryReader { geometry in
+                                            Color.clear
+                                                .preference(
+                                                    key: VisibleMonthPreferenceKey.self,
+                                                    value: [month: geometry.frame(in: .named(coordinateSpaceName))]
+                                                )
+                                        }
+                                    )
+                            }
                         }
                     }
                 }
-            }
-            .coordinateSpace(name: coordinateSpaceName)
-            .onPreferenceChange(VisibleMonthPreferenceKey.self) { frames in
-                
-                let closestMonth = frames.min(by: { abs($0.value.minY) < abs($1.value.minY) })
-                
-                if let newVisibleMonth = closestMonth?.key {
-                    // Only update the state if the visible month has actually changed
-                    if newVisibleMonth != self.currentVisibleMonth {
-                        self.currentVisibleMonth = newVisibleMonth
+                .coordinateSpace(name: coordinateSpaceName)
+                // ... (onPreferenceChange and other modifiers are unchanged) ...
+                .onPreferenceChange(VisibleMonthPreferenceKey.self) { frames in
+                    let closestMonth = frames.min(by: { abs($0.value.minY) < abs($1.value.minY) })
+                    if let newVisibleMonth = closestMonth?.key {
+                        if newVisibleMonth != self.currentVisibleMonth {
+                            self.currentVisibleMonth = newVisibleMonth
+                        }
                     }
                 }
+                .ignoresSafeArea(edges: .top)
+                .background(Color.black)
+                // Define how the MonthView animates in and out
+                .transition(.asymmetric(insertion: .scale.combined(with: .opacity), removal: .scale(scale: 0.8).combined(with: .opacity)))
             }
-            .ignoresSafeArea(edges: .top)
-            .background(Color.black)
-            .onAppear {
-                if months.isEmpty {
-                    months = generateMonths()
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-                    proxy.scrollTo(Date().startOfMonth, anchor: .top)
-                }
+        }
+        // These modifiers apply to the whole view, regardless of which state it's in.
+        .onAppear {
+            if months.isEmpty {
+                months = generateMonths()
             }
         }
         .sheet(item: $selectedDate) { date in
@@ -78,12 +108,11 @@ struct CalendarView: View {
     }
 
     private func generateMonths() -> [Date] {
+        // ... (This function is unchanged) ...
         var result: [Date] = []
         let calendar = Calendar.current
-        // We get the start of THIS month to use as our center point.
         let today = Date().startOfMonth
         
-        // This generates 10 years past and 10 years future correctly.
         let monthRange = -120...120
         
         for i in monthRange {
@@ -91,7 +120,6 @@ struct CalendarView: View {
                 result.append(month)
             }
         }
-        // No need to sort, as this generation method is already ordered.
         return result
     }
 }
