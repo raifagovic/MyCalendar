@@ -1,4 +1,3 @@
-
 //
 //  YearView.swift
 //  MyCalendar
@@ -9,35 +8,40 @@
 import SwiftUI
 
 struct YearView: View {
-    // The year we want to display (passed from CalendarView)
+    // The starting year to display
     let year: Date
-    // A closure to execute when the user taps on a month
+    // The action to perform when a month is tapped
     let onMonthTapped: (Date) -> Void
-
-    // A 3-column grid layout
+    
+    // A 2-column grid for a more spacious layout
     private let columns = [
-        GridItem(.flexible()),
-        GridItem(.flexible()),
-        GridItem(.flexible())
+        GridItem(.flexible(), spacing: 20),
+        GridItem(.flexible(), spacing: 20)
     ]
     
-    // A computed property to generate the 12 months of the given year
-    private var months: [Date] {
+    // Generate a range of years to scroll through
+    private var years: [Date] {
         let calendar = Calendar.current
         var result: [Date] = []
-        // Get the first day of the year
-        guard let yearInterval = calendar.dateInterval(of: .year, for: year) else {
-            return []
-        }
-        
-        for i in 0..<12 {
-            if let month = calendar.date(byAdding: .month, value: i, to: yearInterval.start) {
-                result.append(month)
+        let component = calendar.dateComponents([.year], from: year)
+        guard let firstDayOfYear = calendar.date(from: component) else { return [] }
+
+        // Generate 10 years past and 10 years future
+        for i in -10...10 {
+            if let newYear = calendar.date(byAdding: .year, value: i, to: firstDayOfYear) {
+                result.append(newYear)
             }
         }
         return result
     }
     
+    // Formatters for the year and month headers
+    private var yearFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy"
+        return formatter
+    }
+
     private var monthAbbreviationFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM"
@@ -45,26 +49,33 @@ struct YearView: View {
     }
 
     var body: some View {
-        // We add our own ScrollView here in case content overflows on smaller devices.
-        ScrollView {
-            // A lazy grid is efficient for this kind of layout.
-            LazyVGrid(columns: columns, spacing: 20) {
-                ForEach(months) { month in
-                    Button(action: {
-                        // When tapped, call the closure with the selected month
-                        onMonthTapped(month)
-                    }) {
-                        Text(month, formatter: monthAbbreviationFormatter)
-                            .font(.headline)
-                            .foregroundColor(Calendar.current.isDate(month, equalTo: Date(), toGranularity: .month) ? .red : .primary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 20)
-                            .background(Color.secondary.opacity(0.1))
-                            .cornerRadius(12)
+        // --- THIS VIEW IS NOW A SCROLLABLE LIST OF YEARS ---
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(spacing: 30) {
+                    ForEach(years) { yearDate in
+                        Section(header: Text(yearDate, formatter: yearFormatter).font(.title).fontWeight(.bold).padding(.top)) {
+                            // A grid that contains 12 mini-months
+                            LazyVGrid(columns: columns, spacing: 20) {
+                                ForEach(0..<12) { monthOffset in
+                                    if let monthDate = Calendar.current.date(byAdding: .month, value: monthOffset, to: yearDate) {
+                                        MiniMonthView(monthDate: monthDate) {
+                                            // When tapped, perform the action from CalendarView
+                                            onMonthTapped(monthDate)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        .id(yearDate) // ID for scrolling
                     }
                 }
+                .padding(.horizontal)
             }
-            .padding()
+            .onAppear {
+                // On appear, jump to the current year
+                proxy.scrollTo(year, anchor: .center)
+            }
         }
     }
 }
