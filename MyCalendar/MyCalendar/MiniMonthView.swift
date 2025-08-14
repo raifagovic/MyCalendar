@@ -11,7 +11,7 @@ struct MiniMonthView: View {
     let monthDate: Date
     let onTapped: () -> Void
     
-    private let columns = Array(repeating: GridItem(.flexible()), count: 7)
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
     
     private var days: [Date] {
         let calendar = Calendar.current
@@ -47,7 +47,7 @@ struct MiniMonthView: View {
                     .foregroundColor(Calendar.current.isDate(monthDate, equalTo: Date(), toGranularity: .month) ? .red : .primary)
                 
                 // The grid of day numbers
-                LazyVGrid(columns: columns, spacing: 2) {
+                LazyVGrid(columns: columns, spacing: 7) {
                     ForEach(days.indices, id: \.self) { index in
                         let day = days[index]
                         
@@ -55,8 +55,7 @@ struct MiniMonthView: View {
                             Text("") // Empty cell
                         } else {
                             Text("\(Calendar.current.component(.day, from: day))")
-                                .font(.caption2)
-                                .fontWeight(.bold)
+                                .font(.system(size: 9, weight: .bold))
                                 .foregroundColor(Calendar.current.isDateInToday(day) ? .red : .primary)
                         }
                     }
