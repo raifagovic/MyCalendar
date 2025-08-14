@@ -56,7 +56,8 @@ struct MiniMonthView: View {
                         } else {
                             Text("\(Calendar.current.component(.day, from: day))")
                                 .font(.caption2)
-                                .foregroundColor(Calendar.current.isDateInToday(day) ? .red : .secondary)
+                                .fontWeight(.bold)
+                                .foregroundColor(Calendar.current.isDateInToday(day) ? .red : .primary)
                         }
                     }
                 }
