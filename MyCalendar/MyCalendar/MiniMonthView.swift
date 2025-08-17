@@ -28,6 +28,12 @@ struct MiniMonthView: View {
             let realDays = range.compactMap { calendar.date(byAdding: .day, value: $0 - 1, to: firstDay) }
             allDays.append(contentsOf: realDays)
         }
+        let totalCells = 42 // 6 weeks * 7 days
+        let remainingCells = totalCells - allDays.count
+        if remainingCells > 0 {
+            allDays.append(contentsOf: Array(repeating: Date.distantPast, count: remainingCells))
+        }
+
         return allDays
     }
     

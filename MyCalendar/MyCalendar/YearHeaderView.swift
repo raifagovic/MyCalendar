@@ -8,23 +8,35 @@
 import SwiftUI
 
 struct YearHeaderView: View {
-    // --- CHANGE 1: Remove the 'year' property ---
-    // let year: Date
     let onTodayTapped: () -> Void
     
     var body: some View {
+        // --- THIS ENTIRE VStack IS COPIED FROM STICKYHEADERVIEW FOR CONSISTENCY ---
         VStack(spacing: 0) {
-            Spacer().frame(height: 10)
             
+            // This spacer pushes the content down from the status bar, exactly like in the other header.
+            Spacer().frame(height: 40)
+            
+            // This HStack is the "Nav Bar" content row.
             HStack {
-                // We keep the hidden button as a spacer for alignment
-                Button("          ", action: {})
-                    .font(.headline)
-                    .hidden()
+                // To keep the "Calendar" title perfectly centered, we create a
+                // placeholder button on the left that takes up the same space as the
+                // real year button, but we make it invisible.
+                Button(action: {}) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                            .font(.title3.weight(.semibold))
+                        
+                        // We use a sample year text to get the width right.
+                        Text("2025")
+                            .font(.headline.weight(.semibold))
+                    }
+                }
+                .disabled(true) // Disable the button
+                .hidden()       // Make it completely invisible
                 
                 Spacer()
                 
-                // --- CHANGE 2: Replace the year with a static title ---
                 Text("Calendar")
                     .font(.headline)
                     .fontWeight(.semibold)
@@ -35,10 +47,10 @@ struct YearHeaderView: View {
                     .font(.headline)
             }
             .padding(.horizontal)
+            // Giving it a fixed height ensures perfect vertical alignment.
             .frame(height: 44)
         }
-        // --- CHANGE 3: Add top padding to respect the safe area ---
-        // This pushes the content down from the notch/status bar.
+        // These modifiers are essential to match the other header.
         .padding(.top)
         .background(.regularMaterial)
         .overlay(
