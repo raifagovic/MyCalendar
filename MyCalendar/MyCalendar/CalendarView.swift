@@ -35,23 +35,22 @@ struct CalendarView: View {
                             proxy.scrollTo(selectedMonth.startOfMonth, anchor: .top)
                         }
                     },
-                    // --- PROVIDE THE ACTION FOR THE "TODAY" BUTTON ---
                     onTodayTapped: {
-                        // 1. Ensure the month is set to today
                         self.currentVisibleMonth = Date()
-                        // 2. Animate back to the main calendar view
                         withAnimation(.spring()) {
                             isShowingYearView = false
                         }
-                        // 3. Trigger the scroll to today's date in the main view
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
                              proxy.scrollTo(Date().startOfMonth, anchor: .top)
                         }
                     }
                 )
+                // --- THIS IS THE MISSING LINE ---
+                // This modifier is essential for the YearView's header to go to the top of the screen.
+                .ignoresSafeArea(edges: .top)
                 .transition(.asymmetric(insertion: .scale(scale: 0.8).combined(with: .opacity), removal: .scale.combined(with: .opacity)))
             } else {
-                // ... your main ScrollView code is unchanged ...
+                // Your main ScrollView code is correct and already has this modifier.
                 ScrollView {
                     LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
                         

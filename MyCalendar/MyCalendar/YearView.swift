@@ -8,18 +8,17 @@
 import SwiftUI
 
 struct YearView: View {
+    // ... properties are unchanged ...
     let year: Date
     let onMonthTapped: (Date) -> Void
     let onTodayTapped: () -> Void
     
-    // --- THE FIX: Change from 2 to 3 GridItems ---
     private let columns = [
-        GridItem(.flexible(), spacing: 10), // Reduced spacing for a tighter grid
+        GridItem(.flexible(), spacing: 10),
         GridItem(.flexible(), spacing: 10),
         GridItem(.flexible(), spacing: 10)
     ]
     
-    // ... (the rest of the file is unchanged) ...
     private var years: [Date] {
         let calendar = Calendar.current
         var result: [Date] = []
@@ -44,11 +43,23 @@ struct YearView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
-                    Section(header: YearHeaderView(year: year, onTodayTapped: onTodayTapped)) {
+                    // --- UPDATE THE HEADER INITIALIZER ---
+                    // It no longer needs the 'year' parameter.
+                    Section(header: YearHeaderView(onTodayTapped: onTodayTapped)) {
                         VStack(spacing: 30) {
                             ForEach(years) { yearDate in
-                                Section(header: Text(yearDate, formatter: yearFormatter).font(.title).fontWeight(.bold).padding(.top)) {
-                                    LazyVGrid(columns: columns, spacing: 20) { // Keep spacing here for rows
+                                Section(header:
+                                    HStack {
+                                        Text(yearDate, formatter: yearFormatter)
+                                            .font(.title)
+                                            .fontWeight(.bold)
+                                            .padding(.top)
+                                            .foregroundColor(Calendar.current.isDate(yearDate, equalTo: Date(), toGranularity: .year) ? .red : .primary)
+                                        Spacer()
+                                    }
+                                )
+                                {
+                                    LazyVGrid(columns: columns, spacing: 20) {
                                         ForEach(0..<12) { monthOffset in
                                             if let monthDate = Calendar.current.date(byAdding: .month, value: monthOffset, to: yearDate) {
                                                 MiniMonthView(monthDate: monthDate) {

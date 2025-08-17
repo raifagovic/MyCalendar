@@ -45,6 +45,7 @@ struct MiniMonthView: View {
                     .font(.headline)
                     // --- THE FIX: Use the correct Calendar API ---
                     .foregroundColor(Calendar.current.isDate(monthDate, equalTo: Date(), toGranularity: .month) ? .red : .primary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 
                 // The grid of day numbers
                 LazyVGrid(columns: columns, spacing: 7) {

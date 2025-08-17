@@ -1,4 +1,3 @@
-
 //
 //  YearHeaderView.swift
 //  MyCalendar
@@ -9,31 +8,24 @@
 import SwiftUI
 
 struct YearHeaderView: View {
-    // The year to display
-    let year: Date
-    // The action to perform when the user taps "Today"
+    // --- CHANGE 1: Remove the 'year' property ---
+    // let year: Date
     let onTodayTapped: () -> Void
     
-    private var yearFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy"
-        return formatter
-    }
-
     var body: some View {
         VStack(spacing: 0) {
             Spacer().frame(height: 10)
             
             HStack {
-                // We use a clear button on the left as a spacer
-                // to perfectly balance the "Today" button on the right.
+                // We keep the hidden button as a spacer for alignment
                 Button("          ", action: {})
                     .font(.headline)
                     .hidden()
                 
                 Spacer()
                 
-                Text(year, formatter: yearFormatter)
+                // --- CHANGE 2: Replace the year with a static title ---
+                Text("Calendar")
                     .font(.headline)
                     .fontWeight(.semibold)
                 
@@ -45,6 +37,9 @@ struct YearHeaderView: View {
             .padding(.horizontal)
             .frame(height: 44)
         }
+        // --- CHANGE 3: Add top padding to respect the safe area ---
+        // This pushes the content down from the notch/status bar.
+        .padding(.top)
         .background(.regularMaterial)
         .overlay(
             Divider().background(Color.gray.opacity(0.5)),
