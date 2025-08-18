@@ -1,9 +1,9 @@
-//
+
 //  VisibleMonthPreferenceKey.swift
 //  MyCalendar
 //
 //  Created by Raif Agovic on 9. 8. 2025..
-//
+
 
 import SwiftUI
 

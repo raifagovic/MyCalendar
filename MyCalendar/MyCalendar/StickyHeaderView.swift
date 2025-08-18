@@ -83,7 +83,10 @@ struct StickyHeaderView: View {
             
             // Weekday Symbols
             HStack(spacing: 0) {
-                ForEach(weekdaySymbols, id: \.self) { symbol in
+                ForEach(weekdaySymbols.indices, id: \.self) { index in
+                    
+                    let symbol = weekdaySymbols[index]
+                    
                     Text(symbol)
                         .font(.caption)
                         .fontWeight(.medium)
