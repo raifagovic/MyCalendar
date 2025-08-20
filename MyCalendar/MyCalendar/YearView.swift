@@ -19,7 +19,6 @@ struct YearView: View {
         GridItem(.flexible(), spacing: 10)
     ]
     
-    // We use a @State variable to trigger our .onChange event.
     @State private var years: [Date] = []
     
     private var yearFormatter: DateFormatter {
@@ -40,7 +39,7 @@ struct YearView: View {
                                         Text(yearDate, formatter: yearFormatter)
                                             .font(.title)
                                             .fontWeight(.bold)
-                                            .padding(.top)
+                                            .padding(.top) // Keep inner padding for text spacing
                                             .foregroundColor(Calendar.current.isDate(yearDate, equalTo: Date(), toGranularity: .year) ? .red : .primary)
                                         Spacer()
                                     }
@@ -57,38 +56,43 @@ struct YearView: View {
                                     }
                                 }
                                 .id(yearDate)
+                                // --- THE DEFINITIVE GEOMETRIC FIX ---
+                                // We apply padding ONLY to the target year, ON THE SECTION ITSELF.
+                                .padding(.top, isTargetYear(yearDate) ? 88 : 0)
                             }
                         }
                         .padding(.horizontal)
                     }
                 }
             }
-            // --- THE DEFINITIVE FIX: The Robust Event-Driven Scroll ---
+            // The robust timing logic remains the same.
             .onAppear {
-                // This modifier's ONLY job is to load the data.
                 if years.isEmpty {
                     self.years = generateYears(for: self.year)
                 }
             }
             .onChange(of: years) {
-                // When the data is loaded, THEN we schedule the scroll.
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { // A slightly more robust delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                     
                     let calendar = Calendar.current
                     let targetYearComponent = calendar.dateComponents([.year], from: self.year)
                     guard let targetDate = calendar.date(from: targetYearComponent) else { return }
                     
-                    // The proxy will now have the correct geometry information.
+                    // The .top anchor now works because we are scrolling a padded view.
                     proxy.scrollTo(targetDate, anchor: .top)
                 }
             }
         }
     }
     
+    // This helper function checks if the year being drawn is our target year.
+    private func isTargetYear(_ yearDate: Date) -> Bool {
+        return Calendar.current.isDate(yearDate, equalTo: self.year, toGranularity: .year)
+    }
+    
     private func generateYears(for centralYear: Date) -> [Date] {
         let calendar = Calendar.current
         var result: [Date] = []
-        // We generate the range around the TARGET year, not today.
         let component = calendar.dateComponents([.year], from: centralYear)
         guard let firstDayOfYear = calendar.date(from: component) else { return [] }
 
