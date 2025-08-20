@@ -64,10 +64,10 @@ struct YearView: View {
                                     }
                                 }
                                 .id(yearDate)
+                                .padding(.top, isTargetYear(yearDate) ? 88 : 0)
                             }
                         }
                         .padding(.horizontal)
-                        .padding(.top, 20) // The correct padding
                     }
                 }
             }
@@ -85,5 +85,10 @@ struct YearView: View {
                 proxy.scrollTo(targetDate, anchor: .top)
             }
         }
+    }
+    
+    // This helper function checks if the year being drawn is our target year.
+    private func isTargetYear(_ yearDate: Date) -> Bool {
+        return Calendar.current.isDate(yearDate, equalTo: self.year, toGranularity: .year)
     }
 }
