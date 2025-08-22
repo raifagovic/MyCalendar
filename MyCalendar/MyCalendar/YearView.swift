@@ -64,7 +64,13 @@ struct YearView: View {
                                     }
                                 }
                                 .id(yearDate)
-                                .padding(.top, isTargetYear(yearDate) ? 88 : 0)
+                                .padding(.top, isTargetYear(yearDate) ? 120 : 0)
+                                
+                                if yearDate != years.last {
+                                    Divider()
+                                        .background(Color.gray.opacity(0.5))
+                                        .padding(.top, 30) // Add space above the divider
+                                }
                             }
                         }
                         .padding(.horizontal)
