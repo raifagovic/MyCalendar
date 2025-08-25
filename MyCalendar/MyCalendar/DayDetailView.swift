@@ -10,6 +10,7 @@ import PhotosUI
 import SwiftData
 
 struct DayDetailView: View {
+    // ... all properties are unchanged ...
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     let date: Date
@@ -17,7 +18,6 @@ struct DayDetailView: View {
     @Query private var entries: [DayEntry]
     @State private var selectedPhoto: PhotosPickerItem?
     
-    // --- Gesture State ---
     @State private var currentScale: CGFloat = 1.0
     @State private var currentOffset: CGSize = .zero
 
@@ -34,19 +34,12 @@ struct DayDetailView: View {
     var body: some View {
         let entry = entries.first ?? createAndReturnEntry()
 
-        // --- Gesture Definitions ---
         let magnificationGesture = MagnificationGesture()
-            .updating($gestureScale) { value, state, _ in
-                state = value
-            }
-            .onEnded { value in
-                currentScale *= value
-            }
+            .updating($gestureScale) { value, state, _ in state = value }
+            .onEnded { value in currentScale *= value }
 
         let dragGesture = DragGesture()
-            .updating($gestureOffset) { value, state, _ in
-                state = value.translation
-            }
+            .updating($gestureOffset) { value, state, _ in state = value.translation }
             .onEnded { value in
                 currentOffset.width += value.translation.width
                 currentOffset.height += value.translation.height
@@ -56,14 +49,13 @@ struct DayDetailView: View {
 
         NavigationStack {
             VStack {
-                // --- We conditionally show either the editor or the "Add" button ---
                 if let imageData = entry.backgroundImageData, let uiImage = UIImage(data: imageData) {
                     
-                    // MARK: - Image Editor UI
                     Text("Frame your image")
                         .font(.headline)
                         .padding(.top)
 
+                    // --- THE NEW, CORRECTED CROPPER ---
                     ZStack {
                         // Layer 1: The interactive image
                         Image(uiImage: uiImage)
@@ -74,28 +66,22 @@ struct DayDetailView: View {
                                 x: currentOffset.width + gestureOffset.width,
                                 y: currentOffset.height + gestureOffset.height
                             )
-                        
-                        // Layer 2: The dimming overlay
-                        Rectangle()
-                            .fill(.black.opacity(0.4))
-                        
-                        // Layer 3: The transparent hole
-                        Rectangle()
-                            .fill(Color.white)
-                            .aspectRatio(AppConstants.calendarCellAspectRatio, contentMode: .fit)
-                            .frame(width: 300)
-                            .blendMode(.destinationOut)
                     }
-                    .compositingGroup()
-                    .frame(height: 400)
+                    .frame(width: 300, height: 400) // A fixed frame for the editor
                     .clipped()
                     .gesture(combinedGesture)
+                    // Layer 2: A simple, clear overlay to show the crop area
+                    .overlay(
+                        Rectangle()
+                            .stroke(Color.white.opacity(0.8), lineWidth: 2)
+                            .aspectRatio(AppConstants.calendarCellAspectRatio, contentMode: .fit)
+                            .frame(width: 300)
+                    )
 
-                    // MARK: - Remove Button (Restored)
+                    // ... Remove button is unchanged ...
                     Button(role: .destructive) {
                         withAnimation {
                             entry.backgroundImageData = nil
-                            // Also reset the transform data
                             entry.backgroundImageScale = 1.0
                             entry.backgroundImageOffsetX = 0.0
                             entry.backgroundImageOffsetY = 0.0
@@ -106,9 +92,8 @@ struct DayDetailView: View {
                     .padding()
                     
                 } else {
-                    // MARK: - Add Image UI (Restored)
+                    // ... The "Add Image" UI is unchanged ...
                     Spacer()
-                    // The PhotosPicker for adding a new image
                     PhotosPicker(selection: $selectedPhoto, matching: .images, photoLibrary: .shared()) {
                         VStack(spacing: 10) {
                             Image(systemName: "photo.on.rectangle.angled")
@@ -123,12 +108,11 @@ struct DayDetailView: View {
                             guard let data = try? await newItem?.loadTransferable(type: Data.self),
                                   let uiImage = UIImage(data: data) else { return }
                             
-                            // --- Calculate sensible starting scale ---
                             let editorWidth: CGFloat = 300
                             let editorHeight: CGFloat = 400
                             let scaleX = editorWidth / uiImage.size.width
                             let scaleY = editorHeight / uiImage.size.height
-                            let initialScale = max(scaleX, scaleY) // Fill the frame
+                            let initialScale = max(scaleX, scaleY)
                             
                             withAnimation {
                                 entry.backgroundImageData = data
@@ -141,6 +125,7 @@ struct DayDetailView: View {
                     Spacer()
                 }
             }
+            // ... Navigation and other modifiers are unchanged ...
             .navigationTitle("Frame Image")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
