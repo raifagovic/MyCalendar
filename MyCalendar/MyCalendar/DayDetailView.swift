@@ -10,30 +10,19 @@ import PhotosUI
 import SwiftData
 
 struct DayDetailView: View {
-    // ... all properties are unchanged ...
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     let date: Date
 
-    @Query private var entries: [DayEntry]
+    @State private var entry: DayEntry?
     @State private var selectedPhoto: PhotosPickerItem?
     
     @State private var currentScale: CGFloat = 1.0
     @State private var currentOffset: CGSize = .zero
-
     @GestureState private var gestureScale: CGFloat = 1.0
     @GestureState private var gestureOffset: CGSize = .zero
 
-    init(date: Date) {
-        self.date = date
-        let calendar = Calendar.current
-        let startOfDay = calendar.startOfDay(for: date)
-        _entries = Query(filter: #Predicate<DayEntry> { $0.date == startOfDay })
-    }
-
     var body: some View {
-        let entry = entries.first ?? createAndReturnEntry()
-
         let magnificationGesture = MagnificationGesture()
             .updating($gestureScale) { value, state, _ in state = value }
             .onEnded { value in currentScale *= value }
@@ -49,15 +38,13 @@ struct DayDetailView: View {
 
         NavigationStack {
             VStack {
-                if let imageData = entry.backgroundImageData, let uiImage = UIImage(data: imageData) {
+                if let entry = entry, let imageData = entry.backgroundImageData, let uiImage = UIImage(data: imageData) {
                     
                     Text("Frame your image")
                         .font(.headline)
                         .padding(.top)
 
-                    // --- THE NEW, CORRECTED CROPPER ---
                     ZStack {
-                        // Layer 1: The interactive image
                         Image(uiImage: uiImage)
                             .resizable()
                             .scaledToFill()
@@ -67,10 +54,9 @@ struct DayDetailView: View {
                                 y: currentOffset.height + gestureOffset.height
                             )
                     }
-                    .frame(width: 300, height: 400) // A fixed frame for the editor
+                    .frame(width: 300, height: 400)
                     .clipped()
                     .gesture(combinedGesture)
-                    // Layer 2: A simple, clear overlay to show the crop area
                     .overlay(
                         Rectangle()
                             .stroke(Color.white.opacity(0.8), lineWidth: 2)
@@ -78,7 +64,6 @@ struct DayDetailView: View {
                             .frame(width: 300)
                     )
 
-                    // ... Remove button is unchanged ...
                     Button(role: .destructive) {
                         withAnimation {
                             entry.backgroundImageData = nil
@@ -92,7 +77,6 @@ struct DayDetailView: View {
                     .padding()
                     
                 } else {
-                    // ... The "Add Image" UI is unchanged ...
                     Spacer()
                     PhotosPicker(selection: $selectedPhoto, matching: .images, photoLibrary: .shared()) {
                         VStack(spacing: 10) {
@@ -108,6 +92,16 @@ struct DayDetailView: View {
                             guard let data = try? await newItem?.loadTransferable(type: Data.self),
                                   let uiImage = UIImage(data: data) else { return }
                             
+                            let entryToUpdate: DayEntry
+                            if let existingEntry = self.entry {
+                                entryToUpdate = existingEntry
+                            } else {
+                                let newEntry = DayEntry(date: Calendar.current.startOfDay(for: date))
+                                modelContext.insert(newEntry)
+                                self.entry = newEntry
+                                entryToUpdate = newEntry
+                            }
+                            
                             let editorWidth: CGFloat = 300
                             let editorHeight: CGFloat = 400
                             let scaleX = editorWidth / uiImage.size.width
@@ -115,17 +109,19 @@ struct DayDetailView: View {
                             let initialScale = max(scaleX, scaleY)
                             
                             withAnimation {
-                                entry.backgroundImageData = data
-                                entry.backgroundImageScale = initialScale
-                                entry.backgroundImageOffsetX = 0
-                                entry.backgroundImageOffsetY = 0
+                                entryToUpdate.backgroundImageData = data
+                                entryToUpdate.backgroundImageScale = initialScale
+                                entryToUpdate.backgroundImageOffsetX = 0
+                                entryToUpdate.backgroundImageOffsetY = 0
+                                
+                                self.currentScale = initialScale
+                                self.currentOffset = .zero
                             }
                         }
                     }
                     Spacer()
                 }
             }
-            // ... Navigation and other modifiers are unchanged ...
             .navigationTitle("Frame Image")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -134,25 +130,41 @@ struct DayDetailView: View {
                 }
             }
         }
-        .onAppear {
-            self.currentScale = entry.backgroundImageScale
-            self.currentOffset = CGSize(width: entry.backgroundImageOffsetX, height: entry.backgroundImageOffsetY)
+        // --- THE DEFINITIVE FIX: Use .task(id:) ---
+        // This task will re-run automatically whenever the 'date' changes.
+        .task(id: date) {
+            await fetchEntry(for: date)
         }
         .onDisappear {
-            entry.backgroundImageScale = self.currentScale
-            entry.backgroundImageOffsetX = self.currentOffset.width
-            entry.backgroundImageOffsetY = self.currentOffset.height
-            try? modelContext.save()
+            if let entry = entry {
+                entry.backgroundImageScale = self.currentScale
+                entry.backgroundImageOffsetX = self.currentOffset.width
+                entry.backgroundImageOffsetY = self.currentOffset.height
+                try? modelContext.save()
+            }
         }
     }
     
-    private func createAndReturnEntry() -> DayEntry {
-        if let existingEntry = entries.first {
-            return existingEntry
-        } else {
-            let newEntry = DayEntry(date: Calendar.current.startOfDay(for: date))
-            modelContext.insert(newEntry)
-            return newEntry
+    // The fetch function is now async and takes the date as a parameter.
+    private func fetchEntry(for date: Date) async {
+        let startOfDay = Calendar.current.startOfDay(for: date)
+        let predicate = #Predicate<DayEntry> { $0.date == startOfDay }
+        let descriptor = FetchDescriptor(predicate: predicate)
+        
+        do {
+            let entries = try modelContext.fetch(descriptor)
+            self.entry = entries.first
+            
+            if let entry = self.entry {
+                self.currentScale = entry.backgroundImageScale
+                self.currentOffset = CGSize(width: entry.backgroundImageOffsetX, height: entry.backgroundImageOffsetY)
+            } else {
+                // If no entry is found, reset the state.
+                self.currentScale = 1.0
+                self.currentOffset = .zero
+            }
+        } catch {
+            print("Failed to fetch entry: \(error)")
         }
     }
 }
