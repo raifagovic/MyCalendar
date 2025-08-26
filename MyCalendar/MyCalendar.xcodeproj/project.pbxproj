@@ -10,7 +10,6 @@
 		DC3F999C2E310BC900E8B7BB /* EmoticonInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F999B2E310BC900E8B7BB /* EmoticonInfo.swift */; };
 		DC3F999E2E310F4200E8B7BB /* DayCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F999D2E310F4200E8B7BB /* DayCellView.swift */; };
 		DC3F99A02E31104800E8B7BB /* DayDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F999F2E31104800E8B7BB /* DayDetailView.swift */; };
-		DC3F99A22E3353D600E8B7BB /* ImageCropperView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F99A12E3353D600E8B7BB /* ImageCropperView.swift */; };
 		DC3F99A42E37BD3200E8B7BB /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F99A32E37BD3200E8B7BB /* AppConstants.swift */; };
 		DC3F99AC2E3BB1CF00E8B7BB /* MonthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F99AB2E3BB1CF00E8B7BB /* MonthView.swift */; };
 		DC3F99AE2E3BDB8800E8B7BB /* StickyHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F99AD2E3BDB8800E8B7BB /* StickyHeaderView.swift */; };
@@ -35,7 +34,6 @@
 		DC3F999B2E310BC900E8B7BB /* EmoticonInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmoticonInfo.swift; sourceTree = "<group>"; };
 		DC3F999D2E310F4200E8B7BB /* DayCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCellView.swift; sourceTree = "<group>"; };
 		DC3F999F2E31104800E8B7BB /* DayDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayDetailView.swift; sourceTree = "<group>"; };
-		DC3F99A12E3353D600E8B7BB /* ImageCropperView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCropperView.swift; sourceTree = "<group>"; };
 		DC3F99A32E37BD3200E8B7BB /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
 		DC3F99AB2E3BB1CF00E8B7BB /* MonthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthView.swift; sourceTree = "<group>"; };
 		DC3F99AD2E3BDB8800E8B7BB /* StickyHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickyHeaderView.swift; sourceTree = "<group>"; };
@@ -98,7 +96,6 @@
 				DC5FDE302E25B27C00FAB44F /* DailySketchView.swift */,
 				DC3F999D2E310F4200E8B7BB /* DayCellView.swift */,
 				DC3F999F2E31104800E8B7BB /* DayDetailView.swift */,
-				DC3F99A12E3353D600E8B7BB /* ImageCropperView.swift */,
 				DC3F99A32E37BD3200E8B7BB /* AppConstants.swift */,
 				DC3F99AB2E3BB1CF00E8B7BB /* MonthView.swift */,
 				DC3F99AD2E3BDB8800E8B7BB /* StickyHeaderView.swift */,
@@ -194,7 +191,6 @@
 				DC3F99AC2E3BB1CF00E8B7BB /* MonthView.swift in Sources */,
 				DC3F99A02E31104800E8B7BB /* DayDetailView.swift in Sources */,
 				DC3F999C2E310BC900E8B7BB /* EmoticonInfo.swift in Sources */,
-				DC3F99A22E3353D600E8B7BB /* ImageCropperView.swift in Sources */,
 				DC3F99C02E4C864A00E8B7BB /* YearHeaderView.swift in Sources */,
 				DC3F99A42E37BD3200E8B7BB /* AppConstants.swift in Sources */,
 				DC3F99B22E4120FF00E8B7BB /* WeekRowView.swift in Sources */,
