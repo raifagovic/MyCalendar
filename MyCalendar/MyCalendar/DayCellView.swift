@@ -20,11 +20,13 @@ struct DayCellView: View {
             .background(
                 GeometryReader { geometry in
                     if let imageData = dayEntry?.backgroundImageData,
-                       let uiImage = UIImage(data: imageData),
-                       let data = dayEntry?.cropRectData,
-                       let cropRect = try? JSONDecoder().decode(CGRect.self, from: data) {
+                       let uiImage = UIImage(data: imageData) {
                         
-                        // --- THE NEW RENDERING LOGIC ---
+                        // --- THE FIX: Call our new helper function ---
+                        // The body is now clean. We get the cropRect from the logic function.
+                        let cropRect = calculateCropRect(for: dayEntry, image: uiImage)
+                        
+                        // The rest of the rendering logic is now simple and clear.
                         let imageSize = uiImage.size
                         let scale = geometry.size.width / (cropRect.width * imageSize.width)
                         
@@ -36,7 +38,6 @@ struct DayCellView: View {
                                 x: (-cropRect.midX * imageSize.width) * scale + (geometry.size.width / 2),
                                 y: (-cropRect.midY * imageSize.height) * scale + (geometry.size.height / 2)
                             )
-                            // This ensures the frame is constrained before clipping
                             .frame(width: geometry.size.width, height: geometry.size.height)
                     }
                 }
@@ -67,9 +68,6 @@ struct DayCellView: View {
                 }
             )
             .cornerRadius(8)
-            // --- THE SPILLOVER FIX ---
-            // This is the most important modifier. It ensures nothing can
-            // be drawn or tapped outside the cell's rounded rectangle frame.
             .clipped()
             .popover(item: $selectedEmoticon) { emoticon in
                 // ... popover content is unchanged ...
@@ -82,6 +80,36 @@ struct DayCellView: View {
                 }
                 .padding()
             }
+    }
+    
+    // --- THE FIX: All the complex logic is now in its own function ---
+    private func calculateCropRect(for dayEntry: DayEntry?, image: UIImage) -> CGRect {
+        // First, try to use a saved crop rectangle if it exists.
+        if let data = dayEntry?.cropRectData, let decodedRect = try? JSONDecoder().decode(CGRect.self, from: data) {
+            return decodedRect
+        }
+        
+        // If no saved crop exists, calculate a default "center crop".
+        let imageAspectRatio = image.size.width / image.size.height
+        let viewAspectRatio = AppConstants.calendarCellAspectRatio
+        
+        var width: CGFloat = 1.0
+        var height: CGFloat = 1.0
+        var x: CGFloat = 0
+        var y: CGFloat = 0
+        
+        if imageAspectRatio > viewAspectRatio {
+            // Image is wider than the view; we need to crop the sides.
+            height = 1.0
+            width = viewAspectRatio / imageAspectRatio
+            x = (1.0 - width) / 2
+        } else {
+            // Image is taller than the view; we need to crop the top and bottom.
+            width = 1.0
+            height = imageAspectRatio / viewAspectRatio
+            y = (1.0 - height) / 2
+        }
+        return CGRect(x: x, y: y, width: width, height: height)
     }
     
     private var timeFormatter: DateFormatter {

@@ -7,17 +7,21 @@
 
 import Foundation
 import SwiftData
-import UIKit // Needed for UIImage data
+import UIKit
 
 @Model
 final class DayEntry {
-    @Attribute(.unique) var date: Date // Use a specific date as a unique ID
-    var backgroundImageData: Data?     // To store the background photo
-    var drawingData: Data?             // To store the PKDrawing
+    @Attribute(.unique) var date: Date
+    var backgroundImageData: Data?
     
-    var cropRectData: Data? // Stores an encoded CGRect
+    // --- THE FIX: Restore the simple transform properties ---
+    var backgroundImageScale: CGFloat = 1.0
+    var backgroundImageOffsetX: CGFloat = 0.0
+    var backgroundImageOffsetY: CGFloat = 0.0
     
-    // This sets up a one-to-many relationship with EmoticonInfo
+    // We remove this:
+    // var cropRectData: Data?
+    
     @Relationship(deleteRule: .cascade, inverse: \EmoticonInfo.dayEntry)
     var emoticons: [EmoticonInfo] = []
 

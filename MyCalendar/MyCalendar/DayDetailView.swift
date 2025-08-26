@@ -104,9 +104,7 @@ struct DayDetailView: View {
                             
                             withAnimation {
                                 entryToUpdate.backgroundImageData = data
-                                // Reset to a default "center" crop
-                                let defaultCrop = CGRect(x: 0, y: 0.125, width: 1, height: 0.75)
-                                entryToUpdate.cropRectData = try? JSONEncoder().encode(defaultCrop)
+                                entryToUpdate.cropRectData = nil // Start with no crop
                                 setupInitialTransform(from: entryToUpdate, imageSize: UIImage(data: data)?.size ?? .zero)
                             }
                         }
@@ -160,29 +158,30 @@ struct DayDetailView: View {
     private func setupInitialTransform(from entry: DayEntry, imageSize: CGSize) {
         guard imageSize != .zero else { return }
         
-        let cropRect: CGRect
         if let data = entry.cropRectData, let decodedRect = try? JSONDecoder().decode(CGRect.self, from: data) {
-            cropRect = decodedRect
+            // If we have a saved crop, calculate the transform to match it.
+            let imageAspectRatio = imageSize.width / imageSize.height
+            let editorAspectRatio = editorSize.width / editorSize.height
+            
+            var scaledImageSize = editorSize
+            if imageAspectRatio > editorAspectRatio {
+                scaledImageSize.height = editorSize.width / imageAspectRatio
+            } else {
+                scaledImageSize.width = editorSize.height * imageAspectRatio
+            }
+            
+            self.scale = (scaledImageSize.width / decodedRect.width) / scaledImageSize.width
+            self.offset = CGSize(
+                width: -decodedRect.midX * scaledImageSize.width * self.scale + editorSize.width / 2,
+                height: -decodedRect.midY * scaledImageSize.height * self.scale + editorSize.height / 2
+            )
         } else {
-            // Default to a centered crop
-            cropRect = CGRect(x: 0, y: 0.125, width: 1.0, height: 0.75)
+            // If it's a new image, just scale it to fill the editor.
+            let scaleX = editorSize.width / imageSize.width
+            let scaleY = editorSize.height / imageSize.height
+            self.scale = max(scaleX, scaleY)
+            self.offset = .zero
         }
-
-        let imageAspectRatio = imageSize.width / imageSize.height
-        let editorAspectRatio = editorSize.width / editorSize.height
-        
-        var scaledImageSize = editorSize
-        if imageAspectRatio > editorAspectRatio {
-            scaledImageSize.height = editorSize.width / imageAspectRatio
-        } else {
-            scaledImageSize.width = editorSize.height * imageAspectRatio
-        }
-        
-        self.scale = (scaledImageSize.width / cropRect.width) / scaledImageSize.width
-        self.offset = CGSize(
-            width: -cropRect.midX * scaledImageSize.width * self.scale + editorSize.width / 2,
-            height: -cropRect.midY * scaledImageSize.height * self.scale + editorSize.height / 2
-        )
     }
 
     private func saveCrop() {
@@ -201,23 +200,21 @@ struct DayDetailView: View {
         let finalScale = scale * gestureScale
         let finalOffset = offset + gestureOffset
         
-        let cropX = (editorSize.width / 2 - finalOffset.width) / (scaledImageSize.width * finalScale)
-        let cropY = (editorSize.height / 2 - finalOffset.height) / (scaledImageSize.height * finalScale)
+        // Calculate the crop rectangle in the image's normalized coordinate space (0.0 to 1.0)
         let cropWidth = cropFrame.width / (scaledImageSize.width * finalScale)
         let cropHeight = cropFrame.height / (scaledImageSize.height * finalScale)
         
-        let cropRect = CGRect(
-            x: cropX - cropWidth / 2,
-            y: cropY - cropHeight / 2,
-            width: cropWidth,
-            height: cropHeight
-        )
+        let cropX = (editorSize.width / 2 - finalOffset.width) / (scaledImageSize.width * finalScale) - (cropWidth / 2)
+        let cropY = (editorSize.height / 2 - finalOffset.height) / (scaledImageSize.height * finalScale) - (cropHeight / 2)
+        
+        let cropRect = CGRect(x: cropX, y: cropY, width: cropWidth, height: cropHeight)
         
         entry.cropRectData = try? JSONEncoder().encode(cropRect)
+        try? modelContext.save()
     }
 }
 
-// --- ADD THIS HELPER EXTENSION ---
+// --- ADD THESE HELPER EXTENSIONS (can be in their own file) ---
 extension View {
     @inlinable
     public func reverseMask<Mask: View>(
