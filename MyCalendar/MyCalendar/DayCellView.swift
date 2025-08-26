@@ -13,34 +13,30 @@ struct DayCellView: View {
     
     @State private var selectedEmoticon: EmoticonInfo?
 
-    // --- We define the editor's width as a constant to use in our calculation ---
-    private let editorWidth: CGFloat = 300.0
-
     var body: some View {
         Rectangle()
             .fill(Color.clear)
             .aspectRatio(AppConstants.calendarCellAspectRatio, contentMode: .fit)
             .background(
-                // We use a GeometryReader to find our own size.
                 GeometryReader { geometry in
-                    if let imageData = dayEntry?.backgroundImageData, let uiImage = UIImage(data: imageData) {
+                    if let imageData = dayEntry?.backgroundImageData,
+                       let uiImage = UIImage(data: imageData),
+                       let data = dayEntry?.cropRectData,
+                       let cropRect = try? JSONDecoder().decode(CGRect.self, from: data) {
                         
-                        // --- THE PROPORTIONAL OFFSET CALCULATION ---
-                        // 1. Calculate the ratio between our cell's width and the editor's width.
-                        let ratio = geometry.size.width / editorWidth
-                        
-                        // 2. Scale the saved offset values by this ratio.
-                        let scaledOffsetX = (dayEntry?.backgroundImageOffsetX ?? 0.0) * ratio
-                        let scaledOffsetY = (dayEntry?.backgroundImageOffsetY ?? 0.0) * ratio
+                        // --- THE NEW RENDERING LOGIC ---
+                        let imageSize = uiImage.size
+                        let scale = geometry.size.width / (cropRect.width * imageSize.width)
                         
                         Image(uiImage: uiImage)
                             .resizable()
-                            // 3. Remove the old .scaledToFill() as it conflicts with our manual transform.
-                            .scaledToFill() // <-- This line might need to be `.scaledToFill()` on the container instead
-                            // 4. Apply the UNCHANGED scale and the NEWLY-CALCULATED offset.
-                            .scaleEffect(dayEntry?.backgroundImageScale ?? 1.0)
-                            .offset(x: scaledOffsetX, y: scaledOffsetY)
-                            // This ensures the image is centered in the frame before offset is applied
+                            .scaledToFill()
+                            .scaleEffect(scale)
+                            .offset(
+                                x: (-cropRect.midX * imageSize.width) * scale + (geometry.size.width / 2),
+                                y: (-cropRect.midY * imageSize.height) * scale + (geometry.size.height / 2)
+                            )
+                            // This ensures the frame is constrained before clipping
                             .frame(width: geometry.size.width, height: geometry.size.height)
                     }
                 }
@@ -70,10 +66,13 @@ struct DayCellView: View {
                     }
                 }
             )
-            // ... The rest of the modifiers are unchanged ...
             .cornerRadius(8)
+            // --- THE SPILLOVER FIX ---
+            // This is the most important modifier. It ensures nothing can
+            // be drawn or tapped outside the cell's rounded rectangle frame.
             .clipped()
             .popover(item: $selectedEmoticon) { emoticon in
+                // ... popover content is unchanged ...
                 VStack {
                     if let time = emoticon.time {
                         Text("Time: \(time, formatter: timeFormatter)")
