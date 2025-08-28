@@ -101,6 +101,7 @@
 				DC3F999D2E310F4200E8B7BB /* DayCellView.swift */,
 				DC3F999F2E31104800E8B7BB /* DayDetailView.swift */,
 				DC3F99A12E3353D600E8B7BB /* ImageCropperView.swift */,
+				DC3F99C12E60BE6B00E8B7BB /* Image+Crop.swift */,
 				DC3F99A32E37BD3200E8B7BB /* AppConstants.swift */,
 				DC3F99AB2E3BB1CF00E8B7BB /* MonthView.swift */,
 				DC3F99AD2E3BDB8800E8B7BB /* StickyHeaderView.swift */,
@@ -111,7 +112,6 @@
 				DC3F99BB2E4BDFCD00E8B7BB /* YearView.swift */,
 				DC3F99BD2E4C690300E8B7BB /* MiniMonthView.swift */,
 				DC3F99BF2E4C864A00E8B7BB /* YearHeaderView.swift */,
-				DC3F99C12E60BE6B00E8B7BB /* Image+Crop.swift */,
 			);
 			path = MyCalendar;
 			sourceTree = "<group>";

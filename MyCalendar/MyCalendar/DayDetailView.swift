@@ -128,12 +128,59 @@ struct DayDetailView: View {
         }
         .onDisappear {
             if let entry = entry {
-                entry.backgroundImageScale = self.currentScale
-                entry.backgroundImageOffsetX = self.currentOffset.width
-                entry.backgroundImageOffsetY = self.currentOffset.height
+                entry.backgroundImageScale = currentScale
+                entry.backgroundImageOffsetX = currentOffset.width
+                entry.backgroundImageOffsetY = currentOffset.height
+                
+                if let croppedData = croppedImageForEntry(entry, frameSize: CGSize(width: 300, height: 400)) {
+                    entry.backgroundImageData = croppedData
+                    // Reset offsets and scale because now the image is cropped
+                    entry.backgroundImageScale = 1.0
+                    entry.backgroundImageOffsetX = 0
+                    entry.backgroundImageOffsetY = 0
+                }
+                
                 try? modelContext.save()
             }
         }
+
+    }
+    
+    func croppedImageForEntry(_ entry: DayEntry, frameSize: CGSize) -> Data? {
+        guard let data = entry.backgroundImageData,
+              let uiImage = UIImage(data: data) else { return nil }
+        
+        // 1. The size of the frame in the editor (e.g., 300x400)
+        let editorSize = CGSize(width: 300, height: 400)
+        
+        // 2. Scale factor from editor frame to image
+        let imageScaleX = uiImage.size.width / editorSize.width
+        let imageScaleY = uiImage.size.height / editorSize.height
+        
+        // 3. Calculate visible rectangle in editor coordinates
+        let offsetX = entry.backgroundImageOffsetX
+        let offsetY = entry.backgroundImageOffsetY
+        let scale = entry.backgroundImageScale
+        
+        // Inverse transform: what rectangle of the image is visible in the frame?
+        let visibleWidth = editorSize.width / scale
+        let visibleHeight = editorSize.height / scale
+        let originX = (editorSize.width/2 - offsetX)/scale
+        let originY = (editorSize.height/2 - offsetY)/scale
+        
+        let cropRect = CGRect(
+            x: originX * imageScaleX,
+            y: originY * imageScaleY,
+            width: visibleWidth * imageScaleX,
+            height: visibleHeight * imageScaleY
+        )
+        
+        // 4. Crop and convert back to Data
+        if let cropped = uiImage.cropped(to: cropRect) {
+            return cropped.jpegData(compressionQuality: 0.9)
+        }
+        
+        return nil
     }
     
     private func fetchEntry(for date: Date) async {
