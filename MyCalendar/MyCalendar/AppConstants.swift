@@ -8,9 +8,15 @@
 import Foundation
 import CoreGraphics
 
-// A place for globally used constants
 struct AppConstants {
-    // A cell that is taller than it is wide.
-    // Example: width = 75, height = 100. Ratio = 75/100 = 0.75
-    static let calendarCellAspectRatio: CGFloat = 3.0 / 6.0
+    // The aspect ratio of a calendar cell (width ÷ height).
+    static let calendarCellAspectRatio: CGFloat = 0.5   // measured in DayCellView
+    
+    // Width of the editor preview in DayDetailView.
+    static let editorPreviewWidth: CGFloat = 300
+    
+    // Height automatically derived from the aspect ratio.
+    static var editorPreviewHeight: CGFloat {
+        editorPreviewWidth / calendarCellAspectRatio
+    }
 }
