@@ -45,26 +45,6 @@ struct DayDetailView: View {
                     Text("Frame your image")
                         .font(.headline)
                         .padding(.top)
-
-//                    ZStack {
-//                        Image(uiImage: uiImage)
-//                            .resizable()
-//                            .scaledToFill()
-//                            .scaleEffect(currentScale * gestureScale)
-//                            .offset(
-//                                x: currentOffset.width + gestureOffset.width,
-//                                y: currentOffset.height + gestureOffset.height
-//                            )
-//                    }
-//                    .frame(width: 300, height: 400)
-//                    .clipped()
-//                    .gesture(combinedGesture)
-//                    .overlay(
-//                        Rectangle()
-//                            .stroke(Color.white.opacity(0.8), lineWidth: 2)
-//                            .aspectRatio(AppConstants.calendarCellAspectRatio, contentMode: .fit)
-//                            .frame(width: 300)
-//                    )
                     
                     ZStack {
                         Image(uiImage: uiImage)
