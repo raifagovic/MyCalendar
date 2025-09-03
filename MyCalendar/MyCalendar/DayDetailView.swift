@@ -129,11 +129,8 @@ struct DayDetailView: View {
                         .foregroundColor(.accentColor)
                     }
                     .sheet(isPresented: $showingEmoticonEditor) {
-                        if let entry = entry {
-                            EmoticonEditorView(dayEntry: entry)   // <- pass `entry`, not `dayEntry`
-                        } else {
-                            Text("No entry available")            // safe fallback
-                        }
+                        let entryToEdit = createOrGetEntry()
+                            EmoticonEditorView(dayEntry: entryToEdit)                  
                     }
                     
                     Spacer()
