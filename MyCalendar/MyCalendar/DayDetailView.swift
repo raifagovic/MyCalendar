@@ -10,6 +10,9 @@ import PhotosUI
 import SwiftData
 
 struct DayDetailView: View {
+    @State private var showingEmojiPicker = false
+    @State private var newEmoji: String = ""
+    
     // ... all properties are unchanged ...
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
