@@ -131,7 +131,6 @@ struct DayDetailView: View {
                     }
                     
                     Spacer()
-
                 }
             }
             .navigationTitle("Frame Image")
@@ -152,6 +151,29 @@ struct DayDetailView: View {
                 entry.backgroundImageOffsetY = self.currentOffset.height
                 try? modelContext.save()
             }
+        }
+        .sheet(isPresented: $showingEmojiPicker) {
+            VStack(spacing: 20) {
+                Text("Pick an Emoji")
+                    .font(.headline)
+                
+                TextField("😀", text: $newEmoji)
+                    .font(.system(size: 40))
+                    .multilineTextAlignment(.center)
+                    .onSubmit {
+                        saveEmoji()
+                    }
+                    .padding()
+                    .frame(width: 80)
+                    .background(Color.secondary.opacity(0.2))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                
+                Button("Save") {
+                    saveEmoji()
+                }
+                .disabled(newEmoji.isEmpty)
+            }
+            .padding()
         }
     }
     
