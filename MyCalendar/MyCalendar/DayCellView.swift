@@ -84,16 +84,6 @@ struct DayCellView: View {
         }
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .contentShape(Rectangle()) // ensure the *cell* defines the tappable area
-        .popover(item: $selectedEmoticon) { emoticon in
-            VStack {
-                if let time = emoticon.time {
-                    Text("Time: \(time, formatter: timeFormatter)")
-                } else {
-                    Text("No time set")
-                }
-            }
-            .padding()
-        }
     }
 }
 
