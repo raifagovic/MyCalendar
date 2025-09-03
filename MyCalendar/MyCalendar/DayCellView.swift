@@ -95,11 +95,5 @@ struct DayCellView: View {
             .padding()
         }
     }
-    
-    private var timeFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.timeStyle = .short
-        return formatter
-    }
 }
 
