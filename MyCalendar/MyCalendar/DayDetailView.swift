@@ -114,7 +114,24 @@ struct DayDetailView: View {
                             }
                         }
                     }
+                    
                     Spacer()
+                    
+                    // NEW: Add Emoticon button
+                    Button {
+                        showingEmojiPicker = true
+                    } label: {
+                        VStack(spacing: 10) {
+                            Image(systemName: "face.smiling")
+                                .font(.system(size: 50))
+                            Text("Add Emoticon")
+                                .font(.headline)
+                        }
+                        .foregroundColor(.accentColor)
+                    }
+                    
+                    Spacer()
+
                 }
             }
             .navigationTitle("Frame Image")
