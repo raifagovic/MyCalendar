@@ -198,6 +198,17 @@ struct DayDetailView: View {
         }
     }
     
+    private func saveEmoji() {
+        guard !newEmoji.isEmpty else { return }
+        let entryToUpdate = createOrGetEntry()
+        let emoji = EmoticonInfo(character: newEmoji, time: Date())
+        entryToUpdate.emoticons.append(emoji)
+        try? modelContext.save()
+        newEmoji = ""
+        showingEmojiPicker = false
+    }
+
+    
     // --- We add this simple helper back, as it's needed by the .onChange ---
     private func createOrGetEntry() -> DayEntry {
         if let existingEntry = self.entry {
