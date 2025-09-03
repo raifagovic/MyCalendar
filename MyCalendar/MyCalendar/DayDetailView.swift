@@ -10,9 +10,8 @@ import PhotosUI
 import SwiftData
 
 struct DayDetailView: View {
-    @State private var showingEmojiPicker = false
-    @State private var newEmoji: String = ""
-    
+    @State private var showingEmoticonEditor = false
+
     // ... all properties are unchanged ...
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
@@ -119,7 +118,7 @@ struct DayDetailView: View {
                     
                     // NEW: Add Emoticon button
                     Button {
-                        showingEmojiPicker = true
+                        showingEmoticonEditor = true   // <- open the sheet instead of focusing keyboard
                     } label: {
                         VStack(spacing: 10) {
                             Image(systemName: "face.smiling")
@@ -128,6 +127,13 @@ struct DayDetailView: View {
                                 .font(.headline)
                         }
                         .foregroundColor(.accentColor)
+                    }
+                    .sheet(isPresented: $showingEmoticonEditor) {
+                        if let entry = entry {
+                            EmoticonEditorView(dayEntry: entry)   // <- pass `entry`, not `dayEntry`
+                        } else {
+                            Text("No entry available")            // safe fallback
+                        }
                     }
                     
                     Spacer()
@@ -152,29 +158,6 @@ struct DayDetailView: View {
                 try? modelContext.save()
             }
         }
-        .sheet(isPresented: $showingEmojiPicker) {
-            VStack(spacing: 20) {
-                Text("Pick an Emoji")
-                    .font(.headline)
-                
-                TextField("😀", text: $newEmoji)
-                    .font(.system(size: 40))
-                    .multilineTextAlignment(.center)
-                    .onSubmit {
-                        saveEmoji()
-                    }
-                    .padding()
-                    .frame(width: 80)
-                    .background(Color.secondary.opacity(0.2))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                
-                Button("Save") {
-                    saveEmoji()
-                }
-                .disabled(newEmoji.isEmpty)
-            }
-            .padding()
-        }
     }
     
     private func fetchEntry(for date: Date) async {
@@ -198,15 +181,13 @@ struct DayDetailView: View {
         }
     }
     
-    private func saveEmoji() {
-        guard !newEmoji.isEmpty else { return }
+    private func saveEmoji(_ emoji: String) {
         let entryToUpdate = createOrGetEntry()
-        let emoji = EmoticonInfo(character: newEmoji, time: Date())
-        entryToUpdate.emoticons.append(emoji)
+        let emoticon = EmoticonInfo(character: emoji, time: Date())
+        entryToUpdate.emoticons.append(emoticon)
         try? modelContext.save()
-        newEmoji = ""
-        showingEmojiPicker = false
     }
+
 
     
     // --- We add this simple helper back, as it's needed by the .onChange ---
