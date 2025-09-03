@@ -17,26 +17,6 @@ struct DayCellView: View {
 
     var body: some View {
         ZStack {
-//            GeometryReader { geometry in
-//                if let imageData = dayEntry?.backgroundImageData,
-//                   let uiImage = UIImage(data: imageData) {
-//                    
-//                    let ratio = geometry.size.width / editorWidth
-//                    let scaledOffsetX = (dayEntry?.backgroundImageOffsetX ?? 0.0) * ratio
-//                    let scaledOffsetY = (dayEntry?.backgroundImageOffsetY ?? 0.0) * ratio
-//                    
-//                    Image(uiImage: uiImage)
-//                        .resizable()
-//                        .scaledToFill()
-//                        .scaleEffect(dayEntry?.backgroundImageScale ?? 1.0)
-//                        .offset(x: scaledOffsetX, y: scaledOffsetY)
-//                        .frame(width: geometry.size.width, height: geometry.size.height)
-//                        .clipped()                   // clip to the cell frame
-//                        .allowsHitTesting(false)     // <- IMPORTANT: image won’t intercept taps
-//                } else {
-//                    Color.clear
-//                }
-//            }
             GeometryReader { geometry in
                 let w = geometry.size.width
                 let h = geometry.size.height
