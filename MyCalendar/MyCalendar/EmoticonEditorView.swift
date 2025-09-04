@@ -9,15 +9,14 @@ import SwiftUI
 
 struct EmoticonEditorView: View {
     @Bindable var dayEntry: DayEntry
-    
     @State private var newEmoji: String = ""
-    @FocusState private var emojiFieldFocused: Bool
-    
+    @FocusState var emojiFieldFocused: Bool   // <- make it internal (not private)
+
     var body: some View {
         VStack {
             Text("Edit Emoticons")
                 .font(.headline)
-            
+
             ZStack {
                 Rectangle()
                     .fill(Color.black.opacity(0.1))
@@ -31,8 +30,8 @@ struct EmoticonEditorView: View {
                             }
                         }
                     )
-                
-                // invisible field triggers emoji keyboard
+
+                // hidden textfield to trigger emoji keyboard
                 TextField("", text: $newEmoji)
                     .focused($emojiFieldFocused)
                     .onChange(of: newEmoji) { _, newValue in
@@ -45,12 +44,11 @@ struct EmoticonEditorView: View {
                     .frame(width: 0, height: 0)
                     .opacity(0.01)
             }
-            
-            Button("Add New Emoji") {
-                emojiFieldFocused = true
-            }
         }
         .padding()
+        .onAppear {
+            emojiFieldFocused = true   // <- immediately show keyboard
+        }
     }
 }
 
