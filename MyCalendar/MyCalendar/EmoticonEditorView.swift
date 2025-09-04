@@ -10,13 +10,10 @@ import SwiftUI
 struct EmoticonEditorView: View {
     @Bindable var dayEntry: DayEntry
     @State private var newEmoji: String = ""
-    @FocusState var emojiFieldFocused: Bool   // <- make it internal (not private)
+    @FocusState var emojiFieldFocused: Bool   // internal so parent can bind if needed
 
     var body: some View {
         VStack {
-            Text("Edit Emoticons")
-                .font(.headline)
-
             ZStack {
                 Rectangle()
                     .fill(Color.black.opacity(0.1))
@@ -31,14 +28,13 @@ struct EmoticonEditorView: View {
                         }
                     )
 
-                // hidden textfield to trigger emoji keyboard
+                // hidden textfield to trigger keyboard
                 TextField("", text: $newEmoji)
                     .focused($emojiFieldFocused)
                     .onChange(of: newEmoji) { _, newValue in
                         if let emoji = newValue.last.map(String.init) {
                             dayEntry.emoticons.append(EmoticonInfo(character: emoji))
-                            newEmoji = ""
-                            emojiFieldFocused = false
+                            newEmoji = ""   // reset input but KEEP keyboard open
                         }
                     }
                     .frame(width: 0, height: 0)
@@ -47,7 +43,7 @@ struct EmoticonEditorView: View {
         }
         .padding()
         .onAppear {
-            emojiFieldFocused = true   // <- immediately show keyboard
+            emojiFieldFocused = true   // immediately show keyboard
         }
     }
 }
