@@ -23,6 +23,7 @@
 		DC3F99C02E4C864A00E8B7BB /* YearHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F99BF2E4C864A00E8B7BB /* YearHeaderView.swift */; };
 		DC3F99C42E68A18C00E8B7BB /* EmoticonEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F99C32E68A18C00E8B7BB /* EmoticonEditorView.swift */; };
 		DC3F99C62E6AE1A500E8B7BB /* TextStickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F99C52E6AE1A500E8B7BB /* TextStickerView.swift */; };
+		DC3F99C82E6AE21000E8B7BB /* EmojiStickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F99C72E6AE21000E8B7BB /* EmojiStickerView.swift */; };
 		DC5FDE1D2E16AA1900FAB44F /* MyCalendarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE1C2E16AA1900FAB44F /* MyCalendarApp.swift */; };
 		DC5FDE1F2E16AA1900FAB44F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE1E2E16AA1900FAB44F /* ContentView.swift */; };
 		DC5FDE212E16AA1900FAB44F /* DayEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE202E16AA1900FAB44F /* DayEntry.swift */; };
@@ -50,6 +51,7 @@
 		DC3F99BF2E4C864A00E8B7BB /* YearHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearHeaderView.swift; sourceTree = "<group>"; };
 		DC3F99C32E68A18C00E8B7BB /* EmoticonEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmoticonEditorView.swift; sourceTree = "<group>"; };
 		DC3F99C52E6AE1A500E8B7BB /* TextStickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextStickerView.swift; sourceTree = "<group>"; };
+		DC3F99C72E6AE21000E8B7BB /* EmojiStickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiStickerView.swift; sourceTree = "<group>"; };
 		DC5FDE192E16AA1900FAB44F /* MyCalendar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyCalendar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC5FDE1C2E16AA1900FAB44F /* MyCalendarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyCalendarApp.swift; sourceTree = "<group>"; };
 		DC5FDE1E2E16AA1900FAB44F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -115,6 +117,7 @@
 				DC3F99BF2E4C864A00E8B7BB /* YearHeaderView.swift */,
 				DC3F99C32E68A18C00E8B7BB /* EmoticonEditorView.swift */,
 				DC3F99C52E6AE1A500E8B7BB /* TextStickerView.swift */,
+				DC3F99C72E6AE21000E8B7BB /* EmojiStickerView.swift */,
 			);
 			path = MyCalendar;
 			sourceTree = "<group>";
@@ -199,6 +202,7 @@
 			files = (
 				DC3F99AC2E3BB1CF00E8B7BB /* MonthView.swift in Sources */,
 				DC3F99A02E31104800E8B7BB /* DayDetailView.swift in Sources */,
+				DC3F99C82E6AE21000E8B7BB /* EmojiStickerView.swift in Sources */,
 				DC3F999C2E310BC900E8B7BB /* EmoticonInfo.swift in Sources */,
 				DC3F99A22E3353D600E8B7BB /* ImageCropperView.swift in Sources */,
 				DC3F99C02E4C864A00E8B7BB /* YearHeaderView.swift in Sources */,
