@@ -228,7 +228,7 @@ struct DayDetailView: View {
         
         NavigationStack {
             VStack {
-                // --- Main editable rectangle ---
+                // --- Main editable rectangle (slightly smaller) ---
                 ZStack {
                     if let entry = entry,
                        let imageData = entry.backgroundImageData,
@@ -250,14 +250,17 @@ struct DayDetailView: View {
                             .fill(Color.black.opacity(0.1))
                     }
                 }
-                .frame(width: AppConstants.editorPreviewWidth,
-                       height: AppConstants.editorPreviewHeight)
+                .frame(
+                    width: AppConstants.editorPreviewWidth * 0.9,   // smaller but same ratio
+                    height: AppConstants.editorPreviewHeight * 0.9
+                )
                 .overlay(
                     Rectangle()
                         .stroke(Color.white.opacity(0.8), lineWidth: 2)
                 )
+                .padding(.top, 10)
                 
-                // --- Toolbar with icons ---
+                // --- Toolbar with centered icons ---
                 HStack(spacing: 40) {
                     // Background image picker
                     PhotosPicker(selection: $selectedPhoto, matching: .images, photoLibrary: .shared()) {
@@ -281,8 +284,6 @@ struct DayDetailView: View {
                             .font(.system(size: 24))
                     }
                     
-                    Spacer()
-                    
                     // Recycle bin (delete background image)
                     Button(role: .destructive) {
                         if let entry = entry {
@@ -296,10 +297,10 @@ struct DayDetailView: View {
                     } label: {
                         Image(systemName: "trash")
                             .font(.system(size: 24))
+                            .foregroundColor(.red)
                     }
                 }
-                .padding(.horizontal)
-                .padding(.top, 8)
+                .padding(.vertical, 12)
                 
                 // Hidden textfield to trigger keyboard
                 TextField("", text: $newText)
