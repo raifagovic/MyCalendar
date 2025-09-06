@@ -194,6 +194,19 @@ import SwiftUI
 import PhotosUI
 import SwiftData
 
+// MARK: - Sticker Models
+struct TextSticker: Identifiable {
+    let id = UUID()
+    var text: String
+    var isSelected: Bool = false
+}
+
+struct EmojiSticker: Identifiable {
+    let id = UUID()
+    var character: String
+    var isSelected: Bool = false
+}
+
 struct DayDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
@@ -203,12 +216,17 @@ struct DayDetailView: View {
     @State private var entry: DayEntry?
     @State private var selectedPhoto: PhotosPickerItem?
     
+    // Background image transform state
     @State private var currentScale: CGFloat = 1.0
     @State private var currentOffset: CGSize = .zero
     @GestureState private var gestureScale: CGFloat = 1.0
     @GestureState private var gestureOffset: CGSize = .zero
     
-    // Editing states
+    // Stickers
+    @State private var textStickers: [TextSticker] = []
+    @State private var emojiStickers: [EmojiSticker] = []
+    
+    // Keyboard/text handling
     @FocusState private var textFieldFocused: Bool
     @State private var newText: String = ""
     
@@ -228,7 +246,7 @@ struct DayDetailView: View {
         
         NavigationStack {
             VStack {
-                // --- Main editable rectangle (slightly smaller) ---
+                // --- Main canvas ---
                 ZStack {
                     if let entry = entry,
                        let imageData = entry.backgroundImageData,
@@ -249,18 +267,30 @@ struct DayDetailView: View {
                         Rectangle()
                             .fill(Color.black.opacity(0.1))
                     }
+                    
+                    // Stickers
+                    ForEach($textStickers) { $sticker in
+                        TextStickerView(text: $sticker.text, isSelected: $sticker.isSelected)
+                    }
+                    
+                    ForEach($emojiStickers) { $sticker in
+                        EmojiStickerView(emoji: sticker.character, isSelected: $sticker.isSelected)
+                    }
                 }
-                .frame(
-                    width: AppConstants.editorPreviewWidth * 0.9,   // smaller but same ratio
-                    height: AppConstants.editorPreviewHeight * 0.9
-                )
+                .frame(width: AppConstants.editorPreviewWidth,
+                       height: AppConstants.editorPreviewHeight)
                 .overlay(
                     Rectangle()
                         .stroke(Color.white.opacity(0.8), lineWidth: 2)
                 )
-                .padding(.top, 10)
+                .onTapGesture {
+                    // Deselect all stickers + dismiss keyboard
+                    for i in textStickers.indices { textStickers[i].isSelected = false }
+                    for i in emojiStickers.indices { emojiStickers[i].isSelected = false }
+                    textFieldFocused = false
+                }
                 
-                // --- Toolbar with centered icons ---
+                // --- Toolbar with icons ---
                 HStack(spacing: 40) {
                     // Background image picker
                     PhotosPicker(selection: $selectedPhoto, matching: .images, photoLibrary: .shared()) {
@@ -284,7 +314,7 @@ struct DayDetailView: View {
                             .font(.system(size: 24))
                     }
                     
-                    // Recycle bin (delete background image)
+                    // Recycle bin
                     Button(role: .destructive) {
                         if let entry = entry {
                             withAnimation {
@@ -297,22 +327,20 @@ struct DayDetailView: View {
                     } label: {
                         Image(systemName: "trash")
                             .font(.system(size: 24))
-                            .foregroundColor(.red)
                     }
                 }
-                .padding(.vertical, 12)
+                .padding(.top, 8)
                 
-                // Hidden textfield to trigger keyboard
+                // Hidden textfield for typing
                 TextField("", text: $newText)
                     .focused($textFieldFocused)
                     .frame(width: 0, height: 0)
                     .opacity(0.01)
                     .onChange(of: newText) { _, newValue in
-                        if !newValue.isEmpty {
-                            let entryToUpdate = createOrGetEntry()
-                            entryToUpdate.emoticons.append(EmoticonInfo(character: newValue))
-                            newText = ""
-                        }
+                        guard !newValue.isEmpty else { return }
+                        let sticker = TextSticker(text: newValue)
+                        textStickers.append(sticker)
+                        newText = ""
                     }
             }
             .navigationTitle("Edit Day")
