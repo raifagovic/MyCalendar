@@ -8,8 +8,7 @@
 import SwiftUI
 
 struct StickerView: View {
-    let content: String
-    let type: StickerInfo.StickerType
+    @Binding var sticker: StickerInfo
     @Binding var isSelected: Bool
     
     @State private var scale: CGFloat = 1.0
@@ -18,32 +17,38 @@ struct StickerView: View {
     @GestureState private var gestureOffset: CGSize = .zero
     
     var body: some View {
-        Text(content.isEmpty ? " " : content)
-            .font(type == .emoji ? .system(size: 40) : .body)
-            .padding(type == .emoji ? 0 : 4)
-            .background(Color.clear)
-            .overlay(
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 1)
-            )
-            .scaleEffect(scale * gestureScale)
-            .offset(x: offset.width + gestureOffset.width,
-                    y: offset.height + gestureOffset.height)
-            .gesture(
-                SimultaneousGesture(
-                    MagnificationGesture()
-                        .updating($gestureScale) { value, state, _ in state = value }
-                        .onEnded { value in scale *= value },
-                    DragGesture()
-                        .updating($gestureOffset) { value, state, _ in state = value.translation }
-                        .onEnded { value in
-                            offset.width += value.translation.width
-                            offset.height += value.translation.height
-                        }
-                )
-            )
-            .onTapGesture {
-                isSelected.toggle()
+        Group {
+            if sticker.type == .emoji {
+                Text(sticker.content)
+                    .font(.system(size: 40))
+            } else {
+                Text(sticker.content.isEmpty ? " " : sticker.content)
+                    .padding(4)
             }
+        }
+        .background(Color.clear)
+        .overlay(
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 1)
+        )
+        .scaleEffect(scale * gestureScale)
+        .offset(x: offset.width + gestureOffset.width,
+                y: offset.height + gestureOffset.height)
+        .gesture(
+            SimultaneousGesture(
+                MagnificationGesture()
+                    .updating($gestureScale) { value, state, _ in state = value }
+                    .onEnded { value in scale *= value },
+                DragGesture()
+                    .updating($gestureOffset) { value, state, _ in state = value.translation }
+                    .onEnded { value in
+                        offset.width += value.translation.width
+                        offset.height += value.translation.height
+                    }
+            )
+        )
+        .onTapGesture {
+            isSelected.toggle()
+        }
     }
 }
