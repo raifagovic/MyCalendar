@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		DC3F999C2E310BC900E8B7BB /* EmoticonInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F999B2E310BC900E8B7BB /* EmoticonInfo.swift */; };
 		DC3F999E2E310F4200E8B7BB /* DayCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F999D2E310F4200E8B7BB /* DayCellView.swift */; };
 		DC3F99A02E31104800E8B7BB /* DayDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F999F2E31104800E8B7BB /* DayDetailView.swift */; };
 		DC3F99A22E3353D600E8B7BB /* ImageCropperView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F99A12E3353D600E8B7BB /* ImageCropperView.swift */; };
@@ -34,7 +33,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		DC3F999B2E310BC900E8B7BB /* EmoticonInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmoticonInfo.swift; sourceTree = "<group>"; };
 		DC3F999D2E310F4200E8B7BB /* DayCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCellView.swift; sourceTree = "<group>"; };
 		DC3F999F2E31104800E8B7BB /* DayDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayDetailView.swift; sourceTree = "<group>"; };
 		DC3F99A12E3353D600E8B7BB /* ImageCropperView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCropperView.swift; sourceTree = "<group>"; };
@@ -92,7 +90,6 @@
 			isa = PBXGroup;
 			children = (
 				DC5FDE1C2E16AA1900FAB44F /* MyCalendarApp.swift */,
-				DC3F999B2E310BC900E8B7BB /* EmoticonInfo.swift */,
 				DC5FDE1E2E16AA1900FAB44F /* ContentView.swift */,
 				DC5FDE2E2E1C449E00FAB44F /* DrawingView.swift */,
 				DC5FDE202E16AA1900FAB44F /* DayEntry.swift */,
@@ -199,7 +196,6 @@
 			files = (
 				DC3F99AC2E3BB1CF00E8B7BB /* MonthView.swift in Sources */,
 				DC3F99A02E31104800E8B7BB /* DayDetailView.swift in Sources */,
-				DC3F999C2E310BC900E8B7BB /* EmoticonInfo.swift in Sources */,
 				DC3F99A22E3353D600E8B7BB /* ImageCropperView.swift in Sources */,
 				DC3F99C02E4C864A00E8B7BB /* YearHeaderView.swift in Sources */,
 				DC3F99A42E37BD3200E8B7BB /* AppConstants.swift in Sources */,
