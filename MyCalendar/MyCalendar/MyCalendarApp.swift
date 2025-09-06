@@ -11,10 +11,9 @@ import SwiftData
 @main
 struct MyCalendarApp: App {
     var sharedModelContainer: ModelContainer = {
-        // --- THIS IS THE CORRECTED LINE ---
         let schema = Schema([
             DayEntry.self,
-            EmoticonInfo.self // Add EmoticonInfo here
+            StickerInfo.self // ✅ Use StickerInfo instead of EmoticonInfo
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
