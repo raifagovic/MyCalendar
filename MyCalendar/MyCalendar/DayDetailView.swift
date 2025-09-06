@@ -9,19 +9,6 @@ import SwiftUI
 import PhotosUI
 import SwiftData
 
-// MARK: - Sticker Models
-struct TextSticker: Identifiable {
-    let id = UUID()
-    var text: String
-    var isSelected: Bool = false
-}
-
-struct EmojiSticker: Identifiable {
-    let id = UUID()
-    var character: String
-    var isSelected: Bool = false
-}
-
 struct DayDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
@@ -38,12 +25,12 @@ struct DayDetailView: View {
     @GestureState private var gestureOffset: CGSize = .zero
     
     // Stickers
-    @State private var textStickers: [TextSticker] = []
-    @State private var emojiStickers: [EmojiSticker] = []
+    @State private var stickers: [StickerInfo] = []
     
     // Typing state
     @State private var currentTypingText: String = ""
     @State private var isTyping: Bool = false
+    @State private var selectedSticker: StickerInfo?
     @FocusState private var typingFieldFocused: Bool
     
     var body: some View {
@@ -84,19 +71,25 @@ struct DayDetailView: View {
                             .fill(Color.black.opacity(0.1))
                     }
                     
-                    // Existing text stickers
-                    ForEach($textStickers) { $sticker in
-                        TextStickerView(text: $sticker.text, isSelected: $sticker.isSelected)
-                    }
-                    
-                    // Existing emoji stickers
-                    ForEach($emojiStickers) { $sticker in
-                        EmojiStickerView(emoji: sticker.character, isSelected: $sticker.isSelected)
+                    // Render all stickers
+                    ForEach($stickers) { $sticker in
+                        StickerView(sticker: $sticker,
+                                    isSelected: Binding(
+                                        get: { selectedSticker?.id == sticker.id },
+                                        set: { isSelected in
+                                            selectedSticker = isSelected ? sticker : nil
+                                        }
+                                    ))
                     }
                     
                     // Currently typing text sticker
                     if isTyping && !currentTypingText.isEmpty {
-                        TextStickerView(text: $currentTypingText, isSelected: .constant(true))
+                        StickerView(
+                            sticker: .constant(
+                                StickerInfo(type: .text, content: currentTypingText)
+                            ),
+                            isSelected: .constant(true)
+                        )
                     }
                 }
                 .frame(width: AppConstants.editorPreviewWidth,
@@ -107,14 +100,15 @@ struct DayDetailView: View {
                 )
                 .onTapGesture {
                     // Deselect stickers + dismiss keyboard
-                    for i in textStickers.indices { textStickers[i].isSelected = false }
-                    for i in emojiStickers.indices { emojiStickers[i].isSelected = false }
+                    selectedSticker = nil
                     typingFieldFocused = false
                     
-                    // Finalize current typing
+                    // Save current typing as a sticker
                     if !currentTypingText.isEmpty {
-                        let newSticker = TextSticker(text: currentTypingText)
-                        textStickers.append(newSticker)
+                        let newSticker = StickerInfo(type: .text, content: currentTypingText)
+                        stickers.append(newSticker)
+                        entry?.stickers.append(newSticker)
+                        try? modelContext.save()
                         currentTypingText = ""
                         isTyping = false
                     }
@@ -122,13 +116,11 @@ struct DayDetailView: View {
                 
                 // --- Toolbar ---
                 HStack(spacing: 40) {
-                    // Background image picker
                     PhotosPicker(selection: $selectedPhoto, matching: .images, photoLibrary: .shared()) {
                         Image(systemName: "photo.on.rectangle.angled")
                             .font(.system(size: 24))
                     }
                     
-                    // Keyboard icon
                     Button {
                         isTyping = true
                         typingFieldFocused = true
@@ -137,7 +129,6 @@ struct DayDetailView: View {
                             .font(.system(size: 24))
                     }
                     
-                    // Pencil (drawing placeholder)
                     Button {
                         // TODO: implement drawing tools
                     } label: {
@@ -145,7 +136,6 @@ struct DayDetailView: View {
                             .font(.system(size: 24))
                     }
                     
-                    // Recycle bin
                     Button(role: .destructive) {
                         if let entry = entry {
                             withAnimation {
@@ -184,9 +174,9 @@ struct DayDetailView: View {
         }
         .onDisappear {
             if let entry = entry {
-                entry.backgroundImageScale = self.currentScale
-                entry.backgroundImageOffsetX = self.currentOffset.width
-                entry.backgroundImageOffsetY = self.currentOffset.height
+                entry.backgroundImageScale = currentScale
+                entry.backgroundImageOffsetX = currentOffset.width
+                entry.backgroundImageOffsetY = currentOffset.height
                 try? modelContext.save()
             }
         }
@@ -217,6 +207,7 @@ struct DayDetailView: View {
             self.entry = entries.first
             
             if let entry = self.entry {
+                self.stickers = entry.stickers
                 self.currentScale = entry.backgroundImageScale
                 self.currentOffset = CGSize(width: entry.backgroundImageOffsetX,
                                             height: entry.backgroundImageOffsetY)
@@ -240,3 +231,4 @@ struct DayDetailView: View {
         }
     }
 }
+
