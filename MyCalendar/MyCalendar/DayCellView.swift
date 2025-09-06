@@ -11,7 +11,7 @@ struct DayCellView: View {
     let day: Date
     let dayEntry: DayEntry?
     
-    @State private var selectedEmoticon: EmoticonInfo?
+    @State private var selectedSticker: StickerInfo?
     
     private let editorWidth: CGFloat = 300.0
 
@@ -47,7 +47,6 @@ struct DayCellView: View {
                         Color.clear
                     }
                 }
-                // invisible background view used to run the logging side-effect safely
                 .background(
                     Color.clear
                         .onAppear {
@@ -55,7 +54,6 @@ struct DayCellView: View {
                         }
                 )
             }
-
             .aspectRatio(AppConstants.calendarCellAspectRatio, contentMode: .fit)
             
             VStack {
@@ -67,23 +65,28 @@ struct DayCellView: View {
 
                 Spacer()
 
-                if let emoticons = dayEntry?.emoticons, !emoticons.isEmpty {
-                    HStack(spacing: 4) {
-                        ForEach(emoticons.prefix(3)) { emoticon in
-                            Text(emoticon.character)
-                                .font(.caption)
-                                .onTapGesture {
-                                    self.selectedEmoticon = emoticon
-                                }
+                // Show up to 3 emoji stickers
+                if let stickers = dayEntry?.stickers {
+                    let emojiStickers = stickers.filter { $0.type == .emoji }
+                    if !emojiStickers.isEmpty {
+                        HStack(spacing: 4) {
+                            ForEach(emojiStickers.prefix(3)) { sticker in
+                                Text(sticker.content)
+                                    .font(.caption)
+                                    .onTapGesture {
+                                        self.selectedSticker = sticker
+                                    }
+                            }
                         }
+                        .padding(.bottom, 4)
                     }
-                    .padding(.bottom, 4)
                 }
             }
             .padding(4)
         }
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-        .contentShape(Rectangle()) // ensure the *cell* defines the tappable area
+        .contentShape(Rectangle())
     }
 }
+
 
