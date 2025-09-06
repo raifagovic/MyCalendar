@@ -1,14 +1,15 @@
 //
-//  TextStickerView.swift
+//  StickerView.swift
 //  MyCalendar
 //
-//  Created by Raif Agovic on 5. 9. 2025..
+//  Created by Raif Agovic on 6. 9. 2025..
 //
 
 import SwiftUI
 
-struct TextStickerView: View {
-    @Binding var text: String
+struct StickerView: View {
+    let content: String
+    let type: StickerInfo.StickerType
     @Binding var isSelected: Bool
     
     @State private var scale: CGFloat = 1.0
@@ -17,9 +18,10 @@ struct TextStickerView: View {
     @GestureState private var gestureOffset: CGSize = .zero
     
     var body: some View {
-        Text(text.isEmpty ? " " : text)
-            .padding(4)
-            .background(Color.clear) // transparent background
+        Text(content.isEmpty ? " " : content)
+            .font(type == .emoji ? .system(size: 40) : .body)
+            .padding(type == .emoji ? 0 : 4)
+            .background(Color.clear)
             .overlay(
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
                     .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 1)
@@ -45,4 +47,3 @@ struct TextStickerView: View {
             }
     }
 }
-
