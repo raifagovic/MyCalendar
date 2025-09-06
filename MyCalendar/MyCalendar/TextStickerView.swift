@@ -18,9 +18,8 @@ struct TextStickerView: View {
     
     var body: some View {
         Text(text.isEmpty ? " " : text)
-            .padding(8)
-            .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+            .padding(4)
+            .background(Color.clear) // transparent background
             .overlay(
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
                     .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 1)
@@ -46,3 +45,4 @@ struct TextStickerView: View {
             }
     }
 }
+
