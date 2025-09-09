@@ -18,13 +18,13 @@ struct DayDetailView: View {
     @State private var entry: DayEntry?
     @State private var selectedPhoto: PhotosPickerItem?
     
-    // Background image transform state
+    // Background image transform
     @State private var currentScale: CGFloat = 1.0
     @State private var currentOffset: CGSize = .zero
     @GestureState private var gestureScale: CGFloat = 1.0
     @GestureState private var gestureOffset: CGSize = .zero
     
-    // Stickers (both text and emoji)
+    // Stickers
     @State private var stickers: [StickerInfo] = []
     
     // Typing state
@@ -49,7 +49,6 @@ struct DayDetailView: View {
         
         NavigationStack {
             VStack {
-                // --- Main canvas ---
                 ZStack {
                     if let entry = entry,
                        let imageData = entry.backgroundImageData,
@@ -71,27 +70,30 @@ struct DayDetailView: View {
                             .fill(Color.black.opacity(0.1))
                     }
                     
-                    // Render all stickers
-                    ForEach($stickers) { $sticker in
-                        StickerView(
-                            sticker: $sticker,
-                            isSelected: Binding(
-                                get: { selectedSticker?.id == sticker.id },
-                                set: { isSelected in
-                                    selectedSticker = isSelected ? sticker : nil
-                                }
+                    GeometryReader { geo in
+                        // Render saved stickers
+                        ForEach($stickers) { $sticker in
+                            StickerView(
+                                sticker: $sticker,
+                                isSelected: Binding(
+                                    get: { selectedSticker?.id == sticker.id },
+                                    set: { isSelected in
+                                        selectedSticker = isSelected ? sticker : nil
+                                    }
+                                ),
+                                containerSize: geo.size
                             )
-                        )
-                    }
-                    
-                    // Currently typing text sticker
-                    if isTyping && !currentTypingText.isEmpty {
-                        StickerView(
-                            sticker: .constant(
-                                StickerInfo(type: .text, content: currentTypingText)
-                            ),
-                            isSelected: .constant(true)
-                        )
+                        }
+                        
+                        // Currently typing text
+                        if isTyping && !currentTypingText.isEmpty {
+                            let tempSticker = StickerInfo(type: .text, content: currentTypingText)
+                            StickerView(
+                                sticker: .constant(tempSticker),
+                                isSelected: .constant(true),
+                                containerSize: geo.size
+                            )
+                        }
                     }
                 }
                 .frame(width: AppConstants.editorPreviewWidth,
@@ -105,19 +107,26 @@ struct DayDetailView: View {
                     selectedSticker = nil
                     typingFieldFocused = false
                     
-                    // Save current typing as a sticker
-                    saveCurrentTyping()
+                    // Save typing as a new sticker
+                    if !currentTypingText.isEmpty {
+                        let newSticker = StickerInfo(type: .text, content: currentTypingText,
+                                                     relativePosX: 0.5,
+                                                     relativePosY: 0.5)
+                        stickers.append(newSticker)
+                        entry?.stickers.append(newSticker)
+                        try? modelContext.save()
+                        currentTypingText = ""
+                        isTyping = false
+                    }
                 }
                 
                 // --- Toolbar ---
                 HStack(spacing: 40) {
-                    // Background image picker
                     PhotosPicker(selection: $selectedPhoto, matching: .images, photoLibrary: .shared()) {
                         Image(systemName: "photo.on.rectangle.angled")
                             .font(.system(size: 24))
                     }
                     
-                    // Keyboard icon
                     Button {
                         isTyping = true
                         typingFieldFocused = true
@@ -126,7 +135,6 @@ struct DayDetailView: View {
                             .font(.system(size: 24))
                     }
                     
-                    // Pencil (drawing placeholder)
                     Button {
                         // TODO: implement drawing tools
                     } label: {
@@ -134,7 +142,6 @@ struct DayDetailView: View {
                             .font(.system(size: 24))
                     }
                     
-                    // Recycle bin
                     Button(role: .destructive) {
                         if let entry = entry {
                             withAnimation {
@@ -142,7 +149,6 @@ struct DayDetailView: View {
                                 entry.backgroundImageScale = 1.0
                                 entry.backgroundImageOffsetX = 0
                                 entry.backgroundImageOffsetY = 0
-                                try? modelContext.save()
                             }
                         }
                     } label: {
@@ -152,7 +158,7 @@ struct DayDetailView: View {
                 }
                 .padding(.top, 8)
                 
-                // Hidden TextField for keyboard input
+                // Hidden TextField
                 TextField("", text: $currentTypingText)
                     .focused($typingFieldFocused)
                     .frame(width: 0, height: 0)
@@ -165,10 +171,7 @@ struct DayDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
-                        saveCurrentTyping()
-                        dismiss()
-                    }
+                    Button("Done") { dismiss() }
                 }
             }
         }
@@ -194,7 +197,6 @@ struct DayDetailView: View {
                     entryToUpdate.backgroundImageOffsetY = 0
                     self.currentScale = 1.0
                     self.currentOffset = .zero
-                    try? modelContext.save()
                 }
             }
         }
@@ -234,20 +236,7 @@ struct DayDetailView: View {
             return newEntry
         }
     }
-    
-    private func saveCurrentTyping() {
-        guard !currentTypingText.isEmpty else { return }
-        let newSticker = StickerInfo(
-            type: .text,
-            content: currentTypingText
-        )
-        modelContext.insert(newSticker)
-        entry?.stickers.append(newSticker)
-        stickers.append(newSticker)
-        try? modelContext.save()
-        currentTypingText = ""
-        isTyping = false
-    }
 }
+
 
 
