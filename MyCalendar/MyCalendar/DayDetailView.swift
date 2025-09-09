@@ -157,7 +157,7 @@ struct DayDetailView: View {
                     .focused($typingFieldFocused)
                     .frame(width: 0, height: 0)
                     .opacity(0.01)
-                    .onChange(of: currentTypingText) { _ in
+                    .onChange(of: currentTypingText) {
                         isTyping = true
                     }
             }
