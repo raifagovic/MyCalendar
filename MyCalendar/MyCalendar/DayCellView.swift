@@ -13,79 +13,74 @@ struct DayCellView: View {
     
     @State private var selectedSticker: StickerInfo?
     
-    private let editorWidth: CGFloat = 300.0
+    private let editorWidth: CGFloat = AppConstants.editorPreviewWidth
 
     var body: some View {
         ZStack {
             GeometryReader { geometry in
                 let w = geometry.size.width
                 let h = geometry.size.height
-
+                
                 // editor height derived from your editorWidth + app aspect ratio
                 let editorHeight = editorWidth / AppConstants.calendarCellAspectRatio
-
+                
                 // scale for X and Y separately
                 let scaleX = w / editorWidth
                 let scaleY = h / editorHeight
 
-                ZStack {
-                    if let imageData = dayEntry?.backgroundImageData,
-                       let uiImage = UIImage(data: imageData) {
+                // Background image
+                if let imageData = dayEntry?.backgroundImageData,
+                   let uiImage = UIImage(data: imageData) {
+                    
+                    let scaledOffsetX = (dayEntry?.backgroundImageOffsetX ?? 0.0) * scaleX
+                    let scaledOffsetY = (dayEntry?.backgroundImageOffsetY ?? 0.0) * scaleY
 
-                        let scaledOffsetX = (dayEntry?.backgroundImageOffsetX ?? 0.0) * scaleX
-                        let scaledOffsetY = (dayEntry?.backgroundImageOffsetY ?? 0.0) * scaleY
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .scaleEffect(dayEntry?.backgroundImageScale ?? 1.0)
+                        .offset(x: scaledOffsetX, y: scaledOffsetY)
+                        .frame(width: w, height: h)
+                        .clipped()
+                        .allowsHitTesting(false)
+                } else {
+                    Color.clear
+                }
 
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .scaledToFill()
-                            .scaleEffect(dayEntry?.backgroundImageScale ?? 1.0)
-                            .offset(x: scaledOffsetX, y: scaledOffsetY)
-                            .frame(width: w, height: h)
-                            .clipped()
-                            .allowsHitTesting(false)
-                    } else {
-                        Color.clear
+                // Stickers
+                if let stickers = dayEntry?.stickers {
+                    ForEach(stickers) { sticker in
+                        Text(sticker.content)
+                            .font(sticker.type == .emoji ? .caption : .footnote)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.5)
+                            .scaleEffect(sticker.scale * ((scaleX + scaleY)/2))
+                            .offset(
+                                x: sticker.posX * scaleX,
+                                y: sticker.posY * scaleY
+                            )
+                            .onTapGesture {
+                                selectedSticker = sticker
+                            }
                     }
                 }
-                .background(
-                    Color.clear
-                        .onAppear {
-                            print("DayCell size = \(w) x \(h), ratio = \(w / h)")
-                        }
-                )
             }
             .aspectRatio(AppConstants.calendarCellAspectRatio, contentMode: .fit)
-            
+
+            // Day number
             VStack {
                 Text("\(Calendar.current.component(.day, from: day))")
                     .font(.headline)
                     .padding(.top, 4)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .foregroundColor(Calendar.current.isDateInToday(day) ? .red : .white)
-
+                
                 Spacer()
-
-                // Show up to 3 emoji stickers
-                if let stickers = dayEntry?.stickers {
-                    let emojiStickers = stickers.filter { $0.type == .emoji }
-                    if !emojiStickers.isEmpty {
-                        HStack(spacing: 4) {
-                            ForEach(emojiStickers.prefix(3)) { sticker in
-                                Text(sticker.content)
-                                    .font(.caption)
-                                    .onTapGesture {
-                                        self.selectedSticker = sticker
-                                    }
-                            }
-                        }
-                        .padding(.bottom, 4)
-                    }
-                }
             }
             .padding(4)
         }
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-        .contentShape(Rectangle())
+        .contentShape(Rectangle()) // ensure tappable area
     }
 }
 
