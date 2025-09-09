@@ -17,15 +17,26 @@ final class StickerInfo {
     }
 
     var type: StickerType
-    var content: String
+    var content: String          // Either text or emoji characters
 
-    // Relative positioning (0.0…1.0)
+    // Normalized (0.0 ... 1.0) positions — canonical fields
     var relativePosX: CGFloat = 0.5
     var relativePosY: CGFloat = 0.5
     var scale: CGFloat = 1.0
 
     // Relationship back to DayEntry
     var dayEntry: DayEntry?
+
+    // Backward-compatible computed aliases (so old code using posX/posY still works)
+    var posX: CGFloat {
+        get { relativePosX }
+        set { relativePosX = newValue }
+    }
+
+    var posY: CGFloat {
+        get { relativePosY }
+        set { relativePosY = newValue }
+    }
 
     init(type: StickerType,
          content: String,
@@ -39,5 +50,6 @@ final class StickerInfo {
         self.scale = scale
     }
 }
+
 
 
