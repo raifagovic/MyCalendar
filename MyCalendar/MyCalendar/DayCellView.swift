@@ -10,29 +10,31 @@ import SwiftUI
 struct DayCellView: View {
     let day: Date
     let dayEntry: DayEntry?
-
+    
     @State private var selectedSticker: StickerInfo?
-
-    private let editorWidth: CGFloat = AppConstants.editorPreviewWidth
-    private let editorHeight: CGFloat = AppConstants.editorPreviewHeight
-
+    
+    private let editorWidth: CGFloat = 300.0
+    
     var body: some View {
         ZStack {
             GeometryReader { geometry in
                 let w = geometry.size.width
                 let h = geometry.size.height
-
+                
+                // editor height derived from your editorWidth + app aspect ratio
+                let editorHeight = editorWidth / AppConstants.calendarCellAspectRatio
+                
+                // scale for X and Y separately
                 let scaleX = w / editorWidth
                 let scaleY = h / editorHeight
-
+                
                 ZStack {
-                    // Background image
                     if let imageData = dayEntry?.backgroundImageData,
                        let uiImage = UIImage(data: imageData) {
-
+                        
                         let scaledOffsetX = (dayEntry?.backgroundImageOffsetX ?? 0.0) * scaleX
                         let scaledOffsetY = (dayEntry?.backgroundImageOffsetY ?? 0.0) * scaleY
-
+                        
                         Image(uiImage: uiImage)
                             .resizable()
                             .scaledToFill()
@@ -44,46 +46,34 @@ struct DayCellView: View {
                     } else {
                         Color.clear
                     }
-
-                    // Stickers (text + emoji, positioned using relative coordinates)
+                    
+                    // Render all stickers (text + emoji)
                     if let stickers = dayEntry?.stickers {
                         ForEach(stickers) { sticker in
-                            let posX = (sticker.relativePosX - 0.5) * w
-                            let posY = (sticker.relativePosY - 0.5) * h
-
-                            Group {
-                                if sticker.type == .emoji {
-                                    Text(sticker.content)
-                                        .font(.system(size: 14))
-                                } else {
-                                    Text(sticker.content.isEmpty ? " " : sticker.content)
-                                        .font(.system(size: 10))
-                                        .padding(2)
-                                        .background(Color.white.opacity(0.6))
-                                        .clipShape(RoundedRectangle(cornerRadius: 4))
-                                }
-                            }
-                            .scaleEffect(sticker.scale)
-                            .offset(x: posX, y: posY)
-                            .allowsHitTesting(false)
+                            Text(sticker.content.isEmpty ? " " : sticker.content)
+                                .font(.system(size: sticker.type == .emoji ? 24 : 10))
+                                .padding(sticker.type == .emoji ? 0 : 2)
+                                .scaleEffect(sticker.scale)
+                                .position(
+                                    x: sticker.posX * w,
+                                    y: sticker.posY * h
+                                )
                         }
                     }
                 }
-                .frame(width: w, height: h)
             }
             .aspectRatio(AppConstants.calendarCellAspectRatio, contentMode: .fit)
-
-            // Overlay for day number and optional emojis
+            
             VStack {
                 Text("\(Calendar.current.component(.day, from: day))")
                     .font(.headline)
-                    .padding(.top, 2)
+                    .padding(.top, 4)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .foregroundColor(Calendar.current.isDateInToday(day) ? .red : .white)
-
+                
                 Spacer()
             }
-            .padding(2)
+            .padding(4)
         }
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .contentShape(Rectangle())
