@@ -5,40 +5,35 @@
 //  Created by Raif Agovic on 6. 9. 2025..
 //
 
-import Foundation
 import SwiftData
-import CoreGraphics
-
-enum StickerType: String, Codable {
-    case text
-    case emoji
-}
+import Foundation
 
 @Model
-final class StickerInfo: Identifiable {
-    @Attribute(.unique) var id: UUID = UUID()
-    var typeRaw: String
-    var content: String
-
-    var posX: CGFloat = 0.0
-    var posY: CGFloat = 0.0
-    var scale: CGFloat = 1.0
-
-    var relativePosX: CGFloat = 0.5
-    var relativePosY: CGFloat = 0.5
-
-    // Relationship back to DayEntry (plain var, not @Relationship)
-    var dayEntry: DayEntry?
-
-    init(type: StickerType, content: String) {
-        self.typeRaw = type.rawValue
-        self.content = content
-    }
-
-    var type: StickerType {
-        StickerType(rawValue: typeRaw) ?? .text
+class StickerInfo: Identifiable {
+    @Attribute(.unique) var id: UUID
+    var text: String
+    var posX: Double
+    var posY: Double
+    var scale: Double
+    var rotation: Double   // stored in degrees
+    
+    init(
+        id: UUID = UUID(),
+        text: String,
+        posX: Double = 0.5,
+        posY: Double = 0.5,
+        scale: Double = 1.0,
+        rotation: Double = 0.0
+    ) {
+        self.id = id
+        self.text = text
+        self.posX = posX
+        self.posY = posY
+        self.scale = scale
+        self.rotation = rotation
     }
 }
+
 
 
 
