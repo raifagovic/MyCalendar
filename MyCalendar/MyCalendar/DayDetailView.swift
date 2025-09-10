@@ -207,7 +207,8 @@ struct DayDetailView: View {
                     set: { isSelected in
                         selectedSticker = isSelected ? sticker : nil
                     }
-                )
+                ),
+                containerSize: containerSize // ✅ Pass container size
             )
             .onChange(of: sticker.posX) { _ in saveStickerPosition(sticker, in: containerSize) }
             .onChange(of: sticker.posY) { _ in saveStickerPosition(sticker, in: containerSize) }
@@ -255,6 +256,7 @@ struct DayDetailView: View {
         }
     }
 }
+
 
 
 
