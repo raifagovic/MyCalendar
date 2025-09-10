@@ -23,9 +23,8 @@ struct StickerView: View {
         Group {
             Text(sticker.content.isEmpty ? " " : sticker.content)
                 .font(.system(size: sticker.type == .emoji ? 40 : 18))
-                .padding(sticker.type == .emoji ? 0 : 4)
+                .padding(sticker.type == .emoji ? .zero : 4)
         }
-        .background(Color.clear)
         .overlay(
             RoundedRectangle(cornerRadius: 6, style: .continuous)
                 .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 1)
