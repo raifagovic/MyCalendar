@@ -7,49 +7,41 @@
 
 import Foundation
 import SwiftData
-import CoreGraphics
+import SwiftUI
 
 @Model
-final class StickerInfo {
-    enum StickerType: String, Codable {
-        case text
-        case emoji
-    }
-
-    var type: StickerType
-    var content: String          // Either text or emoji characters
-
-    // Normalized (0.0 ... 1.0) positions — canonical fields
+final class StickerInfo: Identifiable {
+    @Attribute(.unique) var id: UUID
+    var typeRaw: String // "text" for now, could support "emoji", "drawing" later
+    var content: String
+    
+    // Absolute position (used at runtime in editor)
+    var posX: CGFloat = 0.0
+    var posY: CGFloat = 0.0
+    var scale: CGFloat = 1.0
+    
+    // Normalized position (saved relative to canvas size 0...1)
     var relativePosX: CGFloat = 0.5
     var relativePosY: CGFloat = 0.5
-    var scale: CGFloat = 1.0
-
-    // Relationship back to DayEntry
-    var dayEntry: DayEntry?
-
-    // Backward-compatible computed aliases (so old code using posX/posY still works)
-    var posX: CGFloat {
-        get { relativePosX }
-        set { relativePosX = newValue }
-    }
-
-    var posY: CGFloat {
-        get { relativePosY }
-        set { relativePosY = newValue }
-    }
-
-    init(type: StickerType,
-         content: String,
-         relativePosX: CGFloat = 0.5,
-         relativePosY: CGFloat = 0.5,
-         scale: CGFloat = 1.0) {
-        self.type = type
+    
+    // Relationship back to day
+    @Relationship(inverse: \DayEntry.stickers) var dayEntry: DayEntry?
+    
+    init(type: StickerType, content: String) {
+        self.id = UUID()
+        self.typeRaw = type.rawValue
         self.content = content
-        self.relativePosX = relativePosX
-        self.relativePosY = relativePosY
-        self.scale = scale
+    }
+    
+    var type: StickerType {
+        StickerType(rawValue: typeRaw) ?? .text
     }
 }
+
+enum StickerType: String {
+    case text
+}
+
 
 
 

@@ -6,100 +6,251 @@
 //
 
 import SwiftUI
+import PhotosUI
 import SwiftData
 
 struct DayDetailView: View {
     @Environment(\.modelContext) private var modelContext
-    @Bindable var dayEntry: DayEntry
+    @Environment(\.dismiss) private var dismiss
     
-    @State private var selectedStickerID: PersistentIdentifier?
-    @State private var newText: String = ""
+    let date: Date
+    
+    @State private var entry: DayEntry?
+    @State private var selectedPhoto: PhotosPickerItem?
+    
+    // Background image transform state
+    @State private var currentScale: CGFloat = 1.0
+    @State private var currentOffset: CGSize = .zero
+    @GestureState private var gestureScale: CGFloat = 1.0
+    @GestureState private var gestureOffset: CGSize = .zero
+    
+    // Stickers
+    @State private var stickers: [StickerInfo] = []
+    @State private var selectedSticker: StickerInfo?
+    
+    // Typing state
+    @State private var currentTypingText: String = ""
+    @State private var isTyping: Bool = false
+    @FocusState private var typingFieldFocused: Bool
     
     var body: some View {
-        VStack {
-            // Canvas for stickers + background
-            GeometryReader { geometry in
-                let w = geometry.size.width
-                let h = geometry.size.height
-                
-                ZStack {
-                    // Background image if set
-                    if let imageData = dayEntry.backgroundImageData,
-                       let uiImage = UIImage(data: imageData) {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .scaledToFill()
-                            .scaleEffect(dayEntry.backgroundImageScale)
-                            .offset(
-                                x: dayEntry.backgroundImageOffsetX * w,
-                                y: dayEntry.backgroundImageOffsetY * h
+        let magnificationGesture = MagnificationGesture()
+            .updating($gestureScale) { value, state, _ in state = value }
+            .onEnded { value in currentScale *= value }
+        
+        let dragGesture = DragGesture()
+            .updating($gestureOffset) { value, state, _ in state = value.translation }
+            .onEnded { value in
+                currentOffset.width += value.translation.width
+                currentOffset.height += value.translation.height
+            }
+        
+        let combinedGesture = SimultaneousGesture(magnificationGesture, dragGesture)
+        
+        NavigationStack {
+            VStack {
+                // --- Main canvas ---
+                GeometryReader { geometry in
+                    let canvasWidth = geometry.size.width
+                    let canvasHeight = geometry.size.height
+                    
+                    ZStack {
+                        if let entry = entry,
+                           let imageData = entry.backgroundImageData,
+                           let uiImage = UIImage(data: imageData) {
+                            
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                                .scaleEffect(currentScale * gestureScale)
+                                .offset(
+                                    x: currentOffset.width + gestureOffset.width,
+                                    y: currentOffset.height + gestureOffset.height
+                                )
+                                .clipped()
+                                .gesture(combinedGesture)
+                            
+                        } else {
+                            Rectangle()
+                                .fill(Color.black.opacity(0.1))
+                        }
+                        
+                        // Render all stickers
+                        ForEach($stickers) { $sticker in
+                            StickerView(
+                                sticker: $sticker,
+                                isSelected: Binding(
+                                    get: { selectedSticker?.id == sticker.id },
+                                    set: { isSelected in
+                                        selectedSticker = isSelected ? sticker : nil
+                                    }
+                                )
                             )
-                            .frame(width: w, height: h)
-                            .clipped()
-                    } else {
-                        Color.black.opacity(0.05)
+                            .onChange(of: sticker.posX) { _ in saveStickerPosition(sticker, in: canvasWidth, canvasHeight: canvasHeight) }
+                            .onChange(of: sticker.posY) { _ in saveStickerPosition(sticker, in: canvasWidth, canvasHeight: canvasHeight) }
+                            .onChange(of: sticker.scale) { _ in saveStickerPosition(sticker, in: canvasWidth, canvasHeight: canvasHeight) }
+                        }
+                        
+                        // Currently typing text sticker (not saved until tap outside)
+                        if isTyping && !currentTypingText.isEmpty {
+                            Text(currentTypingText)
+                                .padding(4)
+                                .background(Color.clear)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                        .stroke(Color.accentColor, lineWidth: 1)
+                                )
+                        }
+                    }
+                    .frame(width: AppConstants.editorPreviewWidth,
+                           height: AppConstants.editorPreviewHeight)
+                    .overlay(
+                        Rectangle()
+                            .stroke(Color.white.opacity(0.8), lineWidth: 2)
+                    )
+                    .onTapGesture {
+                        selectedSticker = nil
+                        typingFieldFocused = false
+                        
+                        // Save typing as a new sticker
+                        if !currentTypingText.isEmpty {
+                            let newSticker = StickerInfo(type: .text, content: currentTypingText)
+                            stickers.append(newSticker)
+                            entry?.stickers.append(newSticker)
+                            saveStickerPosition(newSticker, in: canvasWidth, canvasHeight: canvasHeight)
+                            try? modelContext.save()
+                            
+                            currentTypingText = ""
+                            isTyping = false
+                        }
+                    }
+                }
+                .frame(width: AppConstants.editorPreviewWidth,
+                       height: AppConstants.editorPreviewHeight)
+                
+                // --- Toolbar ---
+                HStack(spacing: 40) {
+                    PhotosPicker(selection: $selectedPhoto, matching: .images, photoLibrary: .shared()) {
+                        Image(systemName: "photo.on.rectangle.angled")
+                            .font(.system(size: 24))
                     }
                     
-                    // Stickers (text & emoji)
-                    ForEach(dayEntry.stickers) { sticker in
-                        StickerView(
-                            sticker: binding(for: sticker),
-                            isSelected: Binding(
-                                get: { selectedStickerID == sticker.persistentModelID },
-                                set: { newValue in
-                                    selectedStickerID = newValue ? sticker.persistentModelID : nil
-                                }
-                            ),
-                            containerSize: CGSize(width: w, height: h)
-                        )
+                    Button {
+                        isTyping = true
+                        typingFieldFocused = true
+                    } label: {
+                        Image(systemName: "keyboard")
+                            .font(.system(size: 24))
+                    }
+                    
+                    Button {
+                        // TODO: implement drawing tools
+                    } label: {
+                        Image(systemName: "pencil.tip")
+                            .font(.system(size: 24))
+                    }
+                    
+                    Button(role: .destructive) {
+                        if let entry = entry {
+                            withAnimation {
+                                entry.backgroundImageData = nil
+                                entry.backgroundImageScale = 1.0
+                                entry.backgroundImageOffsetX = 0
+                                entry.backgroundImageOffsetY = 0
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.system(size: 24))
                     }
                 }
-            }
-            .aspectRatio(AppConstants.calendarCellAspectRatio, contentMode: .fit)
-            
-            Divider()
-            
-            // Input for adding new text/emoji stickers
-            HStack {
-                TextField("Add text or emoji…", text: $newText)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding(.top, 8)
                 
-                Button("Add") {
-                    addTextSticker(newText)
-                    newText = ""
-                }
-                .disabled(newText.isEmpty)
+                // Hidden TextField
+                TextField("", text: $currentTypingText)
+                    .focused($typingFieldFocused)
+                    .frame(width: 0, height: 0)
+                    .opacity(0.01)
+                    .onChange(of: currentTypingText) {
+                        isTyping = true
+                    }
             }
-            .padding()
+            .navigationTitle("Edit Day")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
         }
-        .navigationTitle(dayEntry.date.formatted(date: .abbreviated, time: .omitted))
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Done") {
-                    try? modelContext.save()
+        .task(id: date) {
+            await fetchEntry(for: date)
+        }
+        .onDisappear {
+            if let entry = entry {
+                entry.backgroundImageScale = currentScale
+                entry.backgroundImageOffsetX = currentOffset.width
+                entry.backgroundImageOffsetY = currentOffset.height
+                try? modelContext.save()
+            }
+        }
+        .onChange(of: selectedPhoto) { _, newItem in
+            Task {
+                guard let data = try? await newItem?.loadTransferable(type: Data.self) else { return }
+                let entryToUpdate = createOrGetEntry()
+                withAnimation {
+                    entryToUpdate.backgroundImageData = data
+                    entryToUpdate.backgroundImageScale = 1.0
+                    entryToUpdate.backgroundImageOffsetX = 0
+                    entryToUpdate.backgroundImageOffsetY = 0
+                    self.currentScale = 1.0
+                    self.currentOffset = .zero
                 }
             }
         }
     }
     
-    // MARK: - Sticker Helpers
+    // MARK: - Helpers
     
-    private func binding(for sticker: StickerInfo) -> Binding<StickerInfo> {
-        guard let index = dayEntry.stickers.firstIndex(where: { $0.persistentModelID == sticker.persistentModelID }) else {
-            fatalError("Sticker not found in dayEntry")
-        }
-        return $dayEntry.stickers[index]
-    }
-    
-    private func addTextSticker(_ text: String) {
-        guard !text.isEmpty else { return }
-        let sticker = StickerInfo(type: .text, content: text)
-        // Start in center with normalized coordinates
-        sticker.posX = 0.5
-        sticker.posY = 0.5
-        sticker.scale = 1.0
-        dayEntry.stickers.append(sticker)
+    private func saveStickerPosition(_ sticker: StickerInfo, in canvasWidth: CGFloat, canvasHeight: CGFloat) {
+        // normalize into 0...1 space
+        sticker.relativePosX = (sticker.posX + canvasWidth / 2) / canvasWidth
+        sticker.relativePosY = (sticker.posY + canvasHeight / 2) / canvasHeight
         try? modelContext.save()
+    }
+    
+    private func fetchEntry(for date: Date) async {
+        let startOfDay = Calendar.current.startOfDay(for: date)
+        let predicate = #Predicate<DayEntry> { $0.date == startOfDay }
+        let descriptor = FetchDescriptor(predicate: predicate)
+        
+        do {
+            let entries = try modelContext.fetch(descriptor)
+            self.entry = entries.first
+            
+            if let entry = self.entry {
+                self.stickers = entry.stickers
+                self.currentScale = entry.backgroundImageScale
+                self.currentOffset = CGSize(width: entry.backgroundImageOffsetX,
+                                            height: entry.backgroundImageOffsetY)
+            } else {
+                self.currentScale = 1.0
+                self.currentOffset = .zero
+            }
+        } catch {
+            print("Failed to fetch entry: \(error)")
+        }
+    }
+    
+    private func createOrGetEntry() -> DayEntry {
+        if let existingEntry = self.entry {
+            return existingEntry
+        } else {
+            let newEntry = DayEntry(date: Calendar.current.startOfDay(for: date))
+            modelContext.insert(newEntry)
+            self.entry = newEntry
+            return newEntry
+        }
     }
 }
 
