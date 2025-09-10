@@ -210,9 +210,9 @@ struct DayDetailView: View {
                 ),
                 containerSize: containerSize // ✅ Pass container size
             )
-            .onChange(of: sticker.posX) { _ in saveStickerPosition(sticker, in: containerSize) }
-            .onChange(of: sticker.posY) { _ in saveStickerPosition(sticker, in: containerSize) }
-            .onChange(of: sticker.scale) { _ in saveStickerPosition(sticker, in: containerSize) }
+            .onChange(of: sticker.posX) { saveStickerPosition(sticker, in: containerSize) }
+            .onChange(of: sticker.posY) { saveStickerPosition(sticker, in: containerSize) }
+            .onChange(of: sticker.scale) { saveStickerPosition(sticker, in: containerSize) }
         }
     }
     
