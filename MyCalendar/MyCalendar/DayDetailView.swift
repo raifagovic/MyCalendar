@@ -49,12 +49,11 @@ struct DayDetailView: View {
         
         NavigationStack {
             VStack {
-                // --- Main canvas ---
                 GeometryReader { geometry in
-                    let canvasWidth = geometry.size.width
-                    let canvasHeight = geometry.size.height
+                    let canvasSize = geometry.size
                     
                     ZStack {
+                        // --- Background ---
                         if let entry = entry,
                            let imageData = entry.backgroundImageData,
                            let uiImage = UIImage(data: imageData) {
@@ -75,23 +74,10 @@ struct DayDetailView: View {
                                 .fill(Color.black.opacity(0.1))
                         }
                         
-                        // Render all stickers
-                        ForEach($stickers) { $sticker in
-                            StickerView(
-                                sticker: $sticker,
-                                isSelected: Binding(
-                                    get: { selectedSticker?.id == sticker.id },
-                                    set: { isSelected in
-                                        selectedSticker = isSelected ? sticker : nil
-                                    }
-                                )
-                            )
-                            .onChange(of: sticker.posX) { _ in saveStickerPosition(sticker, in: canvasWidth, canvasHeight: canvasHeight) }
-                            .onChange(of: sticker.posY) { _ in saveStickerPosition(sticker, in: canvasWidth, canvasHeight: canvasHeight) }
-                            .onChange(of: sticker.scale) { _ in saveStickerPosition(sticker, in: canvasWidth, canvasHeight: canvasHeight) }
-                        }
+                        // --- Stickers ---
+                        stickersLayer(containerSize: canvasSize)
                         
-                        // Currently typing text sticker (not saved until tap outside)
+                        // --- Currently typing sticker (preview only) ---
                         if isTyping && !currentTypingText.isEmpty {
                             Text(currentTypingText)
                                 .padding(4)
@@ -112,12 +98,12 @@ struct DayDetailView: View {
                         selectedSticker = nil
                         typingFieldFocused = false
                         
-                        // Save typing as a new sticker
+                        // Save typing as new sticker
                         if !currentTypingText.isEmpty {
                             let newSticker = StickerInfo(type: .text, content: currentTypingText)
                             stickers.append(newSticker)
                             entry?.stickers.append(newSticker)
-                            saveStickerPosition(newSticker, in: canvasWidth, canvasHeight: canvasHeight)
+                            saveStickerPosition(newSticker, in: canvasSize)
                             try? modelContext.save()
                             
                             currentTypingText = ""
@@ -166,7 +152,7 @@ struct DayDetailView: View {
                 }
                 .padding(.top, 8)
                 
-                // Hidden TextField
+                // --- Hidden TextField ---
                 TextField("", text: $currentTypingText)
                     .focused($typingFieldFocused)
                     .frame(width: 0, height: 0)
@@ -212,10 +198,26 @@ struct DayDetailView: View {
     
     // MARK: - Helpers
     
-    private func saveStickerPosition(_ sticker: StickerInfo, in canvasWidth: CGFloat, canvasHeight: CGFloat) {
-        // normalize into 0...1 space
-        sticker.relativePosX = (sticker.posX + canvasWidth / 2) / canvasWidth
-        sticker.relativePosY = (sticker.posY + canvasHeight / 2) / canvasHeight
+    private func stickersLayer(containerSize: CGSize) -> some View {
+        ForEach($stickers) { $sticker in
+            StickerView(
+                sticker: $sticker,
+                isSelected: Binding(
+                    get: { selectedSticker?.id == sticker.id },
+                    set: { isSelected in
+                        selectedSticker = isSelected ? sticker : nil
+                    }
+                )
+            )
+            .onChange(of: sticker.posX) { _ in saveStickerPosition(sticker, in: containerSize) }
+            .onChange(of: sticker.posY) { _ in saveStickerPosition(sticker, in: containerSize) }
+            .onChange(of: sticker.scale) { _ in saveStickerPosition(sticker, in: containerSize) }
+        }
+    }
+    
+    private func saveStickerPosition(_ sticker: StickerInfo, in containerSize: CGSize) {
+        sticker.relativePosX = (sticker.posX + containerSize.width / 2) / containerSize.width
+        sticker.relativePosY = (sticker.posY + containerSize.height / 2) / containerSize.height
         try? modelContext.save()
     }
     
@@ -253,6 +255,7 @@ struct DayDetailView: View {
         }
     }
 }
+
 
 
 
