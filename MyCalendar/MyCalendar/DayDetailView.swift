@@ -25,7 +25,6 @@ struct DayDetailView: View {
     @GestureState private var gestureOffset: CGSize = .zero
     
     // Stickers
-    @State private var stickers: [StickerInfo] = []
     @State private var selectedSticker: StickerInfo?
     
     // Typing state
@@ -68,16 +67,15 @@ struct DayDetailView: View {
                                 )
                                 .clipped()
                                 .gesture(combinedGesture)
-                            
                         } else {
                             Rectangle()
                                 .fill(Color.black.opacity(0.1))
                         }
                         
-                        // --- Stickers ---
+                        // --- Stickers Layer ---
                         stickersLayer(containerSize: canvasSize)
                         
-                        // --- Currently typing sticker (preview only) ---
+                        // --- Typing Preview ---
                         if isTyping && !currentTypingText.isEmpty {
                             Text(currentTypingText)
                                 .padding(4)
@@ -95,20 +93,9 @@ struct DayDetailView: View {
                             .stroke(Color.white.opacity(0.8), lineWidth: 2)
                     )
                     .onTapGesture {
+                        commitTypingIfNeeded(containerSize: canvasSize)
                         selectedSticker = nil
                         typingFieldFocused = false
-                        
-                        // Save typing as new sticker
-                        if !currentTypingText.isEmpty {
-                            let newSticker = StickerInfo(type: .text, content: currentTypingText)
-                            stickers.append(newSticker)
-                            entry?.stickers.append(newSticker)
-                            saveStickerPosition(newSticker, in: canvasSize)
-                            try? modelContext.save()
-                            
-                            currentTypingText = ""
-                            isTyping = false
-                        }
                     }
                 }
                 .frame(width: AppConstants.editorPreviewWidth,
@@ -130,7 +117,7 @@ struct DayDetailView: View {
                     }
                     
                     Button {
-                        // TODO: implement drawing tools
+                        // Placeholder for future drawing tools
                     } label: {
                         Image(systemName: "pencil.tip")
                             .font(.system(size: 24))
@@ -144,6 +131,7 @@ struct DayDetailView: View {
                                 entry.backgroundImageOffsetX = 0
                                 entry.backgroundImageOffsetY = 0
                             }
+                            try? modelContext.save()
                         }
                     } label: {
                         Image(systemName: "trash")
@@ -152,7 +140,7 @@ struct DayDetailView: View {
                 }
                 .padding(.top, 8)
                 
-                // --- Hidden TextField ---
+                // --- Hidden TextField for Typing ---
                 TextField("", text: $currentTypingText)
                     .focused($typingFieldFocused)
                     .frame(width: 0, height: 0)
@@ -165,13 +153,14 @@ struct DayDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
+                    Button("Done") {
+                        commitTypingIfNeeded(containerSize: CGSize(width: AppConstants.editorPreviewWidth, height: AppConstants.editorPreviewHeight))
+                        dismiss()
+                    }
                 }
             }
         }
-        .task(id: date) {
-            await fetchEntry(for: date)
-        }
+        .task(id: date) { await fetchEntry(for: date) }
         .onDisappear {
             if let entry = entry {
                 entry.backgroundImageScale = currentScale
@@ -189,32 +178,45 @@ struct DayDetailView: View {
                     entryToUpdate.backgroundImageScale = 1.0
                     entryToUpdate.backgroundImageOffsetX = 0
                     entryToUpdate.backgroundImageOffsetY = 0
-                    self.currentScale = 1.0
-                    self.currentOffset = .zero
+                    currentScale = 1.0
+                    currentOffset = .zero
                 }
+                try? modelContext.save()
             }
         }
     }
     
-    // MARK: - Helpers
-    
+    // MARK: - Stickers Layer
     private func stickersLayer(containerSize: CGSize) -> some View {
-        ForEach($stickers) { $sticker in
-            StickerView(
-                sticker: $sticker,
-                isSelected: Binding(
-                    get: { selectedSticker?.id == sticker.id },
-                    set: { isSelected in
-                        selectedSticker = isSelected ? sticker : nil
+        Group {
+            if let entry = entry {
+                let stickersBinding = Binding<[StickerInfo]>(
+                    get: { entry.stickers },
+                    set: { newValue in
+                        entry.stickers = newValue
+                        try? modelContext.save()
                     }
-                ),
-                containerSize: containerSize // ✅ Pass container size
-            )
-            .onChange(of: sticker.posX) { saveStickerPosition(sticker, in: containerSize) }
-            .onChange(of: sticker.posY) { saveStickerPosition(sticker, in: containerSize) }
-            .onChange(of: sticker.scale) { saveStickerPosition(sticker, in: containerSize) }
+                )
+                
+                ForEach(stickersBinding) { $sticker in
+                    StickerView(
+                        sticker: $sticker,
+                        isSelected: Binding(
+                            get: { selectedSticker?.id == sticker.id },
+                            set: { isSelected in
+                                selectedSticker = isSelected ? sticker : nil
+                            }
+                        ),
+                        containerSize: containerSize
+                    )
+                    .onChange(of: sticker.posX) { saveStickerPosition(sticker, in: containerSize) }
+                    .onChange(of: sticker.posY) { saveStickerPosition(sticker, in: containerSize) }
+                    .onChange(of: sticker.scale) { saveStickerPosition(sticker, in: containerSize) }
+                }
+            }
         }
     }
+
     
     private func saveStickerPosition(_ sticker: StickerInfo, in containerSize: CGSize) {
         sticker.relativePosX = (sticker.posX + containerSize.width / 2) / containerSize.width
@@ -222,6 +224,19 @@ struct DayDetailView: View {
         try? modelContext.save()
     }
     
+    // MARK: - Typing Handling
+    private func commitTypingIfNeeded(containerSize: CGSize) {
+        guard !currentTypingText.isEmpty else { return }
+        let entryToUpdate = createOrGetEntry()
+        let newSticker = StickerInfo(type: .text, content: currentTypingText)
+        entryToUpdate.stickers.append(newSticker)
+        saveStickerPosition(newSticker, in: containerSize)
+        try? modelContext.save()
+        currentTypingText = ""
+        isTyping = false
+    }
+    
+    // MARK: - Fetch Entry
     private func fetchEntry(for date: Date) async {
         let startOfDay = Calendar.current.startOfDay(for: date)
         let predicate = #Predicate<DayEntry> { $0.date == startOfDay }
@@ -232,7 +247,6 @@ struct DayDetailView: View {
             self.entry = entries.first
             
             if let entry = self.entry {
-                self.stickers = entry.stickers
                 self.currentScale = entry.backgroundImageScale
                 self.currentOffset = CGSize(width: entry.backgroundImageOffsetX,
                                             height: entry.backgroundImageOffsetY)
@@ -246,16 +260,14 @@ struct DayDetailView: View {
     }
     
     private func createOrGetEntry() -> DayEntry {
-        if let existingEntry = self.entry {
-            return existingEntry
-        } else {
-            let newEntry = DayEntry(date: Calendar.current.startOfDay(for: date))
-            modelContext.insert(newEntry)
-            self.entry = newEntry
-            return newEntry
-        }
+        if let existingEntry = self.entry { return existingEntry }
+        let newEntry = DayEntry(date: Calendar.current.startOfDay(for: date))
+        modelContext.insert(newEntry)
+        self.entry = newEntry
+        return newEntry
     }
 }
+
 
 
 
