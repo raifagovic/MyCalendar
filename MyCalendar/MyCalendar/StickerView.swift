@@ -17,6 +17,9 @@ struct StickerView: View {
     @GestureState private var gestureOffset: CGSize = .zero
     @GestureState private var gestureRotation: Angle = .zero
 
+    // extra padding for easier gesture interaction
+    private let touchPadding: CGFloat = 40
+
     var body: some View {
         let w = containerSize.width
         let h = containerSize.height
@@ -39,25 +42,28 @@ struct StickerView: View {
             x: sticker.posX * w + gestureOffset.width,
             y: sticker.posY * h + gestureOffset.height
         )
+        // Extend the gesture area beyond the small sticker
+        .contentShape(Rectangle().inset(by: -touchPadding))
         .gesture(
-            // nest SimultaneousGesture so we can combine three gestures
             SimultaneousGesture(
                 SimultaneousGesture(
                     MagnificationGesture()
                         .updating($gestureScale) { value, state, _ in state = value }
-                        .onEnded { value in sticker.scale *= value },
+                        .onEnded { value in
+                            sticker.scale *= value
+                        },
                     RotationGesture()
                         .updating($gestureRotation) { value, state, _ in state = value }
-                        .onEnded { value in sticker.rotationDegrees += value.degrees }
+                        .onEnded { value in
+                            sticker.rotationDegrees += value.degrees
+                        }
                 ),
                 DragGesture()
                     .updating($gestureOffset) { value, state, _ in state = value.translation }
                     .onEnded { value in
-                        // translate absolute translation -> normalized pos
                         if w > 0 && h > 0 {
                             sticker.posX += value.translation.width / w
                             sticker.posY += value.translation.height / h
-                            // clamp 0..1 if desired:
                             sticker.posX = min(max(sticker.posX, 0.0), 1.0)
                             sticker.posY = min(max(sticker.posY, 0.0), 1.0)
                         }
@@ -69,4 +75,5 @@ struct StickerView: View {
         }
     }
 }
+
 
