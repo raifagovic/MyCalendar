@@ -212,6 +212,7 @@ struct DayDetailView: View {
                     .onChange(of: sticker.posX) { saveStickerPosition(sticker, in: containerSize) }
                     .onChange(of: sticker.posY) { saveStickerPosition(sticker, in: containerSize) }
                     .onChange(of: sticker.scale) { saveStickerPosition(sticker, in: containerSize) }
+                    .onChange(of: sticker.rotationDegrees) { saveStickerPosition(sticker, in: containerSize) } // ✅ save rotation
                 }
             }
         }
