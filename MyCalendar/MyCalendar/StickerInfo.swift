@@ -5,10 +5,10 @@
 //  Created by Raif Agovic on 6. 9. 2025..
 //
 
+// StickerInfo.swift
 import Foundation
 import SwiftData
 import CoreGraphics
-import SwiftUI
 
 enum StickerType: String, Codable {
     case text
@@ -21,13 +21,19 @@ final class StickerInfo: Identifiable {
     var typeRaw: String
     var content: String
 
-    // Position & transform
-    var posX: CGFloat = 0.5  // relative to container
+    // Normalized position (0..1)
+    var posX: CGFloat = 0.5
     var posY: CGFloat = 0.5
     var scale: CGFloat = 1.0
-    var rotation: Angle = .zero
 
-    // Relationship back to day (one-way)
+    // Rotation stored as degrees (Double) — safe for SwiftData
+    var rotationDegrees: Double = 0.0
+
+    // Normalized position for persistence if needed
+    var relativePosX: CGFloat = 0.5
+    var relativePosY: CGFloat = 0.5
+
+    // Plain reference to the parent (avoid circular macro)
     var dayEntry: DayEntry?
 
     init(type: StickerType, content: String) {
