@@ -24,7 +24,7 @@ final class DayEntry {
     var backgroundImageOffsetY: CGFloat = 0.0
 
     // Stickers (both text + emoji)
-    @Relationship(deleteRule: .cascade, inverse: \StickerInfo.dayEntry)
+    @Relationship(deleteRule: .cascade)
     var stickers: [StickerInfo] = []
 
     init(date: Date) {
