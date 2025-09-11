@@ -24,7 +24,7 @@ struct DayDetailView: View {
     @GestureState private var gestureScale: CGFloat = 1.0
     @GestureState private var gestureOffset: CGSize = .zero
     
-    // Stickers
+    // Stickers selection
     @State private var selectedSticker: StickerInfo?
     
     // Typing state
@@ -66,14 +66,27 @@ struct DayDetailView: View {
                                     y: currentOffset.height + gestureOffset.height
                                 )
                                 .clipped()
-                                .gesture(combinedGesture)
+                                .gesture(selectedSticker == nil ? combinedGesture : nil)
                         } else {
                             Rectangle()
                                 .fill(Color.black.opacity(0.1))
+                                .gesture(selectedSticker == nil ? combinedGesture : nil)
                         }
                         
                         // --- Stickers Layer ---
-                        stickersLayer(containerSize: canvasSize)
+                        if let entry = entry {
+                            ForEach($entry.stickers) { $sticker in
+                                StickerView(
+                                    sticker: $sticker,
+                                    containerSize: canvasSize,
+                                    selectedSticker: $selectedSticker
+                                )
+                                .onChange(of: sticker.posX) { _ in saveStickerPosition(sticker, in: canvasSize) }
+                                .onChange(of: sticker.posY) { _ in saveStickerPosition(sticker, in: canvasSize) }
+                                .onChange(of: sticker.scale) { _ in saveStickerPosition(sticker, in: canvasSize) }
+                                .onChange(of: sticker.rotationDegrees) { _ in saveStickerPosition(sticker, in: canvasSize) }
+                            }
+                        }
                         
                         // --- Typing Preview ---
                         if isTyping && !currentTypingText.isEmpty {
@@ -186,45 +199,6 @@ struct DayDetailView: View {
         }
     }
     
-    // MARK: - Stickers Layer
-    private func stickersLayer(containerSize: CGSize) -> some View {
-        Group {
-            if let entry = entry {
-                let stickersBinding = Binding<[StickerInfo]>(
-                    get: { entry.stickers },
-                    set: { newValue in
-                        entry.stickers = newValue
-                        try? modelContext.save()
-                    }
-                )
-                
-                ForEach(stickersBinding) { $sticker in
-                    StickerView(
-                        sticker: $sticker,
-                        isSelected: Binding(
-                            get: { selectedSticker?.id == sticker.id },
-                            set: { isSelected in
-                                selectedSticker = isSelected ? sticker : nil
-                            }
-                        ),
-                        containerSize: containerSize
-                    )
-                    .onChange(of: sticker.posX) { saveStickerPosition(sticker, in: containerSize) }
-                    .onChange(of: sticker.posY) { saveStickerPosition(sticker, in: containerSize) }
-                    .onChange(of: sticker.scale) { saveStickerPosition(sticker, in: containerSize) }
-                    .onChange(of: sticker.rotationDegrees) { saveStickerPosition(sticker, in: containerSize) } // ✅ save rotation
-                }
-            }
-        }
-    }
-
-    
-    private func saveStickerPosition(_ sticker: StickerInfo, in containerSize: CGSize) {
-        sticker.relativePosX = (sticker.posX + containerSize.width / 2) / containerSize.width
-        sticker.relativePosY = (sticker.posY + containerSize.height / 2) / containerSize.height
-        try? modelContext.save()
-    }
-    
     // MARK: - Typing Handling
     private func commitTypingIfNeeded(containerSize: CGSize) {
         guard !currentTypingText.isEmpty else { return }
@@ -235,6 +209,14 @@ struct DayDetailView: View {
         try? modelContext.save()
         currentTypingText = ""
         isTyping = false
+    }
+    
+    // MARK: - Stickers Positioning
+    private func saveStickerPosition(_ sticker: StickerInfo, in containerSize: CGSize) {
+        // Normalize to 0..1
+        sticker.posX = min(max(sticker.posX, 0.0), 1.0)
+        sticker.posY = min(max(sticker.posY, 0.0), 1.0)
+        try? modelContext.save()
     }
     
     // MARK: - Fetch Entry
