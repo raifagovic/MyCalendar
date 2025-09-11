@@ -24,7 +24,7 @@ struct DayDetailView: View {
     @GestureState private var gestureScale: CGFloat = 1.0
     @GestureState private var gestureOffset: CGSize = .zero
     
-    // Stickers selection
+    // Stickers
     @State private var selectedSticker: StickerInfo?
     
     // Typing state
@@ -33,174 +33,180 @@ struct DayDetailView: View {
     @FocusState private var typingFieldFocused: Bool
     
     var body: some View {
-        let magnificationGesture = MagnificationGesture()
-            .updating($gestureScale) { value, state, _ in state = value }
-            .onEnded { value in currentScale *= value }
-        
-        let dragGesture = DragGesture()
-            .updating($gestureOffset) { value, state, _ in state = value.translation }
-            .onEnded { value in
-                currentOffset.width += value.translation.width
-                currentOffset.height += value.translation.height
-            }
-        
-        let combinedGesture = SimultaneousGesture(magnificationGesture, dragGesture)
-        
         NavigationStack {
             VStack {
-                GeometryReader { geometry in
-                    let canvasSize = geometry.size
-                    
-                    ZStack {
-                        // --- Background ---
-                        if let entry = entry,
-                           let imageData = entry.backgroundImageData,
-                           let uiImage = UIImage(data: imageData) {
-                            
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .scaledToFill()
-                                .scaleEffect(currentScale * gestureScale)
-                                .offset(
-                                    x: currentOffset.width + gestureOffset.width,
-                                    y: currentOffset.height + gestureOffset.height
-                                )
-                                .clipped()
-                                .gesture(selectedSticker == nil ? combinedGesture : nil)
-                        } else {
-                            Rectangle()
-                                .fill(Color.black.opacity(0.1))
-                                .gesture(selectedSticker == nil ? combinedGesture : nil)
-                        }
-                        
-                        // --- Stickers Layer ---
-                        if let entry = entry {
-                            ForEach($entry.stickers) { $sticker in
-                                StickerView(
-                                    sticker: $sticker,
-                                    containerSize: canvasSize,
-                                    selectedSticker: $selectedSticker
-                                )
-                                .onChange(of: sticker.posX) { _ in saveStickerPosition(sticker, in: canvasSize) }
-                                .onChange(of: sticker.posY) { _ in saveStickerPosition(sticker, in: canvasSize) }
-                                .onChange(of: sticker.scale) { _ in saveStickerPosition(sticker, in: canvasSize) }
-                                .onChange(of: sticker.rotationDegrees) { _ in saveStickerPosition(sticker, in: canvasSize) }
-                            }
-                        }
-                        
-                        // --- Typing Preview ---
-                        if isTyping && !currentTypingText.isEmpty {
-                            Text(currentTypingText)
-                                .padding(4)
-                                .background(Color.clear)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                        .stroke(Color.accentColor, lineWidth: 1)
-                                )
-                        }
-                    }
-                    .frame(width: AppConstants.editorPreviewWidth,
-                           height: AppConstants.editorPreviewHeight)
-                    .overlay(
-                        Rectangle()
-                            .stroke(Color.white.opacity(0.8), lineWidth: 2)
-                    )
-                    .onTapGesture {
-                        commitTypingIfNeeded(containerSize: canvasSize)
-                        selectedSticker = nil
-                        typingFieldFocused = false
-                    }
-                }
-                .frame(width: AppConstants.editorPreviewWidth,
-                       height: AppConstants.editorPreviewHeight)
-                
-                // --- Toolbar ---
-                HStack(spacing: 40) {
-                    PhotosPicker(selection: $selectedPhoto, matching: .images, photoLibrary: .shared()) {
-                        Image(systemName: "photo.on.rectangle.angled")
-                            .font(.system(size: 24))
-                    }
-                    
-                    Button {
-                        isTyping = true
-                        typingFieldFocused = true
-                    } label: {
-                        Image(systemName: "keyboard")
-                            .font(.system(size: 24))
-                    }
-                    
-                    Button {
-                        // Placeholder for future drawing tools
-                    } label: {
-                        Image(systemName: "pencil.tip")
-                            .font(.system(size: 24))
-                    }
-                    
-                    Button(role: .destructive) {
-                        if let entry = entry {
-                            withAnimation {
-                                entry.backgroundImageData = nil
-                                entry.backgroundImageScale = 1.0
-                                entry.backgroundImageOffsetX = 0
-                                entry.backgroundImageOffsetY = 0
-                            }
-                            try? modelContext.save()
-                        }
-                    } label: {
-                        Image(systemName: "trash")
-                            .font(.system(size: 24))
-                    }
-                }
-                .padding(.top, 8)
-                
-                // --- Hidden TextField for Typing ---
-                TextField("", text: $currentTypingText)
-                    .focused($typingFieldFocused)
-                    .frame(width: 0, height: 0)
-                    .opacity(0.01)
-                    .onChange(of: currentTypingText) {
-                        isTyping = true
-                    }
+                editorView
+                toolbarView
+                hiddenTextField
             }
             .navigationTitle("Edit Day")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
-                        commitTypingIfNeeded(containerSize: CGSize(width: AppConstants.editorPreviewWidth, height: AppConstants.editorPreviewHeight))
-                        dismiss()
-                    }
-                }
-            }
+            .toolbar { toolbarDoneButton }
         }
         .task(id: date) { await fetchEntry(for: date) }
-        .onDisappear {
-            if let entry = entry {
-                entry.backgroundImageScale = currentScale
-                entry.backgroundImageOffsetX = currentOffset.width
-                entry.backgroundImageOffsetY = currentOffset.height
-                try? modelContext.save()
+        .onDisappear { saveBackgroundState() }
+        .onChange(of: selectedPhoto) { _, newItem in loadPhoto(newItem) }
+    }
+}
+
+// MARK: - Subviews
+private extension DayDetailView {
+    
+    var editorView: some View {
+        GeometryReader { geometry in
+            let canvasSize = geometry.size
+            ZStack {
+                backgroundImageView(canvasSize: canvasSize)
+                stickersLayer(containerSize: canvasSize)
+                typingPreview
+            }
+            .frame(width: AppConstants.editorPreviewWidth,
+                   height: AppConstants.editorPreviewHeight)
+            .overlay(Rectangle().stroke(Color.white.opacity(0.8), lineWidth: 2))
+            .onTapGesture {
+                commitTypingIfNeeded(containerSize: canvasSize)
+                selectedSticker = nil
+                typingFieldFocused = false
             }
         }
-        .onChange(of: selectedPhoto) { _, newItem in
-            Task {
-                guard let data = try? await newItem?.loadTransferable(type: Data.self) else { return }
-                let entryToUpdate = createOrGetEntry()
-                withAnimation {
-                    entryToUpdate.backgroundImageData = data
-                    entryToUpdate.backgroundImageScale = 1.0
-                    entryToUpdate.backgroundImageOffsetX = 0
-                    entryToUpdate.backgroundImageOffsetY = 0
-                    currentScale = 1.0
-                    currentOffset = .zero
+        .frame(width: AppConstants.editorPreviewWidth,
+               height: AppConstants.editorPreviewHeight)
+    }
+    
+    var toolbarView: some View {
+        HStack(spacing: 40) {
+            PhotosPicker(selection: $selectedPhoto, matching: .images, photoLibrary: .shared()) {
+                Image(systemName: "photo.on.rectangle.angled")
+                    .font(.system(size: 24))
+            }
+            
+            Button {
+                isTyping = true
+                typingFieldFocused = true
+            } label: {
+                Image(systemName: "keyboard")
+                    .font(.system(size: 24))
+            }
+            
+            Button {
+                // Placeholder for future drawing tools
+            } label: {
+                Image(systemName: "pencil.tip")
+                    .font(.system(size: 24))
+            }
+            
+            Button(role: .destructive) {
+                if let entry = entry {
+                    withAnimation {
+                        entry.backgroundImageData = nil
+                        entry.backgroundImageScale = 1.0
+                        entry.backgroundImageOffsetX = 0
+                        entry.backgroundImageOffsetY = 0
+                    }
+                    try? modelContext.save()
                 }
-                try? modelContext.save()
+            } label: {
+                Image(systemName: "trash")
+                    .font(.system(size: 24))
+            }
+        }
+        .padding(.top, 8)
+    }
+    
+    var hiddenTextField: some View {
+        TextField("", text: $currentTypingText)
+            .focused($typingFieldFocused)
+            .frame(width: 0, height: 0)
+            .opacity(0.01)
+            .onChange(of: currentTypingText) { isTyping = true }
+    }
+    
+    var toolbarDoneButton: some ToolbarContent {
+        ToolbarItem(placement: .confirmationAction) {
+            Button("Done") {
+                commitTypingIfNeeded(containerSize: CGSize(width: AppConstants.editorPreviewWidth,
+                                                           height: AppConstants.editorPreviewHeight))
+                dismiss()
             }
         }
     }
     
-    // MARK: - Typing Handling
-    private func commitTypingIfNeeded(containerSize: CGSize) {
+    var typingPreview: some View {
+        Group {
+            if isTyping && !currentTypingText.isEmpty {
+                Text(currentTypingText)
+                    .padding(4)
+                    .background(Color.clear)
+                    .overlay(RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .stroke(Color.accentColor, lineWidth: 1))
+            }
+        }
+    }
+    
+    func backgroundImageView(canvasSize: CGSize) -> some View {
+        Group {
+            if let entry = entry,
+               let imageData = entry.backgroundImageData,
+               let uiImage = UIImage(data: imageData) {
+                
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFill()
+                    .scaleEffect(currentScale * gestureScale)
+                    .offset(x: currentOffset.width + gestureOffset.width,
+                            y: currentOffset.height + gestureOffset.height)
+                    .clipped()
+                    .gesture(selectedSticker == nil ? backgroundGesture : nil)
+            } else {
+                Rectangle()
+                    .fill(Color.black.opacity(0.1))
+                    .gesture(selectedSticker == nil ? backgroundGesture : nil)
+            }
+        }
+    }
+    
+    func stickersLayer(containerSize: CGSize) -> some View {
+        Group {
+            if let entry = entry {
+                ForEach(entry.stickers.indices, id: \.self) { index in
+                    let binding = Binding<StickerInfo>(
+                        get: { entry.stickers[index] },
+                        set: { newValue in
+                            self.entry?.stickers[index] = newValue
+                        }
+                    )
+                    StickerView(
+                        sticker: binding,
+                        containerSize: containerSize,
+                        selectedSticker: $selectedSticker
+                    )
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Gestures
+private extension DayDetailView {
+    var backgroundGesture: some Gesture {
+        SimultaneousGesture(
+            MagnificationGesture()
+                .updating($gestureScale) { value, state, _ in state = value }
+                .onEnded { value in currentScale *= value },
+            DragGesture()
+                .updating($gestureOffset) { value, state, _ in state = value.translation }
+                .onEnded { value in
+                    currentOffset.width += value.translation.width
+                    currentOffset.height += value.translation.height
+                }
+        )
+    }
+}
+
+// MARK: - Actions
+private extension DayDetailView {
+    
+    func commitTypingIfNeeded(containerSize: CGSize) {
         guard !currentTypingText.isEmpty else { return }
         let entryToUpdate = createOrGetEntry()
         let newSticker = StickerInfo(type: .text, content: currentTypingText)
@@ -211,16 +217,37 @@ struct DayDetailView: View {
         isTyping = false
     }
     
-    // MARK: - Stickers Positioning
-    private func saveStickerPosition(_ sticker: StickerInfo, in containerSize: CGSize) {
-        // Normalize to 0..1
-        sticker.posX = min(max(sticker.posX, 0.0), 1.0)
-        sticker.posY = min(max(sticker.posY, 0.0), 1.0)
+    func saveStickerPosition(_ sticker: StickerInfo, in containerSize: CGSize) {
+        sticker.relativePosX = sticker.posX
+        sticker.relativePosY = sticker.posY
         try? modelContext.save()
     }
     
-    // MARK: - Fetch Entry
-    private func fetchEntry(for date: Date) async {
+    func saveBackgroundState() {
+        guard let entry = entry else { return }
+        entry.backgroundImageScale = currentScale
+        entry.backgroundImageOffsetX = currentOffset.width
+        entry.backgroundImageOffsetY = currentOffset.height
+        try? modelContext.save()
+    }
+    
+    func loadPhoto(_ newItem: PhotosPickerItem?) {
+        Task {
+            guard let data = try? await newItem?.loadTransferable(type: Data.self) else { return }
+            let entryToUpdate = createOrGetEntry()
+            withAnimation {
+                entryToUpdate.backgroundImageData = data
+                entryToUpdate.backgroundImageScale = 1.0
+                entryToUpdate.backgroundImageOffsetX = 0
+                entryToUpdate.backgroundImageOffsetY = 0
+                currentScale = 1.0
+                currentOffset = .zero
+            }
+            try? modelContext.save()
+        }
+    }
+    
+    func fetchEntry(for date: Date) async {
         let startOfDay = Calendar.current.startOfDay(for: date)
         let predicate = #Predicate<DayEntry> { $0.date == startOfDay }
         let descriptor = FetchDescriptor(predicate: predicate)
@@ -230,19 +257,19 @@ struct DayDetailView: View {
             self.entry = entries.first
             
             if let entry = self.entry {
-                self.currentScale = entry.backgroundImageScale
-                self.currentOffset = CGSize(width: entry.backgroundImageOffsetX,
-                                            height: entry.backgroundImageOffsetY)
+                currentScale = entry.backgroundImageScale
+                currentOffset = CGSize(width: entry.backgroundImageOffsetX,
+                                       height: entry.backgroundImageOffsetY)
             } else {
-                self.currentScale = 1.0
-                self.currentOffset = .zero
+                currentScale = 1.0
+                currentOffset = .zero
             }
         } catch {
             print("Failed to fetch entry: \(error)")
         }
     }
     
-    private func createOrGetEntry() -> DayEntry {
+    func createOrGetEntry() -> DayEntry {
         if let existingEntry = self.entry { return existingEntry }
         let newEntry = DayEntry(date: Calendar.current.startOfDay(for: date))
         modelContext.insert(newEntry)
