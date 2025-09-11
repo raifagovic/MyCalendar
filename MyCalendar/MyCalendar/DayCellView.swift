@@ -21,10 +21,7 @@ struct DayCellView: View {
                 let w = geometry.size.width
                 let h = geometry.size.height
                 
-                // editor height derived from your editorWidth + app aspect ratio
                 let editorHeight = editorWidth / AppConstants.calendarCellAspectRatio
-                
-                // scale for X and Y separately
                 let scaleX = w / editorWidth
                 let scaleY = h / editorHeight
                 
@@ -54,6 +51,7 @@ struct DayCellView: View {
                                 .font(.system(size: sticker.type == .emoji ? 24 : 10))
                                 .padding(sticker.type == .emoji ? 0 : 2)
                                 .scaleEffect(sticker.scale)
+                                .rotationEffect(.degrees(sticker.rotationDegrees)) // ✅ rotation added
                                 .position(
                                     x: sticker.posX * w,
                                     y: sticker.posY * h
