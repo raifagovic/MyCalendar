@@ -7,26 +7,31 @@
 
 import Foundation
 import SwiftData
-import UIKit
+import CoreGraphics
 
 @Model
-final class DayEntry: Identifiable {
+final class DayEntry {
+    // Unique identifier: the date itself
     @Attribute(.unique) var date: Date
-    
+
+    // Background image
     var backgroundImageData: Data?
-    var drawingData: Data?
-    
+    var drawingData: Data? // optional, for PencilKit later
+
+    // Transform state for background
     var backgroundImageScale: CGFloat = 1.0
     var backgroundImageOffsetX: CGFloat = 0.0
     var backgroundImageOffsetY: CGFloat = 0.0
-    
+
+    // Stickers (both text + emoji)
     @Relationship(deleteRule: .cascade, inverse: \StickerInfo.dayEntry)
     var stickers: [StickerInfo] = []
-    
+
     init(date: Date) {
         self.date = date
     }
 }
+
 
 
 
