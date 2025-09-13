@@ -5,7 +5,6 @@
 //  Created by Raif Agovic on 6. 9. 2025..
 //
 
-// StickerInfo.swift
 import Foundation
 import SwiftData
 import CoreGraphics

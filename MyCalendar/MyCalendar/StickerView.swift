@@ -10,17 +10,17 @@ import SwiftUI
 struct StickerView: View {
     @Binding var sticker: StickerInfo
     var containerSize: CGSize
-    @Binding var selectedSticker: StickerInfo?
+    @Binding var selectedStickerID: UUID?
 
     @GestureState private var gestureScale: CGFloat = 1.0
     @GestureState private var gestureOffset: CGSize = .zero
     @GestureState private var gestureRotation: Angle = .zero
 
-    // Extra padding for easier gesture interaction
-    private let touchPadding: CGFloat = 40
+    // Extra padding for easier gesture interaction (keeps small emoji usable)
+    private let touchPadding: CGFloat = 36
 
-    // Check if this sticker is selected
-    private var isSelected: Bool { selectedSticker?.id == sticker.id }
+    // selected by comparing IDs (robust across SwiftData rehydration)
+    private var isSelected: Bool { selectedStickerID == sticker.id }
 
     var body: some View {
         let w = containerSize.width
@@ -34,18 +34,18 @@ struct StickerView: View {
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
                     .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 1)
             )
-            // Apply rotation & scale only if selected
+            // Apply rotation & scale (gesture contributions only when selected)
             .rotationEffect(.degrees(sticker.rotationDegrees) + (isSelected ? gestureRotation : .zero))
             .scaleEffect(sticker.scale * (isSelected ? gestureScale : 1.0))
-            // Position is normalized (0..1)
+            // position is normalized (0..1)
             .position(
                 x: sticker.posX * w + (isSelected ? gestureOffset.width : 0),
                 y: sticker.posY * h + (isSelected ? gestureOffset.height : 0)
             )
-            // Extend gesture area beyond the small sticker
+            // allow easier touches around small stickers
             .contentShape(Rectangle().inset(by: -touchPadding))
             .gesture(
-                // Only allow gestures if selected
+                // enable gestures only when selected — avoids accidental manipulations
                 isSelected ? SimultaneousGesture(
                     SimultaneousGesture(
                         MagnificationGesture()
@@ -68,9 +68,8 @@ struct StickerView: View {
                 ) : nil
             )
             .onTapGesture {
-                // Select this sticker when tapped
-                selectedSticker = sticker
+                // Select this sticker by ID; tapping it again keeps selection (deselect via tapping outside)
+                selectedStickerID = sticker.id
             }
     }
 }
-
