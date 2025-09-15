@@ -303,12 +303,6 @@
 //    }
 //}
 
-//
-//  DayDetailView.swift
-//  MyCalendar
-//
-//  Created by Raif Agovic on 23. 7. 2025..
-//
 
 //
 //  DayDetailView.swift
@@ -338,8 +332,8 @@ struct DayDetailView: View {
 
     @State private var selectedStickerID: UUID?
     
-    // --- THIS IS THE CORRECT STATE VARIABLE FOR TRACKING A DRAG ---
-    @State private var initialStickerPosition: CGPoint?
+    // --- NEW STATE for the unified gesture ---
+    @State private var initialStickerState: (pos: CGPoint, scale: CGFloat, rot: Double)?
 
     @State private var currentTypingText: String = ""
     @State private var isTyping: Bool = false
@@ -372,19 +366,13 @@ private extension DayDetailView {
                 backgroundImageView(canvasSize: canvasSize)
                 stickersLayer(containerSize: canvasSize)
                 typingPreview
+                
+                // --- THE DEFINITIVE FIX: A Transparent Gesture Overlay ---
+                gestureOverlay(canvasSize: canvasSize)
             }
             .frame(width: AppConstants.editorPreviewWidth,
                    height: AppConstants.editorPreviewHeight)
             .overlay(Rectangle().stroke(Color.white.opacity(0.8), lineWidth: 2))
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        handleDragChange(value, canvasSize: canvasSize)
-                    }
-                    .onEnded { value in
-                        handleDragEnd(value, canvasSize: canvasSize)
-                    }
-            )
         }
         .frame(width: AppConstants.editorPreviewWidth,
                height: AppConstants.editorPreviewHeight)
@@ -482,44 +470,57 @@ private extension DayDetailView {
         }
     }
 
-    // --- YOUR ROBUST `stickersLayer` FUNCTION ---
     func stickersLayer(containerSize: CGSize) -> some View {
-        // We wrap in a Group to provide a single, unambiguous return type for the function.
+        // This is now a simple display layer.
         Group {
-            // We safely unwrap the optional 'entry' object.
             if let entry = entry {
-                // We iterate over the *indices* of the stickers array for a stable binding.
-                ForEach(entry.stickers.indices, id: \.self) { index in
-                    // We create a direct, robust binding to the sticker at this index.
-                    let stickerBinding = Binding<StickerInfo>(
-                        get: {
-                            // These safety checks prevent crashes if the array changes.
-                            guard entry.stickers.indices.contains(index) else {
-                                return StickerInfo(type: .text, content: "") // Return a dummy
-                            }
-                            return entry.stickers[index]
-                        },
-                        set: { newValue in
-                            guard entry.stickers.indices.contains(index) else { return }
-                            entry.stickers[index] = newValue
-                        }
-                    )
-                    
-                    // --- THE DEFINITIVE FIX FOR ALL 3 ERRORS ---
-                    // We now call the new, simplified StickerView correctly.
+                ForEach(entry.stickers) { sticker in
                     StickerView(
-                        sticker: stickerBinding,
+                        sticker: sticker,
                         containerSize: containerSize,
-                        // We calculate the 'isSelected' Bool right here.
-                        isSelected: selectedStickerID == entry.stickers[index].id
+                        isSelected: selectedStickerID == sticker.id
                     )
                 }
             }
         }
     }
+    
+    // --- THE NEW GESTURE OVERLAY VIEW ---
+    func gestureOverlay(canvasSize: CGSize) -> some View {
+        // A transparent rectangle that captures all gestures.
+        Rectangle()
+            .fill(Color.white.opacity(0.01)) // Use a near-invisible color
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        handleDragChange(value, canvasSize: canvasSize)
+                    }
+                    .onEnded { value in
+                        handleDragEnd(value, canvasSize: canvasSize)
+                    }
+            )
+            .gesture(
+                MagnificationGesture()
+                    .onChanged { value in
+                        handleScaleChange(value)
+                    }
+                    .onEnded { value in
+                        handleScaleEnd(value)
+                    }
+            )
+            .gesture(
+                RotationGesture()
+                    .onChanged { value in
+                        handleRotationChange(value)
+                    }
+                    .onEnded { value in
+                        handleRotationEnd(value)
+                    }
+            )
+    }
 }
 
-// --- GESTURE LOGIC IS NOW REBUILT AND CORRECTED ---
+// MARK: - Gestures
 private extension DayDetailView {
     var backgroundGesture: some Gesture {
         SimultaneousGesture(
@@ -534,60 +535,111 @@ private extension DayDetailView {
                 }
         )
     }
+    
+    // --- NEW, CENTRALIZED GESTURE HANDLING LOGIC ---
 
     func handleDragChange(_ value: DragGesture.Value, canvasSize: CGSize) {
         if let selectedStickerID = selectedStickerID,
            let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }) {
             
-            // --- THE CORRECT WAY TO DETECT THE START OF A DRAG ---
-            if initialStickerPosition == nil {
-                // If our state is nil, this is the first change. Record the starting position.
-                initialStickerPosition = CGPoint(
-                    x: entry!.stickers[index].posX,
-                    y: entry!.stickers[index].posY
+            // If we haven't recorded the start state, this is the first change.
+            if initialStickerState == nil {
+                initialStickerState = (
+                    pos: CGPoint(x: entry!.stickers[index].posX, y: entry!.stickers[index].posY),
+                    scale: entry!.stickers[index].scale,
+                    rot: entry!.stickers[index].rotationDegrees
                 )
             }
             
-            // Now, apply the drag translation to the *recorded* starting position.
-            let newPosX = initialStickerPosition!.x + (value.translation.width / canvasSize.width)
-            let newPosY = initialStickerPosition!.y + (value.translation.height / canvasSize.height)
+            // Apply the drag translation to the starting position.
+            let newPosX = initialStickerState!.pos.x + (value.translation.width / canvasSize.width)
+            let newPosY = initialStickerState!.pos.y + (value.translation.height / canvasSize.height)
             
-            // Update the sticker's position.
             entry?.stickers[index].posX = newPosX
             entry?.stickers[index].posY = newPosY
         }
     }
     
     func handleDragEnd(_ value: DragGesture.Value, canvasSize: CGSize) {
+        // Was this a simple tap?
+        if value.translation.width < 5 && value.translation.height < 5 {
+            // It was a tap. Perform a hit-test.
+            if let tappedSticker = sticker(at: value.startLocation, in: canvasSize) {
+                // Tap on a sticker -> Select it.
+                selectedStickerID = tappedSticker.id
+            } else {
+                // Tap on background -> Deselect and commit text.
+                selectedStickerID = nil
+                commitTypingIfNeeded(containerSize: canvasSize)
+                typingFieldFocused = false
+            }
+        } else {
+            // This was a drag. Finalize the position and clamp it.
+            if let selectedStickerID = selectedStickerID,
+               let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }) {
+                
+                entry?.stickers[index].posX = min(max(entry!.stickers[index].posX, 0.0), 1.0)
+                entry?.stickers[index].posY = min(max(entry!.stickers[index].posY, 0.0), 1.0)
+                
+                try? modelContext.save()
+            }
+        }
+        
+        // Reset the state for the next gesture.
+        initialStickerState = nil
+    }
+
+    func handleScaleChange(_ value: MagnificationGesture.Value) {
         if let selectedStickerID = selectedStickerID,
            let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }) {
             
-            // Finalize the position and clamp it within bounds.
-            entry?.stickers[index].posX = min(max(entry!.stickers[index].posX, 0.0), 1.0)
-            entry?.stickers[index].posY = min(max(entry!.stickers[index].posY, 0.0), 1.0)
-            
-            // --- CRITICAL: Reset the state for the next gesture ---
-            initialStickerPosition = nil
-            
-            try? modelContext.save()
-            
-        } else {
-            // No sticker was selected. This was a tap.
-            
-            if value.translation.width < 5 && value.translation.height < 5 {
-                if let tappedSticker = sticker(at: value.startLocation, in: canvasSize) {
-                    // It was a tap on a sticker. Select it.
-                    self.selectedStickerID = tappedSticker.id
-                } else {
-                    // It was a tap on the background. Deselect everything.
-                    self.selectedStickerID = nil
-                    commitTypingIfNeeded(containerSize: canvasSize)
-                    typingFieldFocused = false
-                }
+            if initialStickerState == nil {
+                initialStickerState = (
+                    pos: CGPoint(x: entry!.stickers[index].posX, y: entry!.stickers[index].posY),
+                    scale: entry!.stickers[index].scale,
+                    rot: entry!.stickers[index].rotationDegrees
+                )
             }
+            entry?.stickers[index].scale = initialStickerState!.scale * value
         }
     }
     
+    func handleScaleEnd(_ value: MagnificationGesture.Value) {
+        if let selectedStickerID = selectedStickerID,
+           let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }) {
+            
+            entry?.stickers[index].scale = initialStickerState!.scale * value
+            try? modelContext.save()
+        }
+        initialStickerState = nil
+    }
+
+    func handleRotationChange(_ value: RotationGesture.Value) {
+        if let selectedStickerID = selectedStickerID,
+           let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }) {
+
+            if initialStickerState == nil {
+                initialStickerState = (
+                    pos: CGPoint(x: entry!.stickers[index].posX, y: entry!.stickers[index].posY),
+                    scale: entry!.stickers[index].scale,
+                    rot: entry!.stickers[index].rotationDegrees
+                )
+            }
+            entry?.stickers[index].rotationDegrees = initialStickerState!.rot + value.degrees
+        }
+    }
+    
+    func handleRotationEnd(_ value: RotationGesture.Value) {
+        if let selectedStickerID = selectedStickerID,
+           let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }) {
+            
+            entry?.stickers[index].rotationDegrees = initialStickerState!.rot + value.degrees
+            try? modelContext.save()
+        }
+        initialStickerState = nil
+    }
+    
+    // --- NEW HELPER for hit-testing ---
     func sticker(at location: CGPoint, in containerSize: CGSize) -> StickerInfo? {
         guard let entry = entry else { return nil }
         for sticker in entry.stickers.reversed() {
@@ -677,6 +729,7 @@ private extension DayDetailView {
         return newEntry
     }
 }
+
 
 
 
