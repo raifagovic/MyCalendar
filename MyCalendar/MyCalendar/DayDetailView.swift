@@ -485,39 +485,71 @@ private extension DayDetailView {
         }
     }
     
-    // --- THE NEW GESTURE OVERLAY VIEW ---
+//    // --- THE NEW GESTURE OVERLAY VIEW ---
+//    func gestureOverlay(canvasSize: CGSize) -> some View {
+//        // A transparent rectangle that captures all gestures.
+//        Rectangle()
+//            .fill(Color.white.opacity(0.01)) // Use a near-invisible color
+//            .gesture(
+//                DragGesture(minimumDistance: 0)
+//                    .onChanged { value in
+//                        handleDragChange(value, canvasSize: canvasSize)
+//                    }
+//                    .onEnded { value in
+//                        handleDragEnd(value, canvasSize: canvasSize)
+//                    }
+//            )
+//            .gesture(
+//                MagnificationGesture()
+//                    .onChanged { value in
+//                        handleScaleChange(value)
+//                    }
+//                    .onEnded { value in
+//                        handleScaleEnd(value)
+//                    }
+//            )
+//            .gesture(
+//                RotationGesture()
+//                    .onChanged { value in
+//                        handleRotationChange(value)
+//                    }
+//                    .onEnded { value in
+//                        handleRotationEnd(value)
+//                    }
+//            )
+//    }
     func gestureOverlay(canvasSize: CGSize) -> some View {
-        // A transparent rectangle that captures all gestures.
         Rectangle()
-            .fill(Color.white.opacity(0.01)) // Use a near-invisible color
+            .fill(Color.white.opacity(0.01)) // invisible touch area
             .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        handleDragChange(value, canvasSize: canvasSize)
-                    }
-                    .onEnded { value in
-                        handleDragEnd(value, canvasSize: canvasSize)
-                    }
-            )
-            .gesture(
-                MagnificationGesture()
-                    .onChanged { value in
-                        handleScaleChange(value)
-                    }
-                    .onEnded { value in
-                        handleScaleEnd(value)
-                    }
-            )
-            .gesture(
-                RotationGesture()
-                    .onChanged { value in
-                        handleRotationChange(value)
-                    }
-                    .onEnded { value in
-                        handleRotationEnd(value)
-                    }
+                SimultaneousGesture(
+                    SimultaneousGesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { value in
+                                handleDragChange(value, canvasSize: canvasSize)
+                            }
+                            .onEnded { value in
+                                handleDragEnd(value, canvasSize: canvasSize)
+                            },
+                        MagnificationGesture()
+                            .onChanged { value in
+                                handleScaleChange(value)
+                            }
+                            .onEnded { value in
+                                handleScaleEnd(value)
+                            }
+                    ),
+                    RotationGesture()
+                        .onChanged { value in
+                            handleRotationChange(value)
+                        }
+                        .onEnded { value in
+                            handleRotationEnd(value)
+                        }
+                )
             )
     }
+
 }
 
 // MARK: - Gestures
@@ -604,15 +636,27 @@ private extension DayDetailView {
         }
     }
     
+//    func handleScaleEnd(_ value: MagnificationGesture.Value) {
+//        if let selectedStickerID = selectedStickerID,
+//           let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }) {
+//            
+//            entry?.stickers[index].scale = initialStickerState!.scale * value
+//            try? modelContext.save()
+//        }
+//        initialStickerState = nil
+//    }
+    
     func handleScaleEnd(_ value: MagnificationGesture.Value) {
         if let selectedStickerID = selectedStickerID,
-           let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }) {
+           let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }),
+           let initial = initialStickerState {
             
-            entry?.stickers[index].scale = initialStickerState!.scale * value
+            entry?.stickers[index].scale = initial.scale * value
             try? modelContext.save()
         }
         initialStickerState = nil
     }
+
 
     func handleRotationChange(_ value: RotationGesture.Value) {
         if let selectedStickerID = selectedStickerID,
@@ -629,15 +673,27 @@ private extension DayDetailView {
         }
     }
     
+//    func handleRotationEnd(_ value: RotationGesture.Value) {
+//        if let selectedStickerID = selectedStickerID,
+//           let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }) {
+//            
+//            entry?.stickers[index].rotationDegrees = initialStickerState!.rot + value.degrees
+//            try? modelContext.save()
+//        }
+//        initialStickerState = nil
+//    }
+    
     func handleRotationEnd(_ value: RotationGesture.Value) {
         if let selectedStickerID = selectedStickerID,
-           let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }) {
+           let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }),
+           let initial = initialStickerState {
             
-            entry?.stickers[index].rotationDegrees = initialStickerState!.rot + value.degrees
+            entry?.stickers[index].rotationDegrees = initial.rot + value.degrees
             try? modelContext.save()
         }
         initialStickerState = nil
     }
+
     
     // --- NEW HELPER for hit-testing ---
     func sticker(at location: CGPoint, in containerSize: CGSize) -> StickerInfo? {
