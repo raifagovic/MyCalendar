@@ -465,6 +465,15 @@ struct DayDetailView: View {
 
     @State private var entry: DayEntry?
     @State private var selectedPhoto: PhotosPickerItem?
+    
+    // Add near other @State declarations
+    private enum ScaleGestureTarget {
+        case sticker(UUID)
+        case background
+    }
+
+    @State private var activeScaleTarget: ScaleGestureTarget? = nil
+
 
     @State private var currentScale: CGFloat = 1.0
     @State private var currentOffset: CGSize = .zero
@@ -513,7 +522,6 @@ private extension DayDetailView {
                 stickersLayer(containerSize: canvasSize)
                 typingPreview
 
-                // --- FIXED: Conditional gesture updates ---
                 Rectangle()
                     .fill(Color.white.opacity(0.01)) // Invisible touch area
                     .contentShape(Rectangle())
@@ -539,12 +547,12 @@ private extension DayDetailView {
                                     },
                                 MagnificationGesture()
                                     .updating($stickerGestureScale) { value, state, _ in
-                                        if selectedStickerID != nil {
+                                        if selectedStickerID != nil { // ONLY update sticker state if sticker is selected
                                             state = value
                                         }
                                     }
                                     .updating($backgroundGestureScale) { value, state, _ in
-                                        if selectedStickerID == nil {
+                                        if selectedStickerID == nil { // ONLY update background state if NO sticker is selected
                                             state = value
                                         }
                                     }
@@ -557,10 +565,11 @@ private extension DayDetailView {
                             ),
                             RotationGesture()
                                 .updating($stickerGestureRotation) { value, state, _ in
-                                    if selectedStickerID != nil {
+                                    if selectedStickerID != nil { // ONLY update sticker state if sticker is selected
                                         state = value
                                     }
                                 }
+                                // No backgroundGestureRotation needed
                                 .onChanged { value in
                                     handleUnifiedRotationChange(value, canvasSize: canvasSize)
                                 }
@@ -685,7 +694,8 @@ private extension DayDetailView {
 
 // MARK: - Gestures
 private extension DayDetailView {
-
+    
+   
     func handleUnifiedDragChange(_ value: DragGesture.Value, canvasSize: CGSize) {
         if let selectedStickerID = selectedStickerID,
            let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }) {
@@ -745,11 +755,20 @@ private extension DayDetailView {
         // Reset the state for the next gesture.
         initialStickerState = nil
     }
-
+    
     func handleUnifiedScaleChange(_ value: MagnificationGesture.Value, canvasSize: CGSize) {
-        if let selectedStickerID = selectedStickerID,
-           let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }) {
+        // Record the target once, at the start of the gesture
+        if activeScaleTarget == nil {
+            if let sel = selectedStickerID {
+                activeScaleTarget = .sticker(sel)
+            } else {
+                activeScaleTarget = .background
+            }
+        }
 
+        switch activeScaleTarget {
+        case .sticker(let stickerID):
+            guard let index = entry?.stickers.firstIndex(where: { $0.id == stickerID }) else { return }
             if initialStickerState == nil {
                 initialStickerState = (
                     pos: CGPoint(x: entry!.stickers[index].posX, y: entry!.stickers[index].posY),
@@ -757,54 +776,121 @@ private extension DayDetailView {
                     rot: entry!.stickers[index].rotationDegrees
                 )
             }
+            // Live-scale the sticker only
             entry?.stickers[index].scale = initialStickerState!.scale * value
-        } else {
-            // No sticker selected, apply to background
-            // live updates handled via @GestureState backgroundGestureScale so nothing required here
+
+        case .background:
+            // Background live preview is handled via @GestureState backgroundGestureScale.
+            // Nothing to do here for live updates (we finalize in .onEnded).
+            break
+
+        case .none:
+            break
         }
     }
 
     func handleUnifiedScaleEnd(_ value: MagnificationGesture.Value, canvasSize: CGSize) {
-        if let selectedStickerID = selectedStickerID,
-           let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }),
-           let initial = initialStickerState {
-
-            entry?.stickers[index].scale = initial.scale * value
-            try? modelContext.save()
-        } else {
-            // No sticker selected, finalize background scale
-            currentScale *= value
-            try? modelContext.save()
+        defer {
+            // Always reset for the next gesture
+            initialStickerState = nil
+            activeScaleTarget = nil
         }
-        initialStickerState = nil
-    }
 
-    func handleUnifiedRotationChange(_ value: RotationGesture.Value, canvasSize: CGSize) {
-        if let selectedStickerID = selectedStickerID,
-           let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }) {
+        if let target = activeScaleTarget {
+            switch target {
+            case .sticker(let stickerID):
+                // Finalize sticker scale
+                if let index = entry?.stickers.firstIndex(where: { $0.id == stickerID }),
+                   let initial = initialStickerState {
+                    entry?.stickers[index].scale = initial.scale * value
+                    try? modelContext.save()
+                }
 
-            if initialStickerState == nil {
-                initialStickerState = (
-                    pos: CGPoint(x: entry!.stickers[index].posX, y: entry!.stickers[index].posY),
-                    scale: entry!.stickers[index].scale,
-                    rot: entry!.stickers[index].rotationDegrees
-                )
+            case .background:
+                // Finalize background scale
+                currentScale *= value
+                try? modelContext.save()
             }
-            entry?.stickers[index].rotationDegrees = initialStickerState!.rot + value.degrees
+        } else {
+            // Fallback: if nothing recorded, behave like before
+            if let selectedStickerID = selectedStickerID,
+               let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }),
+               let initial = initialStickerState {
+                entry?.stickers[index].scale = initial.scale * value
+                try? modelContext.save()
+            } else {
+                currentScale *= value
+                try? modelContext.save()
+            }
         }
     }
 
-    func handleUnifiedRotationEnd(_ value: RotationGesture.Value, canvasSize: CGSize) {
-        if let selectedStickerID = selectedStickerID,
-           let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }),
-           let initial = initialStickerState {
 
-            entry?.stickers[index].rotationDegrees = initial.rot + value.degrees
-            try? modelContext.save()
+  
+//    func handleUnifiedScaleChange(_ value: MagnificationGesture.Value, canvasSize: CGSize) {
+//            if let selectedStickerID = selectedStickerID,
+//               let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }) {
+//
+//                if initialStickerState == nil {
+//                    initialStickerState = (
+//                        pos: CGPoint(x: entry!.stickers[index].posX, y: entry!.stickers[index].posY),
+//                        scale: entry!.stickers[index].scale,
+//                        rot: entry!.stickers[index].rotationDegrees
+//                    )
+//                }
+//                entry?.stickers[index].scale = initialStickerState!.scale * value
+//            }
+//            // No 'else' block needed here. Background scale updates are handled visually by
+//            // `backgroundImageView` using `backgroundGestureScale` when selectedStickerID is nil.
+//        }
+//
+//        func handleUnifiedScaleEnd(_ value: MagnificationGesture.Value, canvasSize: CGSize) {
+//            if let selectedStickerID = selectedStickerID,
+//               let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }),
+//               let initial = initialStickerState {
+//
+//                // Finalize sticker scale
+//                entry?.stickers[index].scale = initial.scale * value
+//                try? modelContext.save()
+//            } else {
+//                // Only update currentScale if NO sticker was selected for this gesture
+//                currentScale *= value
+//                try? modelContext.save()
+//            }
+//            initialStickerState = nil // Reset
+//        }
+
+        func handleUnifiedRotationChange(_ value: RotationGesture.Value, canvasSize: CGSize) {
+            if let selectedStickerID = selectedStickerID,
+               let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }) {
+
+                if initialStickerState == nil {
+                    initialStickerState = (
+                        pos: CGPoint(x: entry!.stickers[index].posX, y: entry!.stickers[index].posY),
+                        scale: entry!.stickers[index].scale,
+                        rot: entry!.stickers[index].rotationDegrees
+                    )
+                }
+                entry?.stickers[index].rotationDegrees = initialStickerState!.rot + value.degrees
+            }
+            // No 'else' block needed here as background does not rotate.
         }
-        // No rotation for background image
-        initialStickerState = nil
-    }
+
+        func handleUnifiedRotationEnd(_ value: RotationGesture.Value, canvasSize: CGSize) {
+            if let selectedStickerID = selectedStickerID,
+               let index = entry?.stickers.firstIndex(where: { $0.id == selectedStickerID }),
+               let initial = initialStickerState {
+
+                // Finalize sticker rotation
+                entry?.stickers[index].rotationDegrees = initial.rot + value.degrees
+                try? modelContext.save()
+            }
+            // No 'else' block needed here because the background doesn't rotate.
+            // We only save the sticker's rotation if it was selected.
+            initialStickerState = nil // Reset
+        }
+
+
 
     func sticker(at location: CGPoint, in containerSize: CGSize) -> StickerInfo? {
         guard let entry = entry else { return nil }
