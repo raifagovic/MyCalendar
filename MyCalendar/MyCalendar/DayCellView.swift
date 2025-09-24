@@ -46,12 +46,21 @@ struct DayCellView: View {
                     
                     // Render all stickers (text + emoji)
                     if let stickers = dayEntry?.stickers {
+                        // Compute ratio between DayDetailView editor and this cell
+                        let editorWidth = AppConstants.editorPreviewWidth
+                        let editorHeight = AppConstants.editorPreviewHeight
+                        let scaleX = w / editorWidth
+                        let scaleY = h / editorHeight
+                        let globalScale = min(scaleX, scaleY) // keep proportions identical
+
                         ForEach(stickers) { sticker in
+                            // Base font size defined in editor coordinates
+                            let baseFontSize: CGFloat = (sticker.type == .emoji) ? 24 : 12
+
                             Text(sticker.content.isEmpty ? " " : sticker.content)
-                                .font(.system(size: sticker.type == .emoji ? 24 : 10))
-                                .padding(sticker.type == .emoji ? 0 : 2)
-                                .scaleEffect(sticker.scale)
-                                .rotationEffect(.degrees(sticker.rotationDegrees)) // ✅ rotation added
+                                .font(.system(size: baseFontSize))
+                                .scaleEffect(sticker.scale * globalScale)
+                                .rotationEffect(.degrees(sticker.rotationDegrees))
                                 .position(
                                     x: sticker.posX * w,
                                     y: sticker.posY * h
