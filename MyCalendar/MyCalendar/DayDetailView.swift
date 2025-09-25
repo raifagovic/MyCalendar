@@ -102,6 +102,7 @@ private extension DayDetailView {
                 Rectangle()
                     .fill(Color.white.opacity(0.01)) // Invisible touch area
                     .contentShape(Rectangle())
+                    .allowsHitTesting(!isDrawing)
                     .gesture(
                         SimultaneousGesture(
                             SimultaneousGesture(
