@@ -11,6 +11,7 @@ import PencilKit
 struct DrawingView: UIViewRepresentable {
     @Binding var drawingData: Data?
     var isEditable: Bool
+    var showToolPicker: Bool = false  // <-- new parameter
 
     class Coordinator: NSObject, PKCanvasViewDelegate {
         var parent: DrawingView
@@ -42,17 +43,40 @@ struct DrawingView: UIViewRepresentable {
             canvas.drawing = drawing
         }
 
+        // Attach PKToolPicker
+        if showToolPicker {
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                if let window = windowScene.windows.first {
+                    let toolPicker = PKToolPicker.shared(for: window)
+                    toolPicker?.setVisible(true, forFirstResponder: canvas)
+                    toolPicker?.addObserver(canvas)
+                    canvas.becomeFirstResponder()
+                }
+            }
+        }
+
         return canvas
     }
 
     func updateUIView(_ uiView: PKCanvasView, context: Context) {
         uiView.isUserInteractionEnabled = isEditable
 
+        // Prevent overwriting unsaved work
         if let data = drawingData,
-           let drawing = try? PKDrawing(data: data) {
-            // Prevent overwriting unsaved work
-            if drawing != uiView.drawing {
-                uiView.drawing = drawing
+           let drawing = try? PKDrawing(data: data),
+           drawing != uiView.drawing {
+            uiView.drawing = drawing
+        }
+
+        // Update tool picker visibility
+        if showToolPicker {
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                if let window = windowScene.windows.first {
+                    let toolPicker = PKToolPicker.shared(for: window)
+                    toolPicker?.setVisible(true, forFirstResponder: uiView)
+                    toolPicker?.addObserver(uiView)
+                    uiView.becomeFirstResponder()
+                }
             }
         }
     }

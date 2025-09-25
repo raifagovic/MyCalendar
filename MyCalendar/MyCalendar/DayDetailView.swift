@@ -51,7 +51,7 @@ struct DayDetailView: View {
     @State private var isTyping: Bool = false
     @FocusState private var typingFieldFocused: Bool
     
-    @State private var drawingMode: Bool = false
+    @State private var isDrawing: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -81,14 +81,16 @@ private extension DayDetailView {
                 stickersLayer(containerSize: canvasSize)
                 typingPreview
                 
-                // Drawing layer
-                if let entry = entry {
+                
+                if isDrawing, let entry = entry {
                     DrawingView(drawingData: Binding(
-                        get: { entry.drawingData },
+                        get: { entry.drawingData ?? Data() },
                         set: { entry.drawingData = $0; try? modelContext.save() }
-                    ), isEditable: drawingMode)
-                    .allowsHitTesting(drawingMode)
+                    ))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.accentColor, lineWidth: 2))
                 }
+
 
                 Rectangle()
                     .fill(Color.white.opacity(0.01)) // Invisible touch area
@@ -547,3 +549,5 @@ private extension DayDetailView {
         return newEntry
     }
 }
+
+
