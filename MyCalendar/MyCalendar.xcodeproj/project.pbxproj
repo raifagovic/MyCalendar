@@ -89,7 +89,6 @@
 			children = (
 				DC5FDE1C2E16AA1900FAB44F /* MyCalendarApp.swift */,
 				DC5FDE1E2E16AA1900FAB44F /* ContentView.swift */,
-				DC5FDE2E2E1C449E00FAB44F /* DrawingView.swift */,
 				DC5FDE202E16AA1900FAB44F /* DayEntry.swift */,
 				DC5FDE222E16AA1C00FAB44F /* Assets.xcassets */,
 				DC5FDE242E16AA1C00FAB44F /* Preview Content */,
@@ -109,6 +108,7 @@
 				DC3F99BF2E4C864A00E8B7BB /* YearHeaderView.swift */,
 				DC3F99C92E6C95DF00E8B7BB /* StickerInfo.swift */,
 				DC3F99CB2E6C97E800E8B7BB /* StickerView.swift */,
+				DC5FDE2E2E1C449E00FAB44F /* DrawingView.swift */,
 			);
 			path = MyCalendar;
 			sourceTree = "<group>";

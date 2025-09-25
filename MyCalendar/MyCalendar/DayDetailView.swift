@@ -86,7 +86,7 @@ private extension DayDetailView {
                 if isDrawing, let entry = entry {
                     DrawingView(
                         drawingData: Binding(
-                            get: { entry.drawingData ?? Data() },
+                            get: { entry.drawingData },
                             set: { entry.drawingData = $0; try? modelContext.save() }
                         ),
                         isEditable: true,
@@ -180,7 +180,7 @@ private extension DayDetailView {
             }
 
             Button {
-                drawingMode.toggle()
+                isDrawing.toggle()
             } label: {
                 Image(systemName: "pencil.tip")
                     .font(.system(size: 24))
