@@ -201,7 +201,7 @@ private extension DayDetailView {
             .focused($typingFieldFocused)
             .frame(width: 0, height: 0)
             .opacity(0.01)
-            .onChange(of: currentTypingText) { _ in isTyping = true }
+            .onChange(of: currentTypingText) { isTyping = true }
     }
 
     var toolbarDoneButton: some ToolbarContent {
