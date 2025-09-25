@@ -82,15 +82,22 @@ private extension DayDetailView {
                 typingPreview
                 
                 
+                // Drawing layer
                 if isDrawing, let entry = entry {
-                    DrawingView(drawingData: Binding(
-                        get: { entry.drawingData ?? Data() },
-                        set: { entry.drawingData = $0; try? modelContext.save() }
-                    ))
+                    DrawingView(
+                        drawingData: Binding(
+                            get: { entry.drawingData ?? Data() },
+                            set: { entry.drawingData = $0; try? modelContext.save() }
+                        ),
+                        isEditable: true,
+                        showToolPicker: true
+                    )
                     .clipShape(RoundedRectangle(cornerRadius: 6))
-                    .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.accentColor, lineWidth: 2))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(Color.accentColor, lineWidth: 2)
+                    )
                 }
-
 
                 Rectangle()
                     .fill(Color.white.opacity(0.01)) // Invisible touch area
