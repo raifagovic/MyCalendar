@@ -175,7 +175,6 @@ private extension DayDetailView {
             } label: {
                 Image(systemName: "pencil.tip")
                     .font(.system(size: 24))
-                    .foregroundColor(drawingMode ? .accentColor : .primary)
             }
 
             Button(role: .destructive) {
