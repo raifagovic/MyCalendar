@@ -8,6 +8,7 @@
 import SwiftUI
 import PhotosUI
 import SwiftData
+import PencilKit
 
 struct DayDetailView: View {
     @Environment(\.modelContext) private var modelContext
@@ -49,6 +50,8 @@ struct DayDetailView: View {
     @State private var currentTypingText: String = ""
     @State private var isTyping: Bool = false
     @FocusState private var typingFieldFocused: Bool
+    
+    @State private var drawingMode: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -77,6 +80,15 @@ private extension DayDetailView {
                 backgroundImageView(canvasSize: canvasSize)
                 stickersLayer(containerSize: canvasSize)
                 typingPreview
+                
+                // Drawing layer
+                if let entry = entry {
+                    DrawingView(drawingData: Binding(
+                        get: { entry.drawingData },
+                        set: { entry.drawingData = $0; try? modelContext.save() }
+                    ), isEditable: drawingMode)
+                    .allowsHitTesting(drawingMode)
+                }
 
                 Rectangle()
                     .fill(Color.white.opacity(0.01)) // Invisible touch area
@@ -159,10 +171,11 @@ private extension DayDetailView {
             }
 
             Button {
-                // Placeholder for future drawing tools
+                drawingMode.toggle()
             } label: {
                 Image(systemName: "pencil.tip")
                     .font(.system(size: 24))
+                    .foregroundColor(drawingMode ? .accentColor : .primary)
             }
 
             Button(role: .destructive) {
@@ -225,7 +238,7 @@ private extension DayDetailView {
                     .scaleEffect(currentScale * backgroundGestureScale)
                     .offset(x: currentOffset.width + backgroundGestureOffset.width,
                             y: currentOffset.height + backgroundGestureOffset.height)
-                    .clipped()
+                     .clipped()
             } else {
                 Rectangle()
                     .fill(Color.black.opacity(0.1))
