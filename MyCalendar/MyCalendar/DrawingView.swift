@@ -11,7 +11,7 @@ import PencilKit
 struct DrawingView: UIViewRepresentable {
     @Binding var drawingData: Data?
     var isEditable: Bool
-    var showToolPicker: Bool = false  // <-- new parameter
+    var showToolPicker: Bool = false
 
     class Coordinator: NSObject, PKCanvasViewDelegate {
         var parent: DrawingView
@@ -43,13 +43,14 @@ struct DrawingView: UIViewRepresentable {
             canvas.drawing = drawing
         }
 
-        // Attach PKToolPicker
+        // Attach PKToolPicker once when the view is created
         if showToolPicker {
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                if let window = windowScene.windows.first {
-                    let toolPicker = PKToolPicker.shared(for: window)
-                    toolPicker?.setVisible(true, forFirstResponder: canvas)
-                    toolPicker?.addObserver(canvas)
+            DispatchQueue.main.async {
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let window = windowScene.windows.first,
+                   let toolPicker = PKToolPicker.shared(for: window) {
+                    toolPicker.setVisible(true, forFirstResponder: canvas)
+                    toolPicker.addObserver(canvas)
                     canvas.becomeFirstResponder()
                 }
             }
@@ -67,18 +68,7 @@ struct DrawingView: UIViewRepresentable {
            drawing != uiView.drawing {
             uiView.drawing = drawing
         }
-
-        // Update tool picker visibility
-        if showToolPicker {
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                if let window = windowScene.windows.first {
-                    let toolPicker = PKToolPicker.shared(for: window)
-                    toolPicker?.setVisible(true, forFirstResponder: uiView)
-                    toolPicker?.addObserver(uiView)
-                    uiView.becomeFirstResponder()
-                }
-            }
-        }
     }
 }
+
 

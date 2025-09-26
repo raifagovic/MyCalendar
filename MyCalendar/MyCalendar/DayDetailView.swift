@@ -92,11 +92,15 @@ private extension DayDetailView {
                         isEditable: true,
                         showToolPicker: true
                     )
+                    .frame(width: AppConstants.editorPreviewWidth,
+                           height: AppConstants.editorPreviewHeight)
                     .clipShape(RoundedRectangle(cornerRadius: 6))
                     .overlay(
                         RoundedRectangle(cornerRadius: 6)
                             .stroke(Color.accentColor, lineWidth: 2)
                     )
+                    .transition(.move(edge: .bottom)) // optional slide animation like Notes
+                    .zIndex(1) // ensure it’s on top of background/stickers
                 }
 
                 Rectangle()
@@ -156,6 +160,7 @@ private extension DayDetailView {
                                 }
                         )
                     )
+                    .zIndex(0)
             }
             .frame(width: AppConstants.editorPreviewWidth,
                    height: AppConstants.editorPreviewHeight)
