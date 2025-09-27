@@ -62,7 +62,32 @@ struct DayDetailView: View {
             }
             .navigationTitle("Edit Day")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { toolbarDoneButton }
+            .toolbar {
+                // Back button (left side)
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Back") {
+                        try? modelContext.save()   // save all changes
+                        dismiss()                  // then dismiss detail view
+                    }
+                }
+                
+                // Done button (right side)
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        commitTypingIfNeeded(containerSize: CGSize(width: AppConstants.editorPreviewWidth,
+                                                                   height: AppConstants.editorPreviewHeight))
+                        saveBackgroundState()
+                        try? modelContext.save()
+                        
+                        if isDrawing {
+                            isDrawing = false   // just exit drawing mode
+                        } else {
+                            typingFieldFocused = false
+                            isTyping = false    // just dismiss keyboard
+                        }
+                    }
+                }
+            }
         }
         .task(id: date) { await fetchEntry(for: date) }
         .onDisappear { saveBackgroundState() }
@@ -218,15 +243,15 @@ private extension DayDetailView {
             .onChange(of: currentTypingText) { isTyping = true }
     }
 
-    var toolbarDoneButton: some ToolbarContent {
-        ToolbarItem(placement: .confirmationAction) {
-            Button("Done") {
-                commitTypingIfNeeded(containerSize: CGSize(width: AppConstants.editorPreviewWidth,
-                                                           height: AppConstants.editorPreviewHeight))
-                dismiss()
-            }
-        }
-    }
+//    var toolbarDoneButton: some ToolbarContent {
+//        ToolbarItem(placement: .confirmationAction) {
+//            Button("Done") {
+//                commitTypingIfNeeded(containerSize: CGSize(width: AppConstants.editorPreviewWidth,
+//                                                           height: AppConstants.editorPreviewHeight))
+//                dismiss()
+//            }
+//        }
+//    }
 
     var typingPreview: some View {
         Group {
