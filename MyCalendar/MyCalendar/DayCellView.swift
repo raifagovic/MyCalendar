@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import PencilKit
 
 struct DayCellView: View {
     let day: Date
@@ -46,17 +47,15 @@ struct DayCellView: View {
                     
                     // Render all stickers (text + emoji)
                     if let stickers = dayEntry?.stickers {
-                        // Compute ratio between DayDetailView editor and this cell
                         let editorWidth = AppConstants.editorPreviewWidth
                         let editorHeight = AppConstants.editorPreviewHeight
                         let scaleX = w / editorWidth
                         let scaleY = h / editorHeight
-                        let globalScale = min(scaleX, scaleY) // keep proportions identical
-
+                        let globalScale = min(scaleX, scaleY)
+                        
                         ForEach(stickers) { sticker in
-                            // Base font size defined in editor coordinates
                             let baseFontSize: CGFloat = (sticker.type == .emoji) ? 24 : 12
-
+                            
                             Text(sticker.content.isEmpty ? " " : sticker.content)
                                 .font(.system(size: baseFontSize))
                                 .scaleEffect(sticker.scale * globalScale)
@@ -67,9 +66,22 @@ struct DayCellView: View {
                                 )
                         }
                     }
+                    
+                    // Render saved drawing on top
+                    if let data = dayEntry?.drawingData,
+                       let drawing = try? PKDrawing(data: data) {
+                        Canvas { context, canvasSize in
+                            let image = drawing.image(from: CGRect(origin: .zero, size: canvasSize), scale: 1)
+                            context.draw(Image(uiImage: image), at: .zero)
+                        }
+                        .frame(width: w, height: h)
+                        .clipped()
+                        .allowsHitTesting(false)
+                    }
                 }
             }
             .aspectRatio(AppConstants.calendarCellAspectRatio, contentMode: .fit)
+            
             
             VStack {
                 Text("\(Calendar.current.component(.day, from: day))")

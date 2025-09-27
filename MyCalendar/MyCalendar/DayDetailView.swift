@@ -243,16 +243,6 @@ private extension DayDetailView {
             .onChange(of: currentTypingText) { isTyping = true }
     }
 
-//    var toolbarDoneButton: some ToolbarContent {
-//        ToolbarItem(placement: .confirmationAction) {
-//            Button("Done") {
-//                commitTypingIfNeeded(containerSize: CGSize(width: AppConstants.editorPreviewWidth,
-//                                                           height: AppConstants.editorPreviewHeight))
-//                dismiss()
-//            }
-//        }
-//    }
-
     var typingPreview: some View {
         Group {
             if isTyping && !currentTypingText.isEmpty {
