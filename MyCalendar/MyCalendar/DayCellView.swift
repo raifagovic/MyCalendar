@@ -27,6 +27,7 @@ struct DayCellView: View {
                 let scaleY = h / editorHeight
                 
                 ZStack {
+                    // Background
                     if let imageData = dayEntry?.backgroundImageData,
                        let uiImage = UIImage(data: imageData) {
                         
@@ -45,7 +46,7 @@ struct DayCellView: View {
                         Color.clear
                     }
                     
-                    // Render all stickers (text + emoji)
+                    // Stickers below drawings
                     if let stickers = dayEntry?.stickers {
                         let editorWidth = AppConstants.editorPreviewWidth
                         let editorHeight = AppConstants.editorPreviewHeight
@@ -67,7 +68,7 @@ struct DayCellView: View {
                         }
                     }
                     
-                    // Render saved drawing on top
+                    // Drawings above stickers
                     if let data = dayEntry?.drawingData,
                        let drawing = try? PKDrawing(data: data) {
                         Canvas { context, canvasSize in
@@ -82,7 +83,7 @@ struct DayCellView: View {
             }
             .aspectRatio(AppConstants.calendarCellAspectRatio, contentMode: .fit)
             
-            
+            // Day number overlay
             VStack {
                 Text("\(Calendar.current.component(.day, from: day))")
                     .font(.headline)
@@ -98,6 +99,7 @@ struct DayCellView: View {
         .contentShape(Rectangle())
     }
 }
+
 
 
 
