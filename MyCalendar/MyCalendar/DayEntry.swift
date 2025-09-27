@@ -8,6 +8,7 @@
 import Foundation
 import SwiftData
 import CoreGraphics
+import PencilKit
 
 @Model
 final class DayEntry {

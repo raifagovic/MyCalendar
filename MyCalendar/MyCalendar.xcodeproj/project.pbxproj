@@ -29,7 +29,6 @@
 		DC5FDE262E16AA1C00FAB44F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC5FDE252E16AA1C00FAB44F /* Preview Assets.xcassets */; };
 		DC5FDE2D2E18808800FAB44F /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE2C2E18808800FAB44F /* CalendarView.swift */; };
 		DC5FDE2F2E1C449E00FAB44F /* DrawingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE2E2E1C449E00FAB44F /* DrawingView.swift */; };
-		DCDBCB332E87EE7700DB5DFD /* Drawinginfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDBCB322E87EE7700DB5DFD /* Drawinginfo.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -56,7 +55,6 @@
 		DC5FDE252E16AA1C00FAB44F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		DC5FDE2C2E18808800FAB44F /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		DC5FDE2E2E1C449E00FAB44F /* DrawingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawingView.swift; sourceTree = "<group>"; };
-		DCDBCB322E87EE7700DB5DFD /* Drawinginfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Drawinginfo.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,7 +109,6 @@
 				DC3F99CB2E6C97E800E8B7BB /* StickerView.swift */,
 				DC3F99C92E6C95DF00E8B7BB /* StickerInfo.swift */,
 				DC5FDE2E2E1C449E00FAB44F /* DrawingView.swift */,
-				DCDBCB322E87EE7700DB5DFD /* Drawinginfo.swift */,
 			);
 			path = MyCalendar;
 			sourceTree = "<group>";
@@ -213,7 +210,6 @@
 				DC5FDE2F2E1C449E00FAB44F /* DrawingView.swift in Sources */,
 				DC3F999E2E310F4200E8B7BB /* DayCellView.swift in Sources */,
 				DC5FDE2D2E18808800FAB44F /* CalendarView.swift in Sources */,
-				DCDBCB332E87EE7700DB5DFD /* Drawinginfo.swift in Sources */,
 				DC5FDE1D2E16AA1900FAB44F /* MyCalendarApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
