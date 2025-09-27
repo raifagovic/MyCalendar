@@ -106,6 +106,18 @@ private extension DayDetailView {
                 stickersLayer(containerSize: canvasSize)
                 typingPreview
                 
+                // Always show saved drawing
+                if let data = entry?.drawingData,
+                   let drawing = try? PKDrawing(data: data) {
+                    Canvas { context, size in
+                        let image = drawing.image(from: CGRect(origin: .zero, size: size), scale: 1)
+                        context.draw(Image(uiImage: image), at: .zero)
+                    }
+                    .frame(width: AppConstants.editorPreviewWidth,
+                           height: AppConstants.editorPreviewHeight)
+                    .clipped()
+                    .allowsHitTesting(false)
+                }
                 
                 // Drawing layer
                 if isDrawing, let entry = entry {
