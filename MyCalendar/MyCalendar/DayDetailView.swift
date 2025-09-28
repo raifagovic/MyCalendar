@@ -16,7 +16,8 @@ struct DayDetailView: View {
 
     let date: Date
 
-    @State private var entry: DayEntry?
+//    @State private var entry: DayEntry?
+    @Bindable var entry: DayEntry
     @State private var selectedPhoto: PhotosPickerItem?
     
     // Base font sizes in editor coordinate space (used so DayCellView can scale down exactly)
@@ -107,7 +108,7 @@ private extension DayDetailView {
                 typingPreview
                 
                 // Always show saved drawing
-                if let data = entry?.drawingData,
+                if let data = entry.drawingData,
                    let drawing = try? PKDrawing(data: data) {
                     Canvas { context, size in
                         let image = drawing.image(from: CGRect(origin: .zero, size: size), scale: 1)
@@ -120,25 +121,28 @@ private extension DayDetailView {
                 }
                 
                 // Drawing layer
-                if isDrawing, let entry = entry {
-                    DrawingView(
-                        drawingData: Binding(
-                            get: { entry.drawingData },
-                            set: { entry.drawingData = $0; try? modelContext.save() }
-                        ),
-                        isEditable: true,
-                        showToolPicker: true
-                    )
-                    .frame(width: AppConstants.editorPreviewWidth,
-                           height: AppConstants.editorPreviewHeight)
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 6)
-                            .stroke(Color.accentColor, lineWidth: 2)
-                    )
-                    .transition(.move(edge: .bottom)) // optional slide animation like Notes
-                    .zIndex(1) // ensure it’s on top of background/stickers
+                if isDrawing {
+                    if let entry = entry {
+                        DrawingView(
+                            drawingData: Binding(
+                                get: { entry.drawingData },
+                                set: { entry.drawingData = $0; try? modelContext.save() }
+                            ),
+                            isEditable: true,
+                            showToolPicker: true
+                        )
+                        .frame(width: AppConstants.editorPreviewWidth,
+                               height: AppConstants.editorPreviewHeight)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6)
+                                .stroke(Color.accentColor, lineWidth: 2)
+                        )
+                        .transition(.move(edge: .bottom))
+                        .zIndex(1)
+                    }
                 }
+
 
                 Rectangle()
                     .fill(Color.white.opacity(0.01)) // Invisible touch area
