@@ -16,8 +16,7 @@ struct DayDetailView: View {
 
     let date: Date
 
-//    @State private var entry: DayEntry?
-    @Bindable var entry: DayEntry
+    @State private var entry: DayEntry?
     @State private var selectedPhoto: PhotosPickerItem?
     
     // Base font sizes in editor coordinate space (used so DayCellView can scale down exactly)
@@ -108,7 +107,7 @@ private extension DayDetailView {
                 typingPreview
                 
                 // Always show saved drawing
-                if let data = entry.drawingData,
+                if let data = entry?.drawingData,
                    let drawing = try? PKDrawing(data: data) {
                     Canvas { context, size in
                         let image = drawing.image(from: CGRect(origin: .zero, size: size), scale: 1)
