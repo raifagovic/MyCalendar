@@ -77,15 +77,15 @@ struct DayDetailView: View {
                         commitTypingIfNeeded(containerSize: CGSize(width: AppConstants.editorPreviewWidth,
                                                                    height: AppConstants.editorPreviewHeight))
                         saveBackgroundState()
-                        try? modelContext.save()
-                        
+                        // Ensure drawing is saved if drawing mode was active
                         if isDrawing {
-                            isDrawing = false   // just exit drawing mode
-                        } else {
-                            typingFieldFocused = false
-                            isTyping = false    // just dismiss keyboard
+                            isDrawing = false // This will cause DrawingView to deinit and its final drawing to be saved via binding
                         }
+                        typingFieldFocused = false
+                        isTyping = false
+                        try? modelContext.save() // Final save
                     }
+
                 }
             }
         }
