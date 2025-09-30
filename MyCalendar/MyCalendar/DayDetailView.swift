@@ -72,20 +72,38 @@ struct DayDetailView: View {
                 }
                 
                 // Done button (right side)
+//                ToolbarItem(placement: .confirmationAction) {
+//                    Button("Done") {
+//                        commitTypingIfNeeded(containerSize: CGSize(width: AppConstants.editorPreviewWidth,
+//                                                                   height: AppConstants.editorPreviewHeight))
+//                        saveBackgroundState()
+//                        // Ensure drawing is saved if drawing mode was active
+//                        if isDrawing {
+//                            isDrawing = false // This will cause DrawingView to deinit and its final drawing to be saved via binding
+//                        }
+//                        typingFieldFocused = false
+//                        isTyping = false
+//                        try? modelContext.save() // Final save
+//                    }
+//
+//                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
                         commitTypingIfNeeded(containerSize: CGSize(width: AppConstants.editorPreviewWidth,
                                                                    height: AppConstants.editorPreviewHeight))
                         saveBackgroundState()
-                        // Ensure drawing is saved if drawing mode was active
-                        if isDrawing {
-                            isDrawing = false // This will cause DrawingView to deinit and its final drawing to be saved via binding
+                        // No need to explicitly set isDrawing = false here,
+                        // as the view will be dismissed and DayDetailView's onDisappear will handle it.
+                        // However, we ensure the drawing is saved before dismissal if it was active.
+                        if let entry = entry, isDrawing {
+                            // The binding already updates entry.drawingData.
+                            // Just need to ensure the modelContext is saved.
+                            try? modelContext.save()
                         }
                         typingFieldFocused = false
                         isTyping = false
-                        try? modelContext.save() // Final save
+                        dismiss() // Directly dismiss, and onDisappear will handle the final save for all states.
                     }
-
                 }
             }
         }
@@ -226,12 +244,17 @@ private extension DayDetailView {
             }
 
             Button {
-                isDrawing.toggle()
+                withAnimation {
+                    isDrawing.toggle()
+                }
+                // When toggling drawing off, a save should have already happened via the binding.
+                // However, explicitly ensuring the tool picker is dismissed gracefully is good.
+
             } label: {
                 Image(systemName: "pencil.tip")
                     .font(.system(size: 24))
+                    .foregroundColor(isDrawing ? .accentColor : .primary) // Highlight if active
             }
-
             Button(role: .destructive) {
                 if let entry = entry {
                     withAnimation {

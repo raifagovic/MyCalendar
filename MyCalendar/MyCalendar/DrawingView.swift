@@ -59,18 +59,14 @@ struct DrawingView: UIViewRepresentable {
         return canvas
     }
 
-    // In DrawingView
     func updateUIView(_ uiView: PKCanvasView, context: Context) {
         uiView.isUserInteractionEnabled = isEditable
 
-        // If there's new data, always update the drawing.
-        // The delegate will handle saving changes made by the user.
+        // Prevent overwriting unsaved work
         if let data = drawingData,
-           let drawing = try? PKDrawing(data: data) {
+           let drawing = try? PKDrawing(data: data),
+           drawing != uiView.drawing {
             uiView.drawing = drawing
-        } else {
-            // If drawingData is nil, clear the canvas.
-            uiView.drawing = PKDrawing()
         }
     }
 }
