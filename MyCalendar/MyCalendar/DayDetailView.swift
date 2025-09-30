@@ -64,10 +64,23 @@ struct DayDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 // Back button (left side)
+//                ToolbarItem(placement: .navigationBarLeading) {
+//                    Button("Back") {
+//                        try? modelContext.save()   // save all changes
+//                        dismiss()                  // then dismiss detail view
+//                    }
+//                }
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Back") {
-                        try? modelContext.save()   // save all changes
-                        dismiss()                  // then dismiss detail view
+                        commitTypingIfNeeded(containerSize: CGSize(width: AppConstants.editorPreviewWidth,
+                                                                   height: AppConstants.editorPreviewHeight))
+                        saveBackgroundState()
+                        if let entry = entry, isDrawing {
+                            try? modelContext.save()
+                        }
+                        typingFieldFocused = false
+                        isTyping = false
+                        dismiss() // then dismiss detail view
                     }
                 }
                 
