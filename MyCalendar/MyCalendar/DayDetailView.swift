@@ -266,18 +266,34 @@ private extension DayDetailView {
                     .font(.system(size: 24))
             }
 
+//            Button {
+//                withAnimation {
+//                    isDrawing.toggle()
+//                }
+//                // When toggling drawing off, a save should have already happened via the binding.
+//                // However, explicitly ensuring the tool picker is dismissed gracefully is good.
+//
+//            } label: {
+//                Image(systemName: "pencil.tip")
+//                    .font(.system(size: 24))
+//                    .foregroundColor(isDrawing ? .accentColor : .primary) // Highlight if active
+//            }
             Button {
+                // Ensure an entry exists before enabling drawing
+                if entry == nil {
+                    _ = createOrGetEntry()
+                }
                 withAnimation {
                     isDrawing.toggle()
                 }
                 // When toggling drawing off, a save should have already happened via the binding.
                 // However, explicitly ensuring the tool picker is dismissed gracefully is good.
-
             } label: {
                 Image(systemName: "pencil.tip")
                     .font(.system(size: 24))
                     .foregroundColor(isDrawing ? .accentColor : .primary) // Highlight if active
             }
+            
             Button(role: .destructive) {
                 if let entry = entry {
                     withAnimation {
