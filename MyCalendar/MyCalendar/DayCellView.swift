@@ -75,19 +75,19 @@ struct DayCellView: View {
                         let contentScaleFactor = w / AppConstants.editorPreviewWidth
                         
                         ForEach(stickers) { sticker in
-                            // Determine the base font size for the sticker type in the editor
                             let editorBaseFontSize: CGFloat = (sticker.type == .emoji) ? 24 : 12
-                            
-                            // Calculate the final font size for DayCellView:
-                            // editorBaseFontSize * sticker.scale (user's scaling) * contentScaleFactor (cell's downscaling)
                             let finalFontSize = editorBaseFontSize * sticker.scale * contentScaleFactor
                             
                             Text(sticker.content.isEmpty ? " " : sticker.content)
-                                .font(.system(size: finalFontSize)) // Set the final font size directly for sharp rendering
-                                // No additional .scaleEffect(sticker.scale) is needed here,
-                                // as sticker.scale is already incorporated into finalFontSize.
+                                .font(.system(size: finalFontSize))
+                                // Crucial: Prevent text wrapping. Treat the text as a single,
+                                // horizontally rigid block that will be scaled and positioned.
+                                .fixedSize(horizontal: true, vertical: false)
+                                // Optionally, if you're certain it should always be a single line
+                                // and want to truncate if it somehow still overruns (though fixedSize prevents most of this)
+                                .lineLimit(1)
                                 .rotationEffect(.degrees(sticker.rotationDegrees))
-                                // Position is already normalized (0..1), so multiply by current view's width/height
+                                // The position is relative to the DayCellView's frame
                                 .position(
                                     x: sticker.posX * w,
                                     y: sticker.posY * h
