@@ -47,27 +47,6 @@ struct DayCellView: View {
                     }
                     
                     // Stickers below drawings
-//                    if let stickers = dayEntry?.stickers {
-//                        let editorWidth = AppConstants.editorPreviewWidth
-//                        let editorHeight = AppConstants.editorPreviewHeight
-//                        let scaleX = w / editorWidth
-//                        let scaleY = h / editorHeight
-//                        let globalScale = min(scaleX, scaleY)
-//                        
-//                        ForEach(stickers) { sticker in
-//                            let baseFontSize: CGFloat = (sticker.type == .emoji) ? 24 : 12
-//                            
-//                            Text(sticker.content.isEmpty ? " " : sticker.content)
-//                                .font(.system(size: baseFontSize))
-//                                .scaleEffect(sticker.scale * globalScale)
-//                                .rotationEffect(.degrees(sticker.rotationDegrees))
-//                                .position(
-//                                    x: sticker.posX * w,
-//                                    y: sticker.posY * h
-//                                )
-//                        }
-//                    }
-                    // Stickers below drawings
                     if let stickers = dayEntry?.stickers {
                         // Calculate a content scale factor based on the DayCellView's actual width
                         // relative to the editor's reference width.
