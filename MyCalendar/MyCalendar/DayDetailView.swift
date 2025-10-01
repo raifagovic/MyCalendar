@@ -84,14 +84,12 @@ struct DayDetailView: View {
                         commitTypingIfNeeded(containerSize: CGSize(width: AppConstants.editorPreviewWidth,
                                                                    height: AppConstants.editorPreviewHeight))
                         saveBackgroundState()
-                        // No need to explicitly set isDrawing = false here,
-                        // as the view will be dismissed and DayDetailView's onDisappear will handle it.
-                        // However, we ensure the drawing is saved before dismissal if it was active.
-                        if let entry = entry, isDrawing {
-                            // The binding already updates entry.drawingData.
-                            // Just need to ensure the modelContext is saved.
-                            try? modelContext.save()
-                        }
+                        // The drawing data is automatically saved by the DrawingView's binding
+                        // when `entry.drawingData` is set. No explicit modelContext.save()
+                        // is needed here for drawing data.
+                        // The onDisappear handler also includes a final save for drawing data
+                        // if it's not nil. So this block can be safely removed.
+                        
                         typingFieldFocused = false
                         isTyping = false
                         dismiss() // Directly dismiss, and onDisappear will handle the final save for all states.
