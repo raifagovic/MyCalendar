@@ -47,20 +47,46 @@ struct DayCellView: View {
                     }
                     
                     // Stickers below drawings
+//                    if let stickers = dayEntry?.stickers {
+//                        let editorWidth = AppConstants.editorPreviewWidth
+//                        let editorHeight = AppConstants.editorPreviewHeight
+//                        let scaleX = w / editorWidth
+//                        let scaleY = h / editorHeight
+//                        let globalScale = min(scaleX, scaleY)
+//                        
+//                        ForEach(stickers) { sticker in
+//                            let baseFontSize: CGFloat = (sticker.type == .emoji) ? 24 : 12
+//                            
+//                            Text(sticker.content.isEmpty ? " " : sticker.content)
+//                                .font(.system(size: baseFontSize))
+//                                .scaleEffect(sticker.scale * globalScale)
+//                                .rotationEffect(.degrees(sticker.rotationDegrees))
+//                                .position(
+//                                    x: sticker.posX * w,
+//                                    y: sticker.posY * h
+//                                )
+//                        }
+//                    }
+                    // Stickers below drawings
                     if let stickers = dayEntry?.stickers {
-                        let editorWidth = AppConstants.editorPreviewWidth
-                        let editorHeight = AppConstants.editorPreviewHeight
-                        let scaleX = w / editorWidth
-                        let scaleY = h / editorHeight
-                        let globalScale = min(scaleX, scaleY)
+                        // Calculate a content scale factor based on the DayCellView's actual width
+                        // relative to the editor's reference width.
+                        // This ensures all sticker elements (font size, scale effect, position)
+                        // shrink proportionally from the editor's view.
+                        let contentScaleFactor = w / AppConstants.editorPreviewWidth
                         
                         ForEach(stickers) { sticker in
+                            // Base font size from editor, scaled down by contentScaleFactor
                             let baseFontSize: CGFloat = (sticker.type == .emoji) ? 24 : 12
+                            let scaledFontSize = baseFontSize * contentScaleFactor
                             
                             Text(sticker.content.isEmpty ? " " : sticker.content)
-                                .font(.system(size: baseFontSize))
-                                .scaleEffect(sticker.scale * globalScale)
+                                .font(.system(size: scaledFontSize))
+                                // Sticker's stored scale is already relative to editor size,
+                                // so we just apply it directly after the font size is scaled.
+                                .scaleEffect(sticker.scale)
                                 .rotationEffect(.degrees(sticker.rotationDegrees))
+                                // Position is already normalized (0..1), so multiply by current view's width/height
                                 .position(
                                     x: sticker.posX * w,
                                     y: sticker.posY * h
