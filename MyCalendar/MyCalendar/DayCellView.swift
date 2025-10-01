@@ -71,20 +71,21 @@ struct DayCellView: View {
                     if let stickers = dayEntry?.stickers {
                         // Calculate a content scale factor based on the DayCellView's actual width
                         // relative to the editor's reference width.
-                        // This ensures all sticker elements (font size, scale effect, position)
-                        // shrink proportionally from the editor's view.
+                        // This ensures all sticker elements shrink proportionally from the editor's view.
                         let contentScaleFactor = w / AppConstants.editorPreviewWidth
                         
                         ForEach(stickers) { sticker in
-                            // Base font size from editor, scaled down by contentScaleFactor
-                            let baseFontSize: CGFloat = (sticker.type == .emoji) ? AppConstants.stickerEmojiBaseFontSize : AppConstants.stickerTextBaseFontSize
-                            let scaledFontSize = baseFontSize * contentScaleFactor
+                            // Determine the base font size for the sticker type in the editor
+                            let editorBaseFontSize: CGFloat = (sticker.type == .emoji) ? 24 : 12
+                            
+                            // Calculate the final font size for DayCellView:
+                            // editorBaseFontSize * sticker.scale (user's scaling) * contentScaleFactor (cell's downscaling)
+                            let finalFontSize = editorBaseFontSize * sticker.scale * contentScaleFactor
                             
                             Text(sticker.content.isEmpty ? " " : sticker.content)
-                                .font(.system(size: scaledFontSize))
-                                // Sticker's stored scale is already relative to editor size,
-                                // so we just apply it directly after the font size is scaled.
-                                .scaleEffect(sticker.scale)
+                                .font(.system(size: finalFontSize)) // Set the final font size directly for sharp rendering
+                                // No additional .scaleEffect(sticker.scale) is needed here,
+                                // as sticker.scale is already incorporated into finalFontSize.
                                 .rotationEffect(.degrees(sticker.rotationDegrees))
                                 // Position is already normalized (0..1), so multiply by current view's width/height
                                 .position(
