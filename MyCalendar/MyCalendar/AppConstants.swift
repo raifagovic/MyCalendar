@@ -9,6 +9,10 @@ import Foundation
 import CoreGraphics
 
 struct AppConstants {
+    
+    static let stickerEmojiBaseFontSize: CGFloat = 24
+    static let stickerTextBaseFontSize: CGFloat = 12
+
     // The aspect ratio of a calendar cell (width ÷ height).
     static let calendarCellAspectRatio: CGFloat = 0.5   // measured in DayCellView
     

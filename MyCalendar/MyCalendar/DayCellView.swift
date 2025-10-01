@@ -77,7 +77,7 @@ struct DayCellView: View {
                         
                         ForEach(stickers) { sticker in
                             // Base font size from editor, scaled down by contentScaleFactor
-                            let baseFontSize: CGFloat = (sticker.type == .emoji) ? 24 : 12
+                            let baseFontSize: CGFloat = (sticker.type == .emoji) ? AppConstants.stickerEmojiBaseFontSize : AppConstants.stickerTextBaseFontSize
                             let scaledFontSize = baseFontSize * contentScaleFactor
                             
                             Text(sticker.content.isEmpty ? " " : sticker.content)
