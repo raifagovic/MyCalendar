@@ -68,17 +68,7 @@ struct DayCellView: View {
                         }
                     }
                     
-                    // Drawings above stickers
-                    if let data = dayEntry?.drawingData,
-                       let drawing = try? PKDrawing(data: data) {
-                        Canvas { context, canvasSize in
-                            let image = drawing.image(from: CGRect(origin: .zero, size: canvasSize), scale: 1)
-                            context.draw(Image(uiImage: image), at: .zero)
-                        }
-                        .frame(width: w, height: h)
-                        .clipped()
-                        .allowsHitTesting(false)
-                    }
+                    
                 }
             }
             .aspectRatio(AppConstants.calendarCellAspectRatio, contentMode: .fit)

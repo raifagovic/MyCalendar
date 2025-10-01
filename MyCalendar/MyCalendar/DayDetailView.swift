@@ -150,9 +150,14 @@ private extension DayDetailView {
                 // Always show saved drawing
                 if let data = entry?.drawingData,
                    let drawing = try? PKDrawing(data: data) {
-                    Canvas { context, size in
-                        let image = drawing.image(from: CGRect(origin: .zero, size: size), scale: 1)
-                        context.draw(Image(uiImage: image), at: .zero)
+                    Canvas { context, _ in // Ignore `size` from Canvas, use known editor dimensions
+                        // When drawing a PKDrawing in the canvas, we need to specify the *source*
+                        // rectangle and the desired *scale*.
+                        // The drawing was created in the editor's coordinate space.
+                        let drawingSize = CGSize(width: AppConstants.editorPreviewWidth,
+                                                 height: AppConstants.editorPreviewHeight)
+                        let image = drawing.image(from: CGRect(origin: .zero, size: drawingSize), scale: 1)
+                        context.draw(Image(uiImage: image), in: CGRect(origin: .zero, size: drawingSize))
                     }
                     .frame(width: AppConstants.editorPreviewWidth,
                            height: AppConstants.editorPreviewHeight)
@@ -266,18 +271,6 @@ private extension DayDetailView {
                     .font(.system(size: 24))
             }
 
-//            Button {
-//                withAnimation {
-//                    isDrawing.toggle()
-//                }
-//                // When toggling drawing off, a save should have already happened via the binding.
-//                // However, explicitly ensuring the tool picker is dismissed gracefully is good.
-//
-//            } label: {
-//                Image(systemName: "pencil.tip")
-//                    .font(.system(size: 24))
-//                    .foregroundColor(isDrawing ? .accentColor : .primary) // Highlight if active
-//            }
             Button {
                 // Ensure an entry exists before enabling drawing
                 if entry == nil {
