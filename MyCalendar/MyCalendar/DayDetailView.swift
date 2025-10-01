@@ -69,9 +69,7 @@ struct DayDetailView: View {
                         commitTypingIfNeeded(containerSize: CGSize(width: AppConstants.editorPreviewWidth,
                                                                    height: AppConstants.editorPreviewHeight))
                         saveBackgroundState()
-                        if let entry = entry, isDrawing {
-                            try? modelContext.save()
-                        }
+                        
                         typingFieldFocused = false
                         isTyping = false
                         dismiss() // then dismiss detail view
