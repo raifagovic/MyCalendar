@@ -64,12 +64,6 @@ struct DayDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 // Back button (left side)
-//                ToolbarItem(placement: .navigationBarLeading) {
-//                    Button("Back") {
-//                        try? modelContext.save()   // save all changes
-//                        dismiss()                  // then dismiss detail view
-//                    }
-//                }
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Back") {
                         commitTypingIfNeeded(containerSize: CGSize(width: AppConstants.editorPreviewWidth,
@@ -85,21 +79,6 @@ struct DayDetailView: View {
                 }
                 
                 // Done button (right side)
-//                ToolbarItem(placement: .confirmationAction) {
-//                    Button("Done") {
-//                        commitTypingIfNeeded(containerSize: CGSize(width: AppConstants.editorPreviewWidth,
-//                                                                   height: AppConstants.editorPreviewHeight))
-//                        saveBackgroundState()
-//                        // Ensure drawing is saved if drawing mode was active
-//                        if isDrawing {
-//                            isDrawing = false // This will cause DrawingView to deinit and its final drawing to be saved via binding
-//                        }
-//                        typingFieldFocused = false
-//                        isTyping = false
-//                        try? modelContext.save() // Final save
-//                    }
-//
-//                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
                         commitTypingIfNeeded(containerSize: CGSize(width: AppConstants.editorPreviewWidth,
