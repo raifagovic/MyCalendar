@@ -533,10 +533,15 @@ private extension DayDetailView {
             let stickerCenterX = sticker.posX * containerSize.width
             let stickerCenterY = sticker.posY * containerSize.height
 
-            // Assuming default sticker size is 50x50 at scale 1.0
-            let stickerBaseSize: CGFloat = 50
-            let currentStickerWidth = stickerBaseSize * sticker.scale
-            let currentStickerHeight = stickerBaseSize * sticker.scale
+            // Approximate sticker size based on its content type and base font size
+            let effectiveBaseFontSize: CGFloat = (sticker.type == .emoji) ? baseEmojiFontSize : baseTextFontSize
+            // A rough multiplier to account for text content width, adjust as needed
+            // For emojis, it's roughly the font size. For text, it depends on characters.
+            let baseContentWidth: CGFloat = (sticker.type == .emoji) ? effectiveBaseFontSize : (effectiveBaseFontSize * CGFloat(sticker.content.count > 0 ? sticker.content.count : 1) * 0.7) // 0.7 is an approximation for character width
+            let baseContentHeight: CGFloat = effectiveBaseFontSize
+
+            let currentStickerWidth = baseContentWidth * sticker.scale
+            let currentStickerHeight = baseContentHeight * sticker.scale
 
             // Create a bounding box for hit-testing
             // Apply a small padding for easier tapping
