@@ -71,6 +71,15 @@ struct CalendarView: View {
                                 ForEach(months, id: \.self) { month in
                                     MonthView(monthDate: month, dayEntries: dayEntries, selectedDate: $selectedDate)
                                         .id(month.startOfMonth)
+                                        // Report the month's offset to the preference key
+                                        .background(
+                                            GeometryReader { geo in
+                                                Color.clear.preference(
+                                                    key: MonthOffsetPreferenceKey.self,
+                                                    value: [MonthOffset(id: month.startOfMonth, offset: geo.frame(in: .named(coordinateSpaceName)).minY)]
+                                                )
+                                            }
+                                        )
                                 }
                             }
                         }
