@@ -114,3 +114,18 @@ struct CalendarView: View {
         return result.sorted() // And sort the result to be sure
     }
 }
+
+// MARK: - Scroll Tracking Helpers
+
+struct MonthOffset: Identifiable, Equatable {
+    let id: Date // The startOfMonth date for this month
+    let offset: CGFloat
+}
+
+struct MonthOffsetPreferenceKey: PreferenceKey {
+    static var defaultValue: [MonthOffset] = []
+    
+    static func reduce(value: inout [MonthOffset], nextValue: () -> [MonthOffset]) {
+        value.append(contentsOf: nextValue())
+    }
+}
