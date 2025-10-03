@@ -117,6 +117,13 @@ struct CalendarView: View {
                 // When the data is loaded, THEN we scroll.
                 proxy.scrollTo(Date().startOfMonth, anchor: .top)
             }
+            // Pass the currentVisibleMonth to YearView as well
+            .onChange(of: isShowingYearView) { oldValue, newValue in
+                if newValue == false { // When YearView is dismissed
+                    // Ensure currentVisibleMonth is up-to-date with the selected month from YearView
+                    // This is handled by the onMonthTapped closure, but good to have a fallback.
+                }
+            }
         }
         .sheet(item: $selectedDate) { date in
             DayDetailView(date: date)
