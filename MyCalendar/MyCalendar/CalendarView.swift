@@ -89,6 +89,20 @@ struct CalendarView: View {
                     .ignoresSafeArea(edges: .top)
                     .background(Color.black)
                     .transition(.asymmetric(insertion: .scale(scale: 0.8).combined(with: .opacity), removal: .scale(scale: 0.8).combined(with: .opacity)))
+                    // React to changes in month offsets to update currentVisibleMonth
+                    .onPreferenceChange(MonthOffsetPreferenceKey.self) { preferences in
+                        // Find the month that is currently closest to the top (minY around 0 or positive)
+                        if let visibleMonth = preferences
+                            .filter({ $0.offset <= 150 }) // Consider months whose top is within the sticky header's height (150)
+                            .sorted(by: { $0.offset > $1.offset }) // Get the one closest to 0 from the positive side
+                            .first?
+                            .id
+                        {
+                            if !Calendar.current.isDate(currentVisibleMonth, equalTo: visibleMonth, toGranularity: .month) {
+                                currentVisibleMonth = visibleMonth
+                            }
+                        }
+                    }
                 }
             }
             .onAppear {
