@@ -85,6 +85,7 @@ struct CalendarView: View {
                         }
                     }
                     // We remove all failed scroll-tracking logic from the ScrollView itself.
+                    .coordinateSpace(name: coordinateSpaceName)
                     .ignoresSafeArea(edges: .top)
                     .background(Color.black)
                     .transition(.asymmetric(insertion: .scale(scale: 0.8).combined(with: .opacity), removal: .scale(scale: 0.8).combined(with: .opacity)))
