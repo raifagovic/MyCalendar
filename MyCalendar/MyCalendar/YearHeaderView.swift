@@ -35,8 +35,8 @@ struct YearHeaderView: View {
                         Image(systemName: "chevron.left")
                             .font(.title3.weight(.semibold))
                         
-                        // We use a sample year text to get the width right.
-                        Text("2025")
+                        // Use the actual currentYear for spacing consistency, but keep it hidden.
+                        Text(currentYear, formatter: yearFormatter) // <--- CHANGED LINE
                             .font(.headline.weight(.semibold))
                     }
                 }
@@ -45,7 +45,8 @@ struct YearHeaderView: View {
                 
                 Spacer()
                 
-                Text("Calendar")
+                // Display the current year dynamically here
+                Text(currentYear, formatter: yearFormatter) // <--- NEW TITLE DISPLAY
                     .font(.headline)
                     .fontWeight(.semibold)
                 
