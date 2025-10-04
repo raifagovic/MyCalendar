@@ -25,7 +25,7 @@ struct CalendarView: View {
             Group {
                 if isShowingYearView {
                     YearView(
-                        year: currentVisibleMonth,
+                        year: currentVisibleMonth, // Already correct, ensures YearView shows the year of currentVisibleMonth
                         onMonthTapped: { selectedMonth in
                             self.currentVisibleMonth = selectedMonth
                             withAnimation(.spring()) {
@@ -37,12 +37,14 @@ struct CalendarView: View {
                             }
                         },
                         onTodayTapped: {
-                            self.currentVisibleMonth = Date()
+                            // When tapping "Today" in YearView, we want to go back to the *current month* in the main calendar,
+                            // and also update `currentVisibleMonth` to today.
+                            self.currentVisibleMonth = Date() // Set to today's month
                             withAnimation(.spring()) {
                                 isShowingYearView = false
                             }
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-                                 proxy.scrollTo(Date().startOfMonth, anchor: .top)
+                                proxy.scrollTo(Date().startOfMonth, anchor: .top)
                             }
                         }
                     )

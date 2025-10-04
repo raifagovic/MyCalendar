@@ -43,7 +43,17 @@ struct YearView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
-                    Section(header: YearHeaderView(onTodayTapped: onTodayTapped)) {
+                    Section(header: YearHeaderView(onTodayTapped: {
+                        // When "Today" is tapped in the YearView's header,
+                        // scroll the YearView itself to the current year.
+                        let calendar = Calendar.current
+                        let currentYearDate = calendar.date(from: calendar.dateComponents([.year], from: Date()))!
+                        withAnimation {
+                            proxy.scrollTo(currentYearDate, anchor: .top)
+                        }
+                        // Then call the parent's onTodayTapped to dismiss and reset main calendar
+                        onTodayTapped()
+                    })) { // <--- MODIFIED LINE
                         // This VStack no longer has spacing, giving us full manual control.
                         VStack(spacing: 0) {
                             ForEach(years) { yearDate in
