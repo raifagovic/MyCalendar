@@ -43,7 +43,7 @@ struct YearView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
-                    Section(header: YearHeaderView(onTodayTapped: {
+                    Section(header: YearHeaderView(currentYear: year, onTodayTapped: {
                         // When "Today" is tapped in the YearView's header,
                         // scroll the YearView itself to the current year.
                         let calendar = Calendar.current
