@@ -8,8 +8,16 @@
 import SwiftUI
 
 struct YearHeaderView: View {
+    let currentYear: Date // Add this property
     let onTodayTapped: () -> Void
     
+    // Add a year formatter
+    private var yearFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy"
+        return formatter
+    }
+
     var body: some View {
         // --- THIS ENTIRE VStack IS COPIED FROM STICKYHEADERVIEW FOR CONSISTENCY ---
         VStack(spacing: 0) {
