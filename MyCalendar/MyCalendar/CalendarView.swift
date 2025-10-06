@@ -14,7 +14,8 @@ struct CalendarView: View {
     @State private var months: [Date] = []
     @State private var selectedDate: Date?
     
-    @State private var currentVisibleMonth: Date = Date()
+//    @State private var currentVisibleMonth: Date = Date()
+    @State private var currentVisibleMonth: Date = Date().startOfMonth
     @State private var isShowingYearView = false
     
     private let coordinateSpaceName = "calendarScroll"
