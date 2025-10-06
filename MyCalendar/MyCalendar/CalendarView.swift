@@ -56,10 +56,22 @@ struct CalendarView: View {
                             
                             Section(header: StickyHeaderView(
                                 currentVisibleMonth: currentVisibleMonth,
+                                //////////
+//                                onTodayTapped: {
+//                                    // User taps should still have a slight delay for robustness.
+//                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
+//                                        withAnimation {
+//                                            proxy.scrollTo(Date().startOfMonth, anchor: .top)
+//                                        }
+//                                    }
+//                                },
+                                /////////////
                                 onTodayTapped: {
-                                    // User taps should still have a slight delay for robustness.
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-                                        withAnimation {
+                                    // Immediately update currentVisibleMonth to reflect today's month.
+                                    currentVisibleMonth = Date()
+                                    withAnimation(.spring()) {
+                                        // Scroll to today's month with a small delay for layout stability.
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
                                             proxy.scrollTo(Date().startOfMonth, anchor: .top)
                                         }
                                     }
