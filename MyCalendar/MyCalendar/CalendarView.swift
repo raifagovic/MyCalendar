@@ -14,8 +14,7 @@ struct CalendarView: View {
     @State private var months: [Date] = []
     @State private var selectedDate: Date?
     
-//    @State private var currentVisibleMonth: Date = Date()
-    @State private var currentVisibleMonth: Date = Date().startOfMonth
+    @State private var currentVisibleMonth: Date = Date()
     @State private var isShowingYearView = false
     
     private let coordinateSpaceName = "calendarScroll"
@@ -108,18 +107,37 @@ struct CalendarView: View {
                     }
                 }
             }
+//           .onAppear {
+//                // This modifier's ONLY job is to load the data.
+//                if months.isEmpty {
+//                    months = generateMonths()
+//                }
+//            }
+//            // --- THE DEFINITIVE FIX ---
+//            // This modifier watches the `months` array.
+//            .onChange(of: months) {
+//                // When the data is loaded, THEN we scroll.
+//                proxy.scrollTo(Date().startOfMonth, anchor: .top)
+//            }  
+            //////////////
             .onAppear {
-                // This modifier's ONLY job is to load the data.
-                if months.isEmpty {
-                    months = generateMonths()
+            // Ensure currentVisibleMonth is set to today's month when the view appears.
+            currentVisibleMonth = Date()
+
+            if months.isEmpty {
+                months = generateMonths()
+                // Directly scroll to today's month after generating, with a small delay.
+                // This handles the initial launch scroll.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
+                    proxy.scrollTo(Date().startOfMonth, anchor: .top)
                 }
             }
-            // --- THE DEFINITIVE FIX ---
-            // This modifier watches the `months` array.
-            .onChange(of: months) {
-                // When the data is loaded, THEN we scroll.
-                proxy.scrollTo(Date().startOfMonth, anchor: .top)
-            }
+        }
+        // Remove the separate onChange for months as the initial scroll is now in onAppear.
+        // If generateMonths() is ever called again, a separate mechanism would be needed,
+        // but for initial load, onAppear with a dispatch is more direct.
+        // We'll rely on the Today button and year view callbacks for subsequent scrolls.
+            /////////////
             // Pass the currentVisibleMonth to YearView as well
             .onChange(of: isShowingYearView) { oldValue, newValue in
                 if newValue == false { // When YearView is dismissed
