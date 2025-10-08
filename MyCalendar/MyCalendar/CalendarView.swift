@@ -21,7 +21,7 @@ struct CalendarView: View {
 
     var body: some View {
         ScrollViewReader { proxy in
-            // The Group is necessary to keep .onAppear and .onChange in scope.
+//             The Group is necessary to keep .onAppear and .onChange in scope.
             Group {
                 if isShowingYearView {
                     YearView(
@@ -56,22 +56,10 @@ struct CalendarView: View {
                             
                             Section(header: StickyHeaderView(
                                 currentVisibleMonth: currentVisibleMonth,
-                                //////////
-//                                onTodayTapped: {
-//                                    // User taps should still have a slight delay for robustness.
-//                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-//                                        withAnimation {
-//                                            proxy.scrollTo(Date().startOfMonth, anchor: .top)
-//                                        }
-//                                    }
-//                                },
-                                /////////////
                                 onTodayTapped: {
-                                    // Immediately update currentVisibleMonth to reflect today's month.
-                                    currentVisibleMonth = Date()
-                                    withAnimation(.spring()) {
-                                        // Scroll to today's month with a small delay for layout stability.
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
+                                    // User taps should still have a slight delay for robustness.
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
+                                        withAnimation {
                                             proxy.scrollTo(Date().startOfMonth, anchor: .top)
                                         }
                                     }
@@ -119,37 +107,26 @@ struct CalendarView: View {
                     }
                 }
             }
-//           .onAppear {
-//                // This modifier's ONLY job is to load the data.
-//                if months.isEmpty {
-//                    months = generateMonths()
-//                }
-//            }
-//            // --- THE DEFINITIVE FIX ---
-//            // This modifier watches the `months` array.
-//            .onChange(of: months) {
-//                // When the data is loaded, THEN we scroll.
-//                proxy.scrollTo(Date().startOfMonth, anchor: .top)
-//            }  
-            //////////////
-            .onAppear {
-            // Ensure currentVisibleMonth is set to today's month when the view appears.
-            currentVisibleMonth = Date()
 
-            if months.isEmpty {
-                months = generateMonths()
-                // Directly scroll to today's month after generating, with a small delay.
-                // This handles the initial launch scroll.
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
+            .onAppear {
+                if months.isEmpty {
+                    months = generateMonths()
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    currentVisibleMonth = Date().startOfMonth
+                    // 👇 Removed selectedDate assignment to prevent auto sheet open
                     proxy.scrollTo(Date().startOfMonth, anchor: .top)
                 }
             }
-        }
-        // Remove the separate onChange for months as the initial scroll is now in onAppear.
-        // If generateMonths() is ever called again, a separate mechanism would be needed,
-        // but for initial load, onAppear with a dispatch is more direct.
-        // We'll rely on the Today button and year view callbacks for subsequent scrolls.
-            /////////////
+            .onChange(of: months) {
+                // ✅ Only scroll when months are populated for the first time
+                if !months.isEmpty {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        proxy.scrollTo(Date().startOfMonth, anchor: .top)
+                    }
+                }
+            }
             // Pass the currentVisibleMonth to YearView as well
             .onChange(of: isShowingYearView) { oldValue, newValue in
                 if newValue == false { // When YearView is dismissed
@@ -193,3 +170,4 @@ struct MonthOffsetPreferenceKey: PreferenceKey {
         value.append(contentsOf: nextValue())
     }
 }
+
