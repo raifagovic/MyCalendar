@@ -117,14 +117,20 @@ import PencilKit
 struct DayCellView: View {
     let day: Date
     let dayEntry: DayEntry?
+    // We need a way to communicate the selected date *up* to CalendarView
+    // This is typically done via a binding or a closure.
+    // Given your CalendarView's existing `selectedDate: $selectedDate` binding
+    // to MonthView, we will pass it down to DayCellView.
+    @Binding var selectedDate: Date? // Add this binding
     
     @State private var selectedSticker: StickerInfo?
-    @State private var showingNotificationsPopup = false // New state for the popup
+    @State private var showingNotificationsPopup = false
     
     private let editorWidth: CGFloat = 300.0
     
     var body: some View {
         ZStack {
+            // ... (Your existing ZStack content for background, stickers, drawings)
             GeometryReader { geometry in
                 let w = geometry.size.width
                 let h = geometry.size.height
@@ -155,9 +161,6 @@ struct DayCellView: View {
                     
                     // Stickers below drawings
                     if let stickers = dayEntry?.stickers {
-                        // Calculate a content scale factor based on the DayCellView's actual width
-                        // relative to the editor's reference width.
-                        // This ensures all sticker elements shrink proportionally from the editor's view.
                         let contentScaleFactor = w / AppConstants.editorPreviewWidth
                         
                         ForEach(stickers) { sticker in
@@ -166,14 +169,9 @@ struct DayCellView: View {
                             
                             Text(sticker.content.isEmpty ? " " : sticker.content)
                                 .font(.system(size: finalFontSize))
-                                // Crucial: Prevent text wrapping. Treat the text as a single,
-                                // horizontally rigid block that will be scaled and positioned.
                                 .fixedSize(horizontal: true, vertical: false)
-                                // Optionally, if you're certain it should always be a single line
-                                // and want to truncate if it somehow still overruns (though fixedSize prevents most of this)
                                 .lineLimit(1)
                                 .rotationEffect(.degrees(sticker.rotationDegrees))
-                                // The position is relative to the DayCellView's frame
                                 .position(
                                     x: sticker.posX * w,
                                     y: sticker.posY * h
@@ -185,12 +183,8 @@ struct DayCellView: View {
                     if let data = dayEntry?.drawingData,
                        let drawing = try? PKDrawing(data: data) {
                         Canvas { context, canvasSize in
-                            // The PKDrawing was created in the editor's coordinate space.
-                            // We need to render it into the current cell's `canvasSize`.
                             let drawingSourceRect = CGRect(x: 0, y: 0, width: AppConstants.editorPreviewWidth, height: AppConstants.editorPreviewHeight)
                             let image = drawing.image(from: drawingSourceRect, scale: 1)
-                            
-                            // Now draw this image into the cell's Canvas, scaled to fit
                             context.draw(Image(uiImage: image), in: CGRect(origin: .zero, size: canvasSize))
                         }
                         .frame(width: w, height: h)
@@ -214,17 +208,20 @@ struct DayCellView: View {
             .padding(4)
         }
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-        .contentShape(Rectangle())
-        .onLongPressGesture { // Add the long press gesture here
-            if day != .distantPast { // Only allow long press on valid days
+        .contentShape(Rectangle()) // Important for gesture recognition
+        .onTapGesture { // This handles the short tap for DayDetailView
+            if day != .distantPast {
+                selectedDate = day
+            }
+        }
+        .onLongPressGesture { // This handles the long press for notifications
+            if day != .distantPast {
                 showingNotificationsPopup = true
             }
         }
-        .sheet(isPresented: $showingNotificationsPopup) { // Present as a sheet
+        .sheet(isPresented: $showingNotificationsPopup) {
             DayNotificationsView(date: day)
-                .presentationDetents([.medium]) // Make it a medium-sized sheet
+                .presentationDetents([.medium])
         }
     }
 }
-
-
