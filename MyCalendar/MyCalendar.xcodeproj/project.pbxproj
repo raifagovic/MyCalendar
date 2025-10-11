@@ -30,6 +30,7 @@
 		DC5FDE2D2E18808800FAB44F /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE2C2E18808800FAB44F /* CalendarView.swift */; };
 		DC5FDE2F2E1C449E00FAB44F /* DrawingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE2E2E1C449E00FAB44F /* DrawingView.swift */; };
 		DCDBCB352E9B0BCF00DB5DFD /* NotificationEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDBCB342E9B0BCF00DB5DFD /* NotificationEntry.swift */; };
+		DCDBCB372E9B0D0E00DB5DFD /* DayNotificationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDBCB362E9B0D0E00DB5DFD /* DayNotificationsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -57,6 +58,7 @@
 		DC5FDE2C2E18808800FAB44F /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		DC5FDE2E2E1C449E00FAB44F /* DrawingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawingView.swift; sourceTree = "<group>"; };
 		DCDBCB342E9B0BCF00DB5DFD /* NotificationEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationEntry.swift; sourceTree = "<group>"; };
+		DCDBCB362E9B0D0E00DB5DFD /* DayNotificationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayNotificationsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -112,6 +114,7 @@
 				DC3F99C92E6C95DF00E8B7BB /* StickerInfo.swift */,
 				DC5FDE2E2E1C449E00FAB44F /* DrawingView.swift */,
 				DCDBCB342E9B0BCF00DB5DFD /* NotificationEntry.swift */,
+				DCDBCB362E9B0D0E00DB5DFD /* DayNotificationsView.swift */,
 			);
 			path = MyCalendar;
 			sourceTree = "<group>";
@@ -208,6 +211,7 @@
 				DC5FDE1F2E16AA1900FAB44F /* ContentView.swift in Sources */,
 				DC5FDE212E16AA1900FAB44F /* DayEntry.swift in Sources */,
 				DC3F99B02E40EE7400E8B7BB /* CalendarDay.swift in Sources */,
+				DCDBCB372E9B0D0E00DB5DFD /* DayNotificationsView.swift in Sources */,
 				DC3F99AE2E3BDB8800E8B7BB /* StickyHeaderView.swift in Sources */,
 				DC3F99CC2E6C97E800E8B7BB /* StickerView.swift in Sources */,
 				DC3F99BC2E4BDFCD00E8B7BB /* YearView.swift in Sources */,
