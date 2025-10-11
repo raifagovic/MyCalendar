@@ -21,7 +21,6 @@ struct CalendarView: View {
 
     var body: some View {
         ScrollViewReader { proxy in
-//             The Group is necessary to keep .onAppear and .onChange in scope.
             Group {
                 if isShowingYearView {
                     YearView(
@@ -170,4 +169,6 @@ struct MonthOffsetPreferenceKey: PreferenceKey {
         value.append(contentsOf: nextValue())
     }
 }
+
+
 

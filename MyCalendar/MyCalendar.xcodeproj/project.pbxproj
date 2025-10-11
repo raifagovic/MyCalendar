@@ -29,6 +29,7 @@
 		DC5FDE262E16AA1C00FAB44F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC5FDE252E16AA1C00FAB44F /* Preview Assets.xcassets */; };
 		DC5FDE2D2E18808800FAB44F /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE2C2E18808800FAB44F /* CalendarView.swift */; };
 		DC5FDE2F2E1C449E00FAB44F /* DrawingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE2E2E1C449E00FAB44F /* DrawingView.swift */; };
+		DCDBCB352E9B0BCF00DB5DFD /* NotificationEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDBCB342E9B0BCF00DB5DFD /* NotificationEntry.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -55,6 +56,7 @@
 		DC5FDE252E16AA1C00FAB44F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		DC5FDE2C2E18808800FAB44F /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		DC5FDE2E2E1C449E00FAB44F /* DrawingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawingView.swift; sourceTree = "<group>"; };
+		DCDBCB342E9B0BCF00DB5DFD /* NotificationEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationEntry.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,6 +111,7 @@
 				DC3F99CB2E6C97E800E8B7BB /* StickerView.swift */,
 				DC3F99C92E6C95DF00E8B7BB /* StickerInfo.swift */,
 				DC5FDE2E2E1C449E00FAB44F /* DrawingView.swift */,
+				DCDBCB342E9B0BCF00DB5DFD /* NotificationEntry.swift */,
 			);
 			path = MyCalendar;
 			sourceTree = "<group>";
@@ -194,6 +197,7 @@
 				DC3F99AC2E3BB1CF00E8B7BB /* MonthView.swift in Sources */,
 				DC3F99A02E31104800E8B7BB /* DayDetailView.swift in Sources */,
 				DC3F99A22E3353D600E8B7BB /* ImageCropperView.swift in Sources */,
+				DCDBCB352E9B0BCF00DB5DFD /* NotificationEntry.swift in Sources */,
 				DC3F99C02E4C864A00E8B7BB /* YearHeaderView.swift in Sources */,
 				DC3F99A42E37BD3200E8B7BB /* AppConstants.swift in Sources */,
 				DC3F99B22E4120FF00E8B7BB /* WeekRowView.swift in Sources */,

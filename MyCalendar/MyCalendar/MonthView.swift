@@ -77,39 +77,12 @@ struct MonthView: View {
         Calendar.current.isDate(monthDate, equalTo: Date(), toGranularity: .month)
     }
     
-//    var body: some View {
-//        VStack(spacing: 0) {
-//            ForEach(weeks.indices, id: \.self) { weekIndex in
-//                let week = weeks[weekIndex]
-//                
-//                // We just pass all the necessary data to WeekRowView and let it handle the rest.
-//                WeekRowView(
-//                    week: week,
-//                    dayEntries: dayEntries,
-//                    selectedDate: $selectedDate,
-//                    monthDate: monthDate,
-//                    isFirstContentWeek: weekIndex == firstContentWeekIndex,
-//                    firstDayOfCurrentMonth: self.firstDayOfCurrentMonth
-//                )
-//            }
-//        }
-//        .padding(.top, isCurrentMonth ? 135 : 0)
-//    }
-    
     var body: some View {
         VStack(spacing: 0) {
-            // NEW: Add an invisible view here for scrolling *only if* it's the current month
-            // This view will represent the top of the calendar grid, adjusting for the 135 padding.
-            if isCurrentMonth {
-                Color.clear
-                    .frame(height: 0) // It takes no visual space
-                    .id(monthDate.gridStartID) // Give it a unique ID for scrolling
-                    .padding(.top, 135) // Apply the padding *above* this clear view, not on the entire VStack
-            }
-            
             ForEach(weeks.indices, id: \.self) { weekIndex in
                 let week = weeks[weekIndex]
                 
+                // We just pass all the necessary data to WeekRowView and let it handle the rest.
                 WeekRowView(
                     week: week,
                     dayEntries: dayEntries,
@@ -120,7 +93,6 @@ struct MonthView: View {
                 )
             }
         }
-        // REMOVE THE PADDING FROM THE VStack ITSELF. It's now applied to the invisible scroll target.
-        // .padding(.top, isCurrentMonth ? 135 : 0) // <-- REMOVE THIS LINE!
+        .padding(.top, isCurrentMonth ? 135 : 0)
     }
 }
