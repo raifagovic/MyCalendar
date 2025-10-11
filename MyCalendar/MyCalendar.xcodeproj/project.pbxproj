@@ -31,6 +31,7 @@
 		DC5FDE2F2E1C449E00FAB44F /* DrawingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5FDE2E2E1C449E00FAB44F /* DrawingView.swift */; };
 		DCDBCB352E9B0BCF00DB5DFD /* NotificationEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDBCB342E9B0BCF00DB5DFD /* NotificationEntry.swift */; };
 		DCDBCB372E9B0D0E00DB5DFD /* DayNotificationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDBCB362E9B0D0E00DB5DFD /* DayNotificationsView.swift */; };
+		DCDBCB392E9B0DDA00DB5DFD /* AddNotificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDBCB382E9B0DDA00DB5DFD /* AddNotificationView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -59,6 +60,7 @@
 		DC5FDE2E2E1C449E00FAB44F /* DrawingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawingView.swift; sourceTree = "<group>"; };
 		DCDBCB342E9B0BCF00DB5DFD /* NotificationEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationEntry.swift; sourceTree = "<group>"; };
 		DCDBCB362E9B0D0E00DB5DFD /* DayNotificationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayNotificationsView.swift; sourceTree = "<group>"; };
+		DCDBCB382E9B0DDA00DB5DFD /* AddNotificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddNotificationView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,6 +117,7 @@
 				DC5FDE2E2E1C449E00FAB44F /* DrawingView.swift */,
 				DCDBCB342E9B0BCF00DB5DFD /* NotificationEntry.swift */,
 				DCDBCB362E9B0D0E00DB5DFD /* DayNotificationsView.swift */,
+				DCDBCB382E9B0DDA00DB5DFD /* AddNotificationView.swift */,
 			);
 			path = MyCalendar;
 			sourceTree = "<group>";
@@ -205,6 +208,7 @@
 				DC3F99A42E37BD3200E8B7BB /* AppConstants.swift in Sources */,
 				DC3F99B22E4120FF00E8B7BB /* WeekRowView.swift in Sources */,
 				DC3F99B62E47492100E8B7BB /* VisibleMonthPreferenceKey.swift in Sources */,
+				DCDBCB392E9B0DDA00DB5DFD /* AddNotificationView.swift in Sources */,
 				DC3F99CA2E6C95DF00E8B7BB /* StickerInfo.swift in Sources */,
 				DC3F99BE2E4C690300E8B7BB /* MiniMonthView.swift in Sources */,
 				DC3F99B82E476FA900E8B7BB /* Date+Extensions.swift in Sources */,
