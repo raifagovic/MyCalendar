@@ -117,20 +117,16 @@ import PencilKit
 struct DayCellView: View {
     let day: Date
     let dayEntry: DayEntry?
-    // We need a way to communicate the selected date *up* to CalendarView
-    // This is typically done via a binding or a closure.
-    // Given your CalendarView's existing `selectedDate: $selectedDate` binding
-    // to MonthView, we will pass it down to DayCellView.
-    @Binding var selectedDate: Date? // Add this binding
+    // This binding allows DayCellView to update the `selectedDate` in CalendarView
+    @Binding var selectedDate: Date?
     
     @State private var selectedSticker: StickerInfo?
-    @State private var showingNotificationsPopup = false
+    @State private var showingNotificationsPopup = false // State for the long press popup
     
     private let editorWidth: CGFloat = 300.0
     
     var body: some View {
         ZStack {
-            // ... (Your existing ZStack content for background, stickers, drawings)
             GeometryReader { geometry in
                 let w = geometry.size.width
                 let h = geometry.size.height
@@ -208,18 +204,19 @@ struct DayCellView: View {
             .padding(4)
         }
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-        .contentShape(Rectangle()) // Important for gesture recognition
-        .onTapGesture { // This handles the short tap for DayDetailView
+        .contentShape(Rectangle()) // Essential for gesture recognition on the whole cell
+        .onTapGesture { // Handles the short tap for DayDetailView
             if day != .distantPast {
-                selectedDate = day
+                selectedDate = day // Update the binding to show DayDetailView
             }
         }
-        .onLongPressGesture { // This handles the long press for notifications
+        .onLongPressGesture { // Handles the long press for notifications
             if day != .distantPast {
-                showingNotificationsPopup = true
+                showingNotificationsPopup = true // Show the notifications popup
             }
         }
         .sheet(isPresented: $showingNotificationsPopup) {
+            // Present DayNotificationsView as a sheet when showingNotificationsPopup is true
             DayNotificationsView(date: day)
                 .presentationDetents([.medium])
         }
