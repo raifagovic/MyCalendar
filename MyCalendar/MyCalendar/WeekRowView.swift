@@ -91,7 +91,6 @@ import SwiftData
 //    }
 //}
 
-
 struct WeekRowView: View {
     let week: [CalendarDay]
     let dayEntries: [DayEntry]

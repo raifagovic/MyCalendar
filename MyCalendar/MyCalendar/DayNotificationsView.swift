@@ -75,10 +75,12 @@ struct DayNotificationsView: View {
         }
     }
     
-    private func deleteNotifications(at offsets: IndexSet) {
-        for index in offsets {
-            let notification = notifications[index]
-            modelContext.delete(notification)
+        private func deleteNotifications(at offsets: IndexSet) {
+            for index in offsets {
+                let notification = notifications[index]
+                modelContext.delete(notification)
+            }
+            // ✅ Explicitly save changes after deletion
+            try? modelContext.save()
         }
-    }
 }
