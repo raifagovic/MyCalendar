@@ -9,30 +9,22 @@ import SwiftUI
 import SwiftData
 
 struct AddNotificationView: View {
-    let date: Date // The fixed date for the new notification
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     
-    @State private var notificationLabel: String = ""
+    let date: Date // The date for which to add a notification
+    
     @State private var notificationTime: Date = Date()
+    @State private var notificationLabel: String = ""
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
-                Section("Notification Details") {
-                    TextField("Label", text: $notificationLabel)
-                    
-                    DatePicker("Time", selection: $notificationTime, displayedComponents: .hourAndMinute)
-                }
+                DatePicker("Time", selection: $notificationTime, displayedComponents: .hourAndMinute)
                 
-                Button("Save Notification") {
-                    let newNotification = NotificationEntry(date: date, time: notificationTime, label: notificationLabel)
-                    modelContext.insert(newNotification)
-                    dismiss()
-                }
-                .disabled(notificationLabel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                TextField("Label", text: $notificationLabel)
             }
-            .navigationTitle("New Notification")
+            .navigationTitle("Add Notification")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -40,7 +32,22 @@ struct AddNotificationView: View {
                         dismiss()
                     }
                 }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        saveNotification()
+                        dismiss()
+                    }
+                    .disabled(notificationLabel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
             }
         }
+    }
+    
+    private func saveNotification() {
+        let newNotification = NotificationEntry(date: Calendar.current.startOfDay(for: date), time: notificationTime, label: notificationLabel)
+        modelContext.insert(newNotification)
+        
+        // ✅ Explicitly save changes after insertion
+        try? modelContext.save()
     }
 }
