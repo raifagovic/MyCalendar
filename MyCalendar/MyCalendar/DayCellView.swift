@@ -117,11 +117,9 @@ import PencilKit
 struct DayCellView: View {
     let day: Date
     let dayEntry: DayEntry?
-    // This binding allows DayCellView to update the `selectedDate` in CalendarView
-    @Binding var selectedDate: Date?
+    var onTap: (() -> Void)? = nil // 👈 callback for short tap
     
-    @State private var selectedSticker: StickerInfo?
-    @State private var showingNotificationsPopup = false // State for the long press popup
+    @State private var showingNotificationsSheet = false // 👈 for long-press popup
     
     private let editorWidth: CGFloat = 300.0
     
@@ -155,7 +153,7 @@ struct DayCellView: View {
                         Color.clear
                     }
                     
-                    // Stickers below drawings
+                    // Stickers
                     if let stickers = dayEntry?.stickers {
                         let contentScaleFactor = w / AppConstants.editorPreviewWidth
                         
@@ -175,11 +173,16 @@ struct DayCellView: View {
                         }
                     }
                     
-                    // Drawings above stickers
+                    // Drawings
                     if let data = dayEntry?.drawingData,
                        let drawing = try? PKDrawing(data: data) {
                         Canvas { context, canvasSize in
-                            let drawingSourceRect = CGRect(x: 0, y: 0, width: AppConstants.editorPreviewWidth, height: AppConstants.editorPreviewHeight)
+                            let drawingSourceRect = CGRect(
+                                x: 0,
+                                y: 0,
+                                width: AppConstants.editorPreviewWidth,
+                                height: AppConstants.editorPreviewHeight
+                            )
                             let image = drawing.image(from: drawingSourceRect, scale: 1)
                             context.draw(Image(uiImage: image), in: CGRect(origin: .zero, size: canvasSize))
                         }
@@ -204,21 +207,17 @@ struct DayCellView: View {
             .padding(4)
         }
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-        .contentShape(Rectangle()) // Essential for gesture recognition on the whole cell
-        .onTapGesture { // Handles the short tap for DayDetailView
-            if day != .distantPast {
-                selectedDate = day // Update the binding to show DayDetailView
-            }
+        .contentShape(Rectangle())
+        // 👇 Gestures
+        .onTapGesture {
+            onTap?() // Short tap opens DayDetailView
         }
-        .onLongPressGesture { // Handles the long press for notifications
-            if day != .distantPast {
-                showingNotificationsPopup = true // Show the notifications popup
-            }
+        .onLongPressGesture(minimumDuration: 0.5) {
+            // Long press opens notification view
+            showingNotificationsSheet = true
         }
-        .sheet(isPresented: $showingNotificationsPopup) {
-            // Present DayNotificationsView as a sheet when showingNotificationsPopup is true
+        .sheet(isPresented: $showingNotificationsSheet) {
             DayNotificationsView(date: day)
-                .presentationDetents([.medium])
         }
     }
 }

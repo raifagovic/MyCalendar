@@ -335,19 +335,5 @@ struct MonthOffsetPreferenceKey: PreferenceKey {
     }
 }
 
-// You need to update your App's entry point to include NotificationEntry in the modelContainer.
-// Example:
-/*
- @main
- struct YourApp: App {
-     var body: some Scene {
-         WindowGroup {
-             CalendarView()
-         }
-         .modelContainer(for: [DayEntry.self, NotificationEntry.self]) // Add NotificationEntry here
-     }
- }
- */
-
 
 
