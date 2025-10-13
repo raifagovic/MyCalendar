@@ -41,7 +41,7 @@ struct MyCalendarApp: App {
         let schema = Schema([
             DayEntry.self,
             StickerInfo.self, // ✅ Use StickerInfo instead of EmoticonInfo
-            NotificationEntry.self // ✨ ADD THIS LINE ✨
+            NotificationEntry.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
