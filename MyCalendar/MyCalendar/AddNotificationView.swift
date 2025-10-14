@@ -21,8 +21,21 @@ struct AddNotificationView: View {
         NavigationStack {
             Form {
                 DatePicker("Time", selection: $notificationTime, displayedComponents: .hourAndMinute)
-                
                 TextField("Label", text: $notificationLabel)
+                Button("Save Notification") {
+                    let newNotification = NotificationEntry(date: date, time: notificationTime, label: notificationLabel)
+                    modelContext.insert(newNotification)
+                    
+                    // ✨ ADD THIS LINE HERE ✨
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        print("Failed to save notification: \(error.localizedDescription)")
+                    }
+                    
+                    dismiss()
+                }
+                .disabled(notificationLabel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
             .navigationTitle("Add Notification")
             .navigationBarTitleDisplayMode(.inline)
