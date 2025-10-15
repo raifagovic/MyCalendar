@@ -13,6 +13,7 @@ struct WeekRowView: View {
     let dayEntries: [DayEntry]
     @Binding var selectedDate: Date? // For DayDetailView
     @State private var selectedDateForNotifications: Date? // For DayNotificationsView
+    @State private var showingNotificationsSheet = false // for long-press popup
     
     let monthDate: Date
     let isFirstContentWeek: Bool
@@ -38,7 +39,11 @@ struct WeekRowView: View {
                 dayEntry: dayEntries.first {
                     Calendar.current.isDate($0.date, inSameDayAs: day.date)
                 },
-                onTap: { self.selectedDate = day.date }
+                onTap: { self.selectedDate = day.date },
+                onLongPress: {
+                    self.selectedDateForNotifications = day.date
+                    self.showingNotificationsSheet = true
+                }
             )
         }
     }
@@ -91,8 +96,10 @@ struct WeekRowView: View {
                 }
             }
         }
-        .sheet(item: $selectedDateForNotifications) { date in
-            DayNotificationsView(date: date)
+        .sheet(isPresented: $showingNotificationsSheet) {
+            if let date = selectedDateForNotifications {
+                DayNotificationsView(date: date)
+            }
         }
     }
 }

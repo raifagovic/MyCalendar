@@ -123,8 +123,7 @@ struct DayCellView: View {
     let day: Date
     let dayEntry: DayEntry?
     var onTap: (() -> Void)? = nil
-
-    @State private var showingNotificationsSheet = false // for long-press popup
+    var onLongPress: (() -> Void)? = nil
 
     private let editorWidth: CGFloat = 300.0
 
@@ -154,6 +153,8 @@ struct DayCellView: View {
                             .allowsHitTesting(false)
                     } else {
                         Color.clear
+                            .contentShape(Rectangle())
+                            .allowsHitTesting(true)
                     }
 
                     if let stickers = dayEntry?.stickers {
@@ -173,9 +174,12 @@ struct DayCellView: View {
                     if let data = dayEntry?.drawingData,
                        let drawing = try? PKDrawing(data: data) {
                         Canvas { context, size in
-                            let rect = CGRect(x: 0, y: 0, width: AppConstants.editorPreviewWidth, height: AppConstants.editorPreviewHeight)
+                            let rect = CGRect(x: 0, y: 0,
+                                              width: AppConstants.editorPreviewWidth,
+                                              height: AppConstants.editorPreviewHeight)
                             let image = drawing.image(from: rect, scale: 1)
-                            context.draw(Image(uiImage: image), in: CGRect(origin: .zero, size: size))
+                            context.draw(Image(uiImage: image),
+                                         in: CGRect(origin: .zero, size: size))
                         }
                         .frame(width: w, height: h)
                         .clipped()
@@ -195,19 +199,30 @@ struct DayCellView: View {
             }
             .padding(4)
         }
+        // 👇 these modifiers must be on the OUTERMOST container
+        .background(Color.black.opacity(0.001)) // ensures touch area even when empty
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .contentShape(Rectangle())
-        // short tap
+
+        // ✅ Short tap gesture (works normally)
         .onTapGesture {
+            print("✅ Short tap detected on \(day)")
             onTap?()
         }
-        // restore internal long-press (does not block scroll the way some gesture combinators do)
+
+        // ✅ Long press (backup recognizer)
         .onLongPressGesture(minimumDuration: 0.5) {
-            showingNotificationsSheet = true
+            print("🟡 Long press detected on \(day)")
+            onLongPress?()
         }
-        // present notifications sheet from inside DayCellView (this is how it used to work)
-        .sheet(isPresented: $showingNotificationsSheet) {
-            DayNotificationsView(date: day)
-        }
+
+        // ✅ Simultaneous gesture to bypass scroll interference
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0.5)
+                .onEnded { _ in
+                    print("🧩 Simultaneous long press fired for \(day)")
+                    onLongPress?()
+                }
+        )
     }
 }
