@@ -13,8 +13,12 @@ struct MonthView: View {
     let monthDate: Date
     let dayEntries: [DayEntry]
     @Binding var selectedDate: Date?
+    
+    // ✅ Sheet state managed here (stable context)
+    @State private var showingNotificationsSheet = false
+    @State private var selectedDateForNotifications: Date? = nil
 
-    // --- All this setup code is still needed to pass down to WeekRowView ---
+    // --- Calendar setup ---
     private var weeks: [[CalendarDay]] {
         let calendar = Calendar.current
         guard let monthInterval = calendar.dateInterval(of: .month, for: monthDate) else { return [] }
@@ -65,34 +69,43 @@ struct MonthView: View {
                    Calendar.current.component(.day, from: day.date) == 1
         }
     }
-    
-    // --- THIS LOGIC STAYS HERE, AS IT APPLIES TO THE WHOLE MONTH ---
+
     private var firstContentWeekIndex: Int? {
         weeks.firstIndex { week in
             week.contains { $0.date != .distantPast && Calendar.current.isDate($0.date, equalTo: monthDate, toGranularity: .month) }
         }
     }
-    
+
     private var isCurrentMonth: Bool {
         Calendar.current.isDate(monthDate, equalTo: Date(), toGranularity: .month)
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             ForEach(weeks.indices, id: \.self) { weekIndex in
                 let week = weeks[weekIndex]
                 
-                // We just pass all the necessary data to WeekRowView and let it handle the rest.
                 WeekRowView(
                     week: week,
                     dayEntries: dayEntries,
                     selectedDate: $selectedDate,
                     monthDate: monthDate,
                     isFirstContentWeek: weekIndex == firstContentWeekIndex,
-                    firstDayOfCurrentMonth: self.firstDayOfCurrentMonth
+                    firstDayOfCurrentMonth: self.firstDayOfCurrentMonth,
+                    onLongPressDay: { date in
+                        // ✅ Called from DayCellView’s long press
+                        self.selectedDateForNotifications = date
+                        self.showingNotificationsSheet = true
+                    }
                 )
             }
         }
         .padding(.top, isCurrentMonth ? 135 : 0)
+        // ✅ Sheet managed here
+        .sheet(isPresented: $showingNotificationsSheet) {
+            if let date = selectedDateForNotifications {
+                DayNotificationsView(date: date)
+            }
+        }
     }
 }

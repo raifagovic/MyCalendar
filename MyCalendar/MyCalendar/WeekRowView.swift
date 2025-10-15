@@ -11,24 +11,20 @@ import SwiftData
 struct WeekRowView: View {
     let week: [CalendarDay]
     let dayEntries: [DayEntry]
-    @Binding var selectedDate: Date? // For DayDetailView
-    @State private var selectedDateForNotifications: Date? // For DayNotificationsView
-    @State private var showingNotificationsSheet = false // for long-press popup
+    @Binding var selectedDate: Date?
     
+    // ✅ We remove local sheet state — handled by MonthView
     let monthDate: Date
     let isFirstContentWeek: Bool
     let firstDayOfCurrentMonth: CalendarDay?
-    
-    private var isCurrentMonth: Bool {
-        Calendar.current.isDate(monthDate, equalTo: Date(), toGranularity: .month)
-    }
+    let onLongPressDay: (Date) -> Void  // 👈 callback to MonthView
     
     private var monthAbbreviationFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM"
         return formatter
     }
-    
+
     @ViewBuilder
     private func dayCell(for day: CalendarDay) -> some View {
         if day.date == Date.distantPast {
@@ -36,18 +32,12 @@ struct WeekRowView: View {
         } else {
             DayCellView(
                 day: day.date,
-                dayEntry: dayEntries.first {
-                    Calendar.current.isDate($0.date, inSameDayAs: day.date)
-                },
                 onTap: { self.selectedDate = day.date },
-                onLongPress: {
-                    self.selectedDateForNotifications = day.date
-                    self.showingNotificationsSheet = true
-                }
+                onLongPress: { onLongPressDay(day.date) } // ✅ calls up to MonthView
             )
         }
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             // --- Header divider logic ---
@@ -88,17 +78,12 @@ struct WeekRowView: View {
                     }
                 }
             }
-            
+
             // --- Day cells row ---
             HStack(spacing: 0) {
                 ForEach(week) { day in
                     dayCell(for: day)
                 }
-            }
-        }
-        .sheet(isPresented: $showingNotificationsSheet) {
-            if let date = selectedDateForNotifications {
-                DayNotificationsView(date: date)
             }
         }
     }
