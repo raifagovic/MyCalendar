@@ -73,7 +73,14 @@ struct CalendarView: View {
                                 }
                             )) {
                                 ForEach(months, id: \.self) { month in
-                                    MonthView(monthDate: month, dayEntries: dayEntries, selectedDate: $selectedDate)
+                                    MonthView(monthDate: month,
+                                              dayEntries: dayEntries,
+                                              selectedDate: $selectedDate,
+                                              onLongPressDay: { date in
+                                                      self.selectedDateForNotifications = date
+                                                      self.showingNotificationsSheet = true
+                                                  }
+                                    )
                                         .id(month.startOfMonth)
                                         // Report the month's offset to the preference key
                                         .background(
