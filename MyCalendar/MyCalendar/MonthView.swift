@@ -97,11 +97,5 @@ struct MonthView: View {
             }
         }
         .padding(.top, isCurrentMonth ? 135 : 0)
-        // ✅ Sheet managed here
-        .sheet(isPresented: $showingNotificationsSheet) {
-            if let date = selectedDateForNotifications {
-                DayNotificationsView(date: date)
-            }
-        }
     }
 }

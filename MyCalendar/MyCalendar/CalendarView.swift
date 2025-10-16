@@ -137,8 +137,16 @@ struct CalendarView: View {
                 }
             }
         }
+        // 👇 TAP — shows DayDetailView
         .sheet(item: $selectedDate) { date in
             DayDetailView(date: date)
+        }
+        
+        // 👇 LONG PRESS — shows DayNotificationsView
+        .sheet(isPresented: $showingNotificationsSheet) {
+            if let date = selectedDateForNotifications {
+                DayNotificationsView(date: date)
+            }
         }
     }
 
