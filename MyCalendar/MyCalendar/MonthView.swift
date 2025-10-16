@@ -13,10 +13,6 @@ struct MonthView: View {
     let monthDate: Date
     let dayEntries: [DayEntry]
     @Binding var selectedDate: Date?
-    
-    // ✅ Sheet state managed here (stable context)
-    @State private var showingNotificationsSheet = false
-    @State private var selectedDateForNotifications: Date? = nil
 
     // --- Calendar setup ---
     private var weeks: [[CalendarDay]] {

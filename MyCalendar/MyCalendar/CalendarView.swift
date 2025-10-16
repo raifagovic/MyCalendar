@@ -16,6 +16,9 @@ struct CalendarView: View {
     
     @State private var currentVisibleMonth: Date = Date()
     @State private var isShowingYearView = false
+  
+    @State private var showingNotificationsSheet = false
+    @State private var selectedDateForNotifications: Date? = nil
     
     private let coordinateSpaceName = "calendarScroll"
 
