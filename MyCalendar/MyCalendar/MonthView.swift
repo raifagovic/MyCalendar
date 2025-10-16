@@ -13,7 +13,8 @@ struct MonthView: View {
     let monthDate: Date
     let dayEntries: [DayEntry]
     @Binding var selectedDate: Date?
-
+    let onLongPressDay: (Date) -> Void
+    
     // --- Calendar setup ---
     private var weeks: [[CalendarDay]] {
         let calendar = Calendar.current
@@ -88,11 +89,7 @@ struct MonthView: View {
                     monthDate: monthDate,
                     isFirstContentWeek: weekIndex == firstContentWeekIndex,
                     firstDayOfCurrentMonth: self.firstDayOfCurrentMonth,
-                    onLongPressDay: { date in
-                        // ✅ Called from DayCellView’s long press
-                        self.selectedDateForNotifications = date
-                        self.showingNotificationsSheet = true
-                    }
+                    onLongPressDay: onLongPressDay
                 )
             }
         }
