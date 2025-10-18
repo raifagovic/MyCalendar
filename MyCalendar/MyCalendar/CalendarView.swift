@@ -150,10 +150,13 @@ struct CalendarView: View {
         }
         
         // 👇 LONG PRESS — shows DayNotificationsView
-        .sheet(isPresented: $showingNotificationsSheet) {
-            if let date = selectedDateForNotifications {
-                DayNotificationsView(date: date)
-            }
+//        .sheet(isPresented: $showingNotificationsSheet) {
+//            if let date = selectedDateForNotifications {
+//                DayNotificationsView(date: date)
+//            }
+//        }
+        .sheet(item: $selectedDateForNotifications) { date in
+            DayNotificationsView(date: date)
         }
     }
 
