@@ -1,4 +1,3 @@
-
 //
 //  MonthView.swift
 //  MyCalendar
@@ -15,49 +14,6 @@ struct MonthView: View {
     @Binding var selectedDate: Date?
     let onLongPressDay: (Date) -> Void
     
-    // --- Calendar setup ---
-//    private var weeks: [[CalendarDay]] {
-//        let calendar = Calendar.current
-//        guard let monthInterval = calendar.dateInterval(of: .month, for: monthDate) else { return [] }
-//        var allDays: [CalendarDay] = []
-//        let firstDay = monthInterval.start
-//        
-//        let emptyDays = (calendar.component(.weekday, from: firstDay) - calendar.firstWeekday + 7) % 7
-//        
-//        for _ in 0..<emptyDays {
-//            allDays.append(CalendarDay(date: .distantPast))
-//        }
-//        if let range = calendar.range(of: .day, in: .month, for: monthDate) {
-//            let realDays = range.compactMap { calendar.date(byAdding: .day, value: $0 - 1, to: firstDay) }
-//            for day in realDays {
-//                allDays.append(CalendarDay(date: day))
-//            }
-//        }
-//        var resultWeeks = [[CalendarDay]]()
-//        var currentWeek: [CalendarDay] = []
-//        for day in allDays {
-//            currentWeek.append(day)
-//            if currentWeek.count == 7 {
-//                resultWeeks.append(currentWeek)
-//                currentWeek = []
-//            }
-//        }
-//        if !currentWeek.isEmpty {
-//            let remaining = 7 - currentWeek.count
-//            for _ in 0..<remaining {
-//                currentWeek.append(CalendarDay(date: .distantPast))
-//            }
-//            resultWeeks.append(currentWeek)
-//        }
-//        while resultWeeks.count < 6 {
-//            var paddingWeek: [CalendarDay] = []
-//            for _ in 0..<7 {
-//                paddingWeek.append(CalendarDay(date: .distantPast))
-//            }
-//            resultWeeks.append(paddingWeek)
-//        }
-//        return resultWeeks
-//    }
     private var weeks: [[CalendarDay]] {
         let calendar = Calendar.current
         guard let monthInterval = calendar.dateInterval(of: .month, for: monthDate) else { return [] }
