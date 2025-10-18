@@ -11,4 +11,5 @@ import Foundation
 struct CalendarDay: Identifiable, Hashable {
     let id = UUID() // Guaranteed to be unique for every single instance
     let date: Date
+    var entry: DayEntry?
 }
