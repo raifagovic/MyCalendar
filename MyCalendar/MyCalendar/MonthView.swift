@@ -16,46 +16,88 @@ struct MonthView: View {
     let onLongPressDay: (Date) -> Void
     
     // --- Calendar setup ---
+//    private var weeks: [[CalendarDay]] {
+//        let calendar = Calendar.current
+//        guard let monthInterval = calendar.dateInterval(of: .month, for: monthDate) else { return [] }
+//        var allDays: [CalendarDay] = []
+//        let firstDay = monthInterval.start
+//        
+//        let emptyDays = (calendar.component(.weekday, from: firstDay) - calendar.firstWeekday + 7) % 7
+//        
+//        for _ in 0..<emptyDays {
+//            allDays.append(CalendarDay(date: .distantPast))
+//        }
+//        if let range = calendar.range(of: .day, in: .month, for: monthDate) {
+//            let realDays = range.compactMap { calendar.date(byAdding: .day, value: $0 - 1, to: firstDay) }
+//            for day in realDays {
+//                allDays.append(CalendarDay(date: day))
+//            }
+//        }
+//        var resultWeeks = [[CalendarDay]]()
+//        var currentWeek: [CalendarDay] = []
+//        for day in allDays {
+//            currentWeek.append(day)
+//            if currentWeek.count == 7 {
+//                resultWeeks.append(currentWeek)
+//                currentWeek = []
+//            }
+//        }
+//        if !currentWeek.isEmpty {
+//            let remaining = 7 - currentWeek.count
+//            for _ in 0..<remaining {
+//                currentWeek.append(CalendarDay(date: .distantPast))
+//            }
+//            resultWeeks.append(currentWeek)
+//        }
+//        while resultWeeks.count < 6 {
+//            var paddingWeek: [CalendarDay] = []
+//            for _ in 0..<7 {
+//                paddingWeek.append(CalendarDay(date: .distantPast))
+//            }
+//            resultWeeks.append(paddingWeek)
+//        }
+//        return resultWeeks
+//    }
     private var weeks: [[CalendarDay]] {
         let calendar = Calendar.current
         guard let monthInterval = calendar.dateInterval(of: .month, for: monthDate) else { return [] }
+
         var allDays: [CalendarDay] = []
         let firstDay = monthInterval.start
-        
+
+        // how many blank cells before the first of the month
         let emptyDays = (calendar.component(.weekday, from: firstDay) - calendar.firstWeekday + 7) % 7
-        
+
+        // Add leading blanks
         for _ in 0..<emptyDays {
-            allDays.append(CalendarDay(date: .distantPast))
+            allDays.append(CalendarDay(date: .distantPast, entry: nil))
         }
+
+        // Add real days, linked to their DayEntry
         if let range = calendar.range(of: .day, in: .month, for: monthDate) {
-            let realDays = range.compactMap { calendar.date(byAdding: .day, value: $0 - 1, to: firstDay) }
-            for day in realDays {
-                allDays.append(CalendarDay(date: day))
+            for dayNumber in range {
+                if let date = calendar.date(byAdding: .day, value: dayNumber - 1, to: firstDay) {
+                    // ✅ Attach matching DayEntry if one exists
+                    let entry = dayEntries.first(where: { Calendar.current.isDate($0.date, inSameDayAs: date) })
+                    allDays.append(CalendarDay(date: date, entry: entry))
+                }
             }
         }
-        var resultWeeks = [[CalendarDay]]()
-        var currentWeek: [CalendarDay] = []
-        for day in allDays {
-            currentWeek.append(day)
-            if currentWeek.count == 7 {
-                resultWeeks.append(currentWeek)
-                currentWeek = []
-            }
+
+        // Fill trailing blanks to make full weeks
+        while allDays.count % 7 != 0 {
+            allDays.append(CalendarDay(date: .distantPast, entry: nil))
         }
-        if !currentWeek.isEmpty {
-            let remaining = 7 - currentWeek.count
-            for _ in 0..<remaining {
-                currentWeek.append(CalendarDay(date: .distantPast))
-            }
-            resultWeeks.append(currentWeek)
+
+        // Split into 6 weeks (so grid is stable)
+        var resultWeeks: [[CalendarDay]] = []
+        for chunk in stride(from: 0, to: allDays.count, by: 7) {
+            resultWeeks.append(Array(allDays[chunk..<min(chunk + 7, allDays.count)]))
         }
         while resultWeeks.count < 6 {
-            var paddingWeek: [CalendarDay] = []
-            for _ in 0..<7 {
-                paddingWeek.append(CalendarDay(date: .distantPast))
-            }
-            resultWeeks.append(paddingWeek)
+            resultWeeks.append(Array(repeating: CalendarDay(date: .distantPast, entry: nil), count: 7))
         }
+
         return resultWeeks
     }
 

@@ -32,8 +32,7 @@ struct WeekRowView: View {
         } else {
             DayCellView(
                 day: day.date,
-//                dayEntry: day.entry,
-                dayEntry: nil,
+                dayEntry: day.entry,
                 onTap: { self.selectedDate = day.date },
                 onLongPress: { onLongPressDay(day.date) } // ✅ calls up to MonthView
             )
