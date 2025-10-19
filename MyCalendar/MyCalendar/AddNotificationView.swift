@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import UserNotifications
 
 struct AddNotificationView: View {
     @Environment(\.modelContext) private var modelContext
@@ -43,10 +44,42 @@ struct AddNotificationView: View {
     }
     
     private func saveNotification() {
-        let newNotification = NotificationEntry(date: Calendar.current.startOfDay(for: date), time: notificationTime, label: notificationLabel)
+        let startOfDay = Calendar.current.startOfDay(for: date)
+        let newNotification = NotificationEntry(date: startOfDay, time: notificationTime, label: notificationLabel)
         modelContext.insert(newNotification)
-        
-        // ✅ Explicitly save changes after insertion
         try? modelContext.save()
+
+        // Schedule a real local notification
+        scheduleLocalNotification(for: newNotification)
+    }
+
+    private func scheduleLocalNotification(for entry: NotificationEntry) {
+        let content = UNMutableNotificationContent()
+        content.title = "Reminder"
+        content.body = entry.label
+        content.sound = .default
+
+        // Combine the entry.date (day) and entry.time (hour/minute)
+        var calendar = Calendar.current
+        var components = calendar.dateComponents([.year, .month, .day], from: entry.date)
+        let timeComponents = calendar.dateComponents([.hour, .minute], from: entry.time)
+        components.hour = timeComponents.hour
+        components.minute = timeComponents.minute
+
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+
+        let request = UNNotificationRequest(
+            identifier: entry.id.uuidString,
+            content: content,
+            trigger: trigger
+        )
+
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("❌ Failed to schedule notification: \(error.localizedDescription)")
+            } else {
+                print("✅ Notification scheduled for \(components)")
+            }
+        }
     }
 }
