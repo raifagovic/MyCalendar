@@ -37,6 +37,16 @@ import SwiftData
 
 @main
 struct MyCalendarApp: App {
+    init() {
+        // Ask user for permission to send notifications
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { success, error in
+            if let error = error {
+                print("Notification permission error: \(error.localizedDescription)")
+            } else {
+                print("Notifications permission granted: \(success)")
+            }
+        }
+    }
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             DayEntry.self,
