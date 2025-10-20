@@ -9,20 +9,20 @@ import SwiftUI
 import SwiftData
 
 struct DayNotificationsView: View {
-    let date: Date // The date for which we are showing notifications
+    let date: Date
     @Environment(\.modelContext) private var modelContext
     
     @Query private var notifications: [NotificationEntry]
     
     @State private var showingAddNotificationSheet = false
+    @State private var notificationToEdit: NotificationEntry? = nil // ✅ Track notification being edited
     
     init(date: Date) {
         self.date = date
-        // Filter notifications for the specific date
         let calendar = Calendar.current
         let startOfDay = calendar.startOfDay(for: date)
         guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay) else {
-            _notifications = Query(filter: #Predicate<NotificationEntry> { _ in false }) // Should not happen
+            _notifications = Query(filter: #Predicate<NotificationEntry> { _ in false })
             return
         }
         
@@ -30,7 +30,7 @@ struct DayNotificationsView: View {
             filter: #Predicate<NotificationEntry> { notification in
                 notification.date >= startOfDay && notification.date < endOfDay
             },
-            sort: \NotificationEntry.time // Sort by time
+            sort: \NotificationEntry.time
         )
     }
     
@@ -53,6 +53,12 @@ struct DayNotificationsView: View {
                                 .font(.subheadline)
                             Text(notification.label)
                                 .font(.body)
+                            Spacer()
+                        }
+                        .contentShape(Rectangle()) // ✅ Make entire row tappable
+                        .onTapGesture {
+                            notificationToEdit = notification
+                            showingAddNotificationSheet = true
                         }
                     }
                     .onDelete(perform: deleteNotifications)
@@ -61,26 +67,31 @@ struct DayNotificationsView: View {
             }
             
             Button("Add Notification") {
+                notificationToEdit = nil
                 showingAddNotificationSheet = true
             }
             .padding(.top, 8)
         }
         .padding()
-        .background(Color.black.opacity(0.8)) // Darker background
+        .background(Color.black.opacity(0.8))
         .cornerRadius(15)
         .shadow(radius: 10)
         .frame(minWidth: 250, idealWidth: 300, maxWidth: 350)
         .sheet(isPresented: $showingAddNotificationSheet) {
-            AddNotificationView(date: date)
+            AddNotificationView(
+                date: date,
+                notificationToEdit: notificationToEdit // ✅ Pass notification if editing
+            )
         }
     }
     
-        private func deleteNotifications(at offsets: IndexSet) {
-            for index in offsets {
-                let notification = notifications[index]
-                modelContext.delete(notification)
-            }
-            // ✅ Explicitly save changes after deletion
-            try? modelContext.save()
+    private func deleteNotifications(at offsets: IndexSet) {
+        for index in offsets {
+            let notification = notifications[index]
+            modelContext.delete(notification)
+            // ✅ Remove scheduled notification from the system
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notification.id.uuidString])
         }
+        try? modelContext.save()
+    }
 }
