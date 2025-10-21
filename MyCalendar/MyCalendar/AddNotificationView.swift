@@ -80,7 +80,7 @@ struct AddNotificationView: View {
         content.sound = .default
 
         // Combine the entry.date (day) and entry.time (hour/minute)
-        var calendar = Calendar.current
+        let calendar = Calendar.current
         var components = calendar.dateComponents([.year, .month, .day], from: entry.date)
         let timeComponents = calendar.dateComponents([.hour, .minute], from: entry.time)
         components.hour = timeComponents.hour

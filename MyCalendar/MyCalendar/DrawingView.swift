@@ -48,7 +48,7 @@ struct DrawingView: UIViewRepresentable {
             DispatchQueue.main.async {
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                    let window = windowScene.windows.first {
-                   let toolPicker = PKToolPicker()
+                    let toolPicker = PKToolPicker()
                     toolPicker.setVisible(true, forFirstResponder: canvas)
                     toolPicker.addObserver(canvas)
                     canvas.becomeFirstResponder()
