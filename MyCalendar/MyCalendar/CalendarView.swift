@@ -72,25 +72,27 @@ struct CalendarView: View {
                                     }
                                 }
                             )) {
-                                ForEach(months, id: \.self) { month in
-                                    MonthView(monthDate: month,
-                                              dayEntries: dayEntries,
-                                              selectedDate: $selectedDate,
-                                              onLongPressDay: { date in
-                                                      self.selectedDateForNotifications = date
-                                                      self.showingNotificationsSheet = true
-                                                  }
+                                ForEach(months) { monthData in
+                                    MonthView(
+                                        monthData: monthData,
+                                        selectedDate: $selectedDate,
+                                        onLongPressDay: { date in
+                                            self.selectedDateForNotifications = date
+                                            self.showingNotificationsSheet = true
+                                        }
                                     )
-                                        .id(month.startOfMonth)
-                                        // Report the month's offset to the preference key
-                                        .background(
-                                            GeometryReader { geo in
-                                                Color.clear.preference(
-                                                    key: MonthOffsetPreferenceKey.self,
-                                                    value: [MonthOffset(id: month.startOfMonth, offset: geo.frame(in: .named(coordinateSpaceName)).minY)]
-                                                )
-                                            }
-                                        )
+                                    .id(monthData.id)
+                                    .background(
+                                        GeometryReader { geo in
+                                            Color.clear.preference(
+                                                key: MonthOffsetPreferenceKey.self,
+                                                value: [MonthOffset(
+                                                    id: monthData.id,
+                                                    offset: geo.frame(in: .named(coordinateSpaceName)).minY
+                                                )]
+                                            )
+                                        }
+                                    )
                                 }
                             }
                         }
@@ -148,13 +150,7 @@ struct CalendarView: View {
         .sheet(item: $selectedDate) { date in
             DayDetailView(date: date)
         }
-        
-        // 👇 LONG PRESS — shows DayNotificationsView
-//        .sheet(isPresented: $showingNotificationsSheet) {
-//            if let date = selectedDateForNotifications {
-//                DayNotificationsView(date: date)
-//            }
-//        }
+
         .sheet(item: $selectedDateForNotifications) { date in
             DayNotificationsView(date: date)
         }
