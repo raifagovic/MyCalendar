@@ -11,7 +11,7 @@ import SwiftData
 struct CalendarView: View {
     @Query(sort: \DayEntry.date) private var dayEntries: [DayEntry]
     
-    @State private var months: [Date] = []
+    @State private var months: [MonthData] = []
     @State private var selectedDate: Date? // This is used for DayDetailView, a short tap
     
     @State private var currentVisibleMonth: Date = Date()
@@ -160,19 +160,21 @@ struct CalendarView: View {
         }
     }
 
-    private func generateMonths() -> [Date] {
-        var result: [Date] = []
+    private func generateMonths() -> [MonthData] {
+        var result: [MonthData] = []
         let calendar = Calendar.current
-        let today = Date() // Use the actual current date as the center point
-        
+        let today = Date()
+
         let monthRange = -120...120
-        
+
         for i in monthRange {
-            if let month = calendar.date(byAdding: .month, value: i, to: today) {
-                result.append(month.startOfMonth)
+            if let monthDate = calendar.date(byAdding: .month, value: i, to: today)?.startOfMonth {
+                let data = MonthData.generate(for: monthDate, dayEntries: dayEntries)
+                result.append(data)
             }
         }
-        return result.sorted() // And sort the result to be sure
+
+        return result.sorted(by: { $0.id < $1.id })
     }
 }
 
