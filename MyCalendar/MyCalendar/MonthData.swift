@@ -10,5 +10,4 @@ import Foundation
 struct MonthData: Identifiable {
     let id: Date
     let weeks: [[CalendarDay]]
-    let dayEntries: [DayEntry]
 }
