@@ -18,6 +18,7 @@ final class DayEntry {
     // Background image
     var backgroundImageData: Data?
     var drawingData: Data? // optional, for PencilKit later
+    var drawingPreviewData: Data?
 
     // Transform state for background
     var backgroundImageScale: CGFloat = 1.0
