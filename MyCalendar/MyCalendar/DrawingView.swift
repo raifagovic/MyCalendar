@@ -12,6 +12,7 @@ struct DrawingView: UIViewRepresentable {
     @Binding var drawingData: Data?
     var isEditable: Bool
     var showToolPicker: Bool = false
+    var onDrawingChanged: ((PKDrawing) -> Void)? = nil
 
     class Coordinator: NSObject, PKCanvasViewDelegate {
         var parent: DrawingView
@@ -22,6 +23,7 @@ struct DrawingView: UIViewRepresentable {
 
         func canvasViewDrawingDidChange(_ canvasView: PKCanvasView) {
             parent.drawingData = canvasView.drawing.dataRepresentation()
+            parent.onDrawingChanged?(canvasView.drawing)
         }
     }
 
