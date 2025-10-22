@@ -149,7 +149,12 @@ private extension DayDetailView {
                                 set: { entry.drawingData = $0; try? modelContext.save() }
                             ),
                             isEditable: true,
-                            showToolPicker: true
+                            showToolPicker: true,
+                            onDrawingChanged: { drawing in // 👈 add this
+                                Task {
+                                    await generateDrawingPreview(for: drawing)
+                                }
+                            }
                         )
                         .frame(width: AppConstants.editorPreviewWidth,
                                height: AppConstants.editorPreviewHeight)
@@ -624,6 +629,25 @@ private extension DayDetailView {
         modelContext.insert(newEntry)
         self.entry = newEntry
         return newEntry
+    }
+    
+    @MainActor
+    func generateDrawingPreview(for drawing: PKDrawing) async {
+        guard let entry = entry else { return }
+
+        let size = CGSize(
+            width: AppConstants.editorPreviewWidth,
+            height: AppConstants.editorPreviewHeight
+        )
+
+        // Render PKDrawing to UIImage
+        let image = drawing.image(from: CGRect(origin: .zero, size: size), scale: 1.0)
+
+        // Convert to PNG (or JPEG if you prefer smaller file)
+        if let data = image.pngData() {
+            entry.drawingPreviewData = data
+            try? modelContext.save()
+        }
     }
 }
 
