@@ -146,66 +146,20 @@ extension DayCellView {
         }
     }
     
-//    private func loadDrawingImage() {
-//        guard drawingImage == nil,
-//              let data = dayEntry?.drawingData else { return }
-//        
-//        let key = "draw_\(data.hashValue)"
-//        if let cached = DrawingCache.shared.image(forKey: key) {
-//            drawingImage = cached
-//            return
-//        }
-//        
-//        Task.detached(priority: .userInitiated) {
-//            guard let drawing = try? PKDrawing(data: data) else { return }
-//            let rect = CGRect(
-//                x: 0,
-//                y: 0,
-//                width: AppConstants.editorPreviewWidth,
-//                height: AppConstants.editorPreviewHeight
-//            )
-//            let img = drawing.image(from: rect, scale: 1)
-//            DrawingCache.shared.set(img, forKey: key)
-//            await MainActor.run { drawingImage = img }
-//        }
-//    }
-    
-    private func loadDrawingImage() {
-        // ✅ 1. Try to use preview image if available
-        if let previewData = dayEntry?.drawingPreviewData {
-            let key = "drawPreview_\(previewData.hashValue)"
-            if let cached = DrawingCache.shared.image(forKey: key) {
-                drawingImage = cached
-                return
-            }
-            
-            Task.detached(priority: .userInitiated) {
-                if let img = UIImage(data: previewData) {
-                    DrawingCache.shared.set(img, forKey: key)
-                    await MainActor.run { drawingImage = img }
-                }
-            }
-            return
-        }
-        
-        // ✅ 2. Fallback: load full PKDrawing if no preview exists
-        guard drawingImage == nil,
-              let data = dayEntry?.drawingData else { return }
-        
+    private func loadDrawingImage(forceReload: Bool = false) {
+        guard let data = dayEntry?.drawingData else { return }
+
         let key = "draw_\(data.hashValue)"
-        if let cached = DrawingCache.shared.image(forKey: key) {
+        if !forceReload, let cached = DrawingCache.shared.image(forKey: key) {
             drawingImage = cached
             return
         }
-        
+
         Task.detached(priority: .userInitiated) {
             guard let drawing = try? PKDrawing(data: data) else { return }
-            let rect = CGRect(
-                x: 0,
-                y: 0,
-                width: AppConstants.editorPreviewWidth,
-                height: AppConstants.editorPreviewHeight
-            )
+            let rect = CGRect(x: 0, y: 0,
+                              width: AppConstants.editorPreviewWidth,
+                              height: AppConstants.editorPreviewHeight)
             let img = drawing.image(from: rect, scale: 1)
             DrawingCache.shared.set(img, forKey: key)
             await MainActor.run { drawingImage = img }

@@ -70,6 +70,14 @@ struct DrawingView: UIViewRepresentable {
             uiView.drawing = drawing
         }
     }
+    
+    func dismantleUIView(_ uiView: PKCanvasView, coordinator: Coordinator) {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let toolPicker = PKToolPicker.shared(for: windowScene) {
+            toolPicker.setVisible(false, forFirstResponder: uiView)
+            toolPicker.removeObserver(uiView)
+        }
+    }
 }
 
 
