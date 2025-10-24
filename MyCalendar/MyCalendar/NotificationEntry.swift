@@ -17,7 +17,7 @@ final class NotificationEntry {
     
     init(date: Date, time: Date, label: String) {
         self.id = UUID()
-        self.date = date
+        self.date = Calendar.current.startOfDay(for: date) 
         self.time = time
         self.label = label
     }

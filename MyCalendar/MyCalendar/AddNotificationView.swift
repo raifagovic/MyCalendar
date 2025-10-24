@@ -63,8 +63,8 @@ struct AddNotificationView: View {
             
         } else {
             // ✅ Adding new notification
-            let startOfDay = Calendar.current.startOfDay(for: date)
-            let newEntry = NotificationEntry(date: startOfDay, time: notificationTime, label: notificationLabel)
+//            let startOfDay = Calendar.current.startOfDay(for: date)
+            let newEntry = NotificationEntry(date: self.date, time: notificationTime, label: notificationLabel)
             modelContext.insert(newEntry)
             
             scheduleLocalNotification(for: newEntry)
