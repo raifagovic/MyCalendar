@@ -46,15 +46,16 @@ struct DrawingView: UIViewRepresentable {
         // Attach PKToolPicker once when the view is created
         if showToolPicker {
             DispatchQueue.main.async {
-                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                    let toolPicker = PKToolPicker()
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let window = windowScene.keyWindow,
+                   let toolPicker = PKToolPicker.shared(for: window) {
                     toolPicker.setVisible(true, forFirstResponder: canvas)
                     toolPicker.addObserver(canvas)
                     canvas.becomeFirstResponder()
                 }
             }
         }
-
+        
         return canvas
     }
 
