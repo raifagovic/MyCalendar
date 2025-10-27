@@ -158,7 +158,6 @@ private extension DayDetailView {
                             RoundedRectangle(cornerRadius: 6)
                                 .stroke(Color.accentColor, lineWidth: 2)
                         )
-                        .transition(.move(edge: .bottom))
                         .zIndex(1)
                     }
                 }
