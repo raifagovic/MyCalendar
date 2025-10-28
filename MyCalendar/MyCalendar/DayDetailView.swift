@@ -253,8 +253,6 @@ private extension DayDetailView {
                 withAnimation {
                     isDrawing.toggle()
                 }
-                // When toggling drawing off, a save should have already happened via the binding.
-                // However, explicitly ensuring the tool picker is dismissed gracefully is good.
             } label: {
                 Image(systemName: "pencil.tip")
                     .font(.system(size: 24))
