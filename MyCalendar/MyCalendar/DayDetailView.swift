@@ -18,6 +18,7 @@ struct DayDetailView: View {
 
     @State private var entry: DayEntry?
     @State private var selectedPhoto: PhotosPickerItem?
+    @StateObject private var drawingController = DrawingController()
     
     // Base font sizes in editor coordinate space (used so DayCellView can scale down exactly)
     private let baseEmojiFontSize: CGFloat = 24
@@ -140,28 +141,28 @@ private extension DayDetailView {
                     .allowsHitTesting(false)
                 }
                 
-                // Drawing layer
-                if isDrawing {
-                    if let entry = entry {
-                        DrawingView(
-                            drawingData: Binding(
-                                get: { entry.drawingData },
-                                set: { entry.drawingData = $0; try? modelContext.save() }
-                            ),
-                            isEditable: true,
-                            showToolPicker: true
-                        )
-                        .frame(width: AppConstants.editorPreviewWidth,
-                               height: AppConstants.editorPreviewHeight)
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 6)
-                                .stroke(Color.accentColor, lineWidth: 2)
-                        )
-                        .zIndex(1)
-                    }
+                // Drawing layer (always alive, first toggle works)
+                if let entry = entry {
+                    DrawingView(
+                        controller: drawingController,
+                        drawingData: Binding(
+                            get: { entry.drawingData },
+                            set: { entry.drawingData = $0; try? modelContext.save() }
+                        ),
+                        isEditable: isDrawing,
+                        showToolPicker: isDrawing
+                    )
+                    .opacity(isDrawing ? 1 : 0)           // hides visually but keeps alive
+                    .allowsHitTesting(isDrawing)          // only interactive when drawing
+                    .frame(width: AppConstants.editorPreviewWidth,
+                           height: AppConstants.editorPreviewHeight)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(Color.accentColor, lineWidth: 2)
+                    )
+                    .zIndex(1)
                 }
-
 
                 Rectangle()
                     .fill(Color.white.opacity(0.01)) // Invisible touch area
