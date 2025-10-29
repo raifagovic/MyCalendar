@@ -137,6 +137,7 @@ private extension DayDetailView {
                            height: AppConstants.editorPreviewHeight)
                     .clipped()
                     .allowsHitTesting(false)
+                    .opacity(drawingController._isDrawing ? 0 : 1) // Hide this static view when actively drawing
                 }
                 
                 // Drawing layer (always alive, first toggle works)
