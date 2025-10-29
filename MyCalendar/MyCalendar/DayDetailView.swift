@@ -147,9 +147,7 @@ private extension DayDetailView {
                         drawingData: Binding(
                             get: { entry.drawingData },
                             set: { entry.drawingData = $0; try? modelContext.save() }
-                        ),
-                        isEditable: isDrawing,
-                        showToolPicker: isDrawing
+                        )
                     )
                     .opacity(isDrawing ? 1 : 0)           // hides visually but keeps alive
                     .allowsHitTesting(isDrawing)          // only interactive when drawing
