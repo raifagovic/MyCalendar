@@ -51,8 +51,6 @@ struct DayDetailView: View {
     @State private var currentTypingText: String = ""
     @State private var isTyping: Bool = false
     @FocusState private var typingFieldFocused: Bool
-    
-    @State private var isDrawing: Bool = false
 
     var body: some View {
         NavigationStack {
