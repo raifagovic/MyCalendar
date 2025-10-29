@@ -106,6 +106,7 @@ struct DayDetailView: View {
             }
             // When the detail view disappears, stop drawing mode.
             // This is important to ensure the PKToolPicker dismisses.
+            drawingController.hideToolPicker()
             isDrawing = false
         }
         .onChange(of: selectedPhoto) { _, newItem in loadPhoto(newItem) }
