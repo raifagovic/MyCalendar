@@ -32,28 +32,21 @@ struct DrawingView: UIViewRepresentable {
         }
 
     func updateUIView(_ canvas: PKCanvasView, context: Context) {
-        canvas.isUserInteractionEnabled = isEditable
-
-        if let data = drawingData,
-           let drawing = try? PKDrawing(data: data),
-           drawing != canvas.drawing {
-            canvas.drawing = drawing
+            // DrawingView now solely reacts to changes in drawingData.
+            // The `isUserInteractionEnabled` and `PKToolPicker` visibility
+            // are managed by the DrawingController via its `_isDrawing` property's `didSet`.
+            
+            if let data = drawingData,
+               let drawing = try? PKDrawing(data: data),
+               drawing != canvas.drawing {
+                canvas.drawing = drawing
+            }
+            
+            // The controller's _isDrawing didSet will handle tool picker visibility
+            // and responder status, and also canvas.isUserInteractionEnabled.
+            // So, this updateUIView only needs to ensure the canvas is correctly linked
+            // and its drawing content is up to date.
         }
-
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let window = windowScene.windows.first,
-              let toolPicker = PKToolPicker.shared(for: window) else { return }
-
-        if showToolPicker {
-            toolPicker.setVisible(true, forFirstResponder: canvas)
-            toolPicker.addObserver(canvas)
-            canvas.becomeFirstResponder()
-        } else {
-            toolPicker.setVisible(false, forFirstResponder: canvas)
-            toolPicker.removeObserver(canvas)
-            canvas.resignFirstResponder()
-        }
-    }
 
     func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
