@@ -11,18 +11,25 @@ import PencilKit
 struct DrawingView: UIViewRepresentable {
     @ObservedObject var controller: DrawingController
     @Binding var drawingData: Data?
-    var isEditable: Bool
-    var showToolPicker: Bool
 
     func makeUIView(context: Context) -> PKCanvasView {
-        let canvas = PKCanvasView()
-        controller.canvas = canvas
-        canvas.backgroundColor = .clear
-        canvas.isOpaque = false
-        canvas.drawingPolicy = .anyInput
-        canvas.delegate = context.coordinator
-        return canvas
-    }
+            let canvas = PKCanvasView()
+            controller.canvas = canvas // Link the controller to the canvas
+            canvas.backgroundColor = .clear
+            canvas.isOpaque = false
+            canvas.drawingPolicy = .anyInput
+            canvas.delegate = context.coordinator
+            
+            // Initial setup for editable state (controlled by the controller's _isDrawing)
+            canvas.isUserInteractionEnabled = controller._isDrawing
+            
+            // Crucial: When the view is created, if drawing mode is active,
+            // tell the controller to show the tool picker.
+            if controller._isDrawing {
+                controller.ensureShowToolPickerWithRetry()
+            }
+            return canvas
+        }
 
     func updateUIView(_ canvas: PKCanvasView, context: Context) {
         canvas.isUserInteractionEnabled = isEditable
