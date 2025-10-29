@@ -247,12 +247,27 @@ private extension DayDetailView {
             }
 
             Button {
-                // Ensure an entry exists before enabling drawing
                 if entry == nil {
                     _ = createOrGetEntry()
                 }
+
+                // If opening drawing, ensure typing field isn't focused (it steals responder)
+                if !isDrawing {
+                    typingFieldFocused = false
+                }
+
                 withAnimation {
                     isDrawing.toggle()
+                }
+
+                // If we just turned drawing ON, run tool picker logic
+                if isDrawing { // now it's true → we just enabled drawing
+                    DispatchQueue.main.async {
+                        drawingController.ensureShowToolPickerWithRetry(retryDelay: 0.05)
+                    }
+                } else {
+                    // we toggled off: hide tool picker
+                    drawingController.hideToolPicker()
                 }
             } label: {
                 Image(systemName: "pencil.tip")
