@@ -95,7 +95,6 @@ struct DayDetailView: View {
             }
         }
         .task(id: date) { await fetchEntry(for: date) }
-//        .onDisappear { saveBackgroundState() }
         .onDisappear {
             saveBackgroundState() // Saves background image scale/offset
             // Also save drawing data if present
@@ -105,7 +104,7 @@ struct DayDetailView: View {
             // When the detail view disappears, stop drawing mode.
             // This is important to ensure the PKToolPicker dismisses.
             drawingController.hideToolPicker()
-            isDrawing = false
+            drawingController._isDrawing = false // Ensure the controller's state is reset
         }
         .onChange(of: selectedPhoto) { _, newItem in loadPhoto(newItem) }
     }
