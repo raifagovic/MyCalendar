@@ -118,10 +118,10 @@
 				DC3F99BF2E4C864A00E8B7BB /* YearHeaderView.swift */,
 				DC3F99CB2E6C97E800E8B7BB /* StickerView.swift */,
 				DC3F99C92E6C95DF00E8B7BB /* StickerInfo.swift */,
-				DC5FDE2E2E1C449E00FAB44F /* DrawingView.swift */,
 				DCDBCB342E9B0BCF00DB5DFD /* NotificationEntry.swift */,
 				DCDBCB362E9B0D0E00DB5DFD /* DayNotificationsView.swift */,
 				DCDBCB382E9B0DDA00DB5DFD /* AddNotificationView.swift */,
+				DC5FDE2E2E1C449E00FAB44F /* DrawingView.swift */,
 				DCDBCB3C2EB2BAD000DB5DFD /* DrawingController.swift */,
 				DCDBCB3E2EB4053300DB5DFD /* CanvasHostView.swift */,
 			);
