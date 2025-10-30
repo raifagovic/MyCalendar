@@ -112,7 +112,7 @@ struct DayDetailView: View {
 
 // MARK: - Subviews
 private extension DayDetailView {
-
+    
     var editorView: some View {
         GeometryReader { geometry in
             let canvasSize = geometry.size
@@ -149,8 +149,7 @@ private extension DayDetailView {
                             set: { entry.drawingData = $0; try? modelContext.save() }
                         )
                     )
-                    .opacity(isDrawing ? 1 : 0)           // hides visually but keeps alive
-                    .allowsHitTesting(isDrawing)          // only interactive when drawing
+                    .opacity(drawingController._isDrawing ? 1 : 0)         // hides visually but keeps alive
                     .frame(width: AppConstants.editorPreviewWidth,
                            height: AppConstants.editorPreviewHeight)
                     .clipShape(RoundedRectangle(cornerRadius: 6))
@@ -160,11 +159,11 @@ private extension DayDetailView {
                     )
                     .zIndex(1)
                 }
-
+                
                 Rectangle()
                     .fill(Color.white.opacity(0.01)) // Invisible touch area
                     .contentShape(Rectangle())
-                    .allowsHitTesting(!isDrawing)
+                    .allowsHitTesting(!drawingController._isDrawing)
                     .gesture(
                         SimultaneousGesture(
                             SimultaneousGesture(
@@ -209,7 +208,7 @@ private extension DayDetailView {
                                         state = value
                                     }
                                 }
-                                // No backgroundGestureRotation needed
+                            // No backgroundGestureRotation needed
                                 .onChanged { value in
                                     handleUnifiedRotationChange(value, canvasSize: canvasSize)
                                 }
@@ -227,14 +226,14 @@ private extension DayDetailView {
         .frame(width: AppConstants.editorPreviewWidth,
                height: AppConstants.editorPreviewHeight)
     }
-
+    
     var toolbarView: some View {
         HStack(spacing: 40) {
             PhotosPicker(selection: $selectedPhoto, matching: .images, photoLibrary: .shared()) {
                 Image(systemName: "photo.on.rectangle.angled")
                     .font(.system(size: 24))
             }
-
+            
             Button {
                 isTyping = true
                 typingFieldFocused = true
@@ -242,30 +241,20 @@ private extension DayDetailView {
                 Image(systemName: "keyboard")
                     .font(.system(size: 24))
             }
-
+            
             Button {
                 if entry == nil {
                     _ = createOrGetEntry()
                 }
-
+                
                 // If opening drawing, ensure typing field isn't focused (it steals responder)
-                if !isDrawing {
-                    typingFieldFocused = false
+                if !drawingController._isDrawing {                   typingFieldFocused = false
                 }
-
+                
                 withAnimation {
-                    isDrawing.toggle()
+                    drawingController._isDrawing.toggle()
                 }
-
-                // If we just turned drawing ON, run tool picker logic
-                if isDrawing { // now it's true → we just enabled drawing
-                    DispatchQueue.main.async {
-                        drawingController.ensureShowToolPickerWithRetry(retryDelay: 0.05)
-                    }
-                } else {
-                    // we toggled off: hide tool picker
-                    drawingController.hideToolPicker()
-                }
+                
             } label: {
                 Image(systemName: "pencil.tip")
                     .font(.system(size: 24))
@@ -288,6 +277,7 @@ private extension DayDetailView {
         }
         .padding(.top, 8)
     }
+        
 
     var hiddenTextField: some View {
         TextField("", text: $currentTypingText)
