@@ -33,6 +33,7 @@
 		DCDBCB372E9B0D0E00DB5DFD /* DayNotificationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDBCB362E9B0D0E00DB5DFD /* DayNotificationsView.swift */; };
 		DCDBCB392E9B0DDA00DB5DFD /* AddNotificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDBCB382E9B0DDA00DB5DFD /* AddNotificationView.swift */; };
 		DCDBCB3D2EB2BAD000DB5DFD /* DrawingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDBCB3C2EB2BAD000DB5DFD /* DrawingController.swift */; };
+		DCDBCB3F2EB4053300DB5DFD /* CanvasHostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDBCB3E2EB4053300DB5DFD /* CanvasHostView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -63,6 +64,7 @@
 		DCDBCB362E9B0D0E00DB5DFD /* DayNotificationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayNotificationsView.swift; sourceTree = "<group>"; };
 		DCDBCB382E9B0DDA00DB5DFD /* AddNotificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddNotificationView.swift; sourceTree = "<group>"; };
 		DCDBCB3C2EB2BAD000DB5DFD /* DrawingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawingController.swift; sourceTree = "<group>"; };
+		DCDBCB3E2EB4053300DB5DFD /* CanvasHostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasHostView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,6 +123,7 @@
 				DCDBCB362E9B0D0E00DB5DFD /* DayNotificationsView.swift */,
 				DCDBCB382E9B0DDA00DB5DFD /* AddNotificationView.swift */,
 				DCDBCB3C2EB2BAD000DB5DFD /* DrawingController.swift */,
+				DCDBCB3E2EB4053300DB5DFD /* CanvasHostView.swift */,
 			);
 			path = MyCalendar;
 			sourceTree = "<group>";
@@ -226,6 +229,7 @@
 				DC5FDE2F2E1C449E00FAB44F /* DrawingView.swift in Sources */,
 				DC3F999E2E310F4200E8B7BB /* DayCellView.swift in Sources */,
 				DC5FDE2D2E18808800FAB44F /* CalendarView.swift in Sources */,
+				DCDBCB3F2EB4053300DB5DFD /* CanvasHostView.swift in Sources */,
 				DC5FDE1D2E16AA1900FAB44F /* MyCalendarApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

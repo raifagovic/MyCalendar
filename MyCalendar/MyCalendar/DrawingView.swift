@@ -20,14 +20,14 @@ struct DrawingView: UIViewRepresentable {
             canvas.drawingPolicy = .anyInput
             canvas.delegate = context.coordinator
             
-            // Initial setup for editable state (controlled by the controller's _isDrawing)
-            canvas.isUserInteractionEnabled = controller._isDrawing
-            
-            // Crucial: When the view is created, if drawing mode is active,
-            // tell the controller to show the tool picker.
-            if controller._isDrawing {
-                controller.ensureShowToolPickerWithRetry()
-            }
+//            // Initial setup for editable state (controlled by the controller's _isDrawing)
+//            canvas.isUserInteractionEnabled = controller._isDrawing
+//            
+//            // Crucial: When the view is created, if drawing mode is active,
+//            // tell the controller to show the tool picker.
+//            if controller._isDrawing {
+//                controller.ensureShowToolPickerWithRetry()
+//            }
             return canvas
         }
 
