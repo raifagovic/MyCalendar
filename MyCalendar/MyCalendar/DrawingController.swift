@@ -42,8 +42,8 @@ final class DrawingController: ObservableObject {
 
     private var hasAddedObserver = false
 
-    /// Attempt to show tool picker and make canvas first responder.
-    /// Returns true if succeeded.
+    // Attempt to show tool picker and make canvas first responder.
+    // Returns true if succeeded.
     func showToolPicker() -> Bool {
         guard let canvas = canvas, let window = canvas.window else { return false }
         guard let toolPicker = PKToolPicker.shared(for: window) else { return false }
@@ -78,42 +78,14 @@ final class DrawingController: ObservableObject {
         canvas.resignFirstResponder()
     }
 
-    /// Try show with a short retry (safe, idempotent)
-//    func ensureShowToolPickerWithRetry(retryDelay: TimeInterval = 0.05) {
-//        // First try now
-//        if showToolPicker() { return }
-//
-//        // Small retry after a short delay to let responder chain settle
-//        DispatchQueue.main.asyncAfter(deadline: .now() + retryDelay) { [weak self] in
-//            _ = self?.showToolPicker()
-//        }
-//    }
-    func ensureShowToolPickerWithRetry(maxAttempts: Int = 20, retryDelay: TimeInterval = 0.05) {
-        // If the picker is already visible and the canvas is ready, stop here.
+    // Try show with a short retry (safe, idempotent)
+    func ensureShowToolPickerWithRetry(retryDelay: TimeInterval = 0.05) {
+        // First try now
         if showToolPicker() { return }
 
-        var attempts = 0
-        var workItem: DispatchWorkItem?
-
-        workItem = DispatchWorkItem { [weak self] in
-            guard let self = self else { return }
-            attempts += 1
-
-            if self.showToolPicker() {
-                return
-            }
-
-            if attempts < maxAttempts {
-                // Schedule another attempt
-                DispatchQueue.main.asyncAfter(deadline: .now() + retryDelay, execute: workItem!)
-            } else {
-                #if DEBUG
-                print("[DrawingController] ensureShowToolPickerWithRetry: gave up after \(attempts) tries (canvas.window = \(String(describing: self.canvas?.window)))")
-                #endif
-            }
+        // Small retry after a short delay to let responder chain settle
+        DispatchQueue.main.asyncAfter(deadline: .now() + retryDelay) { [weak self] in
+            _ = self?.showToolPicker()
         }
-
-        // Start first attempt slightly delayed
-        DispatchQueue.main.asyncAfter(deadline: .now() + retryDelay, execute: workItem!)
     }
 }
