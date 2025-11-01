@@ -107,6 +107,16 @@ final class DrawingController: ObservableObject {
         }
     }
 
+    // MARK: - Public helper callable from host view
+    /// Call this when the canvas has just been attached to a window.
+    /// It will re-apply the current drawing state on the main queue.
+    func showToolPickerAfterWindow() {
+        DispatchQueue.main.async { [weak self] in
+            self?.applyDrawingState()
+        }
+    }
+
+    // MARK: - Internal logic
     private func applyDrawingState() {
         guard let canvas = canvas else { return }
 
@@ -123,9 +133,13 @@ final class DrawingController: ObservableObject {
         guard let canvas = canvas, let window = canvas.window else { return }
         guard let picker = PKToolPicker.shared(for: window) else { return }
 
+        // Remove any prior double-registration risk by removing first
+        // then re-adding (PKToolPicker implementations are idempotent, but this is safe).
+        picker.removeObserver(canvas)
         picker.addObserver(canvas)
+
         picker.setVisible(true, forFirstResponder: canvas)
-        canvas.becomeFirstResponder()
+        _ = canvas.becomeFirstResponder()
     }
 
     private func hideToolPicker() {
