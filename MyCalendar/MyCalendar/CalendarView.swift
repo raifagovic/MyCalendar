@@ -5,192 +5,6 @@
 //  Created by Raif Agovic on 4. 7. 2025..
 //
 
-//import SwiftUI
-//import SwiftData
-//
-//struct CalendarView: View {
-//    @Query(sort: \DayEntry.date) private var dayEntries: [DayEntry]
-//    
-//    @State private var months: [Date] = []
-//    @State private var selectedDate: Date? // This is used for DayDetailView, a short tap
-//    
-//    @State private var currentVisibleMonth: Date = Date()
-//    @State private var isShowingYearView = false
-//  
-//    @State private var showingNotificationsSheet = false
-//    @State private var selectedDateForNotifications: Date? = nil
-//    
-//    private let coordinateSpaceName = "calendarScroll"
-//
-//    var body: some View {
-//        ScrollViewReader { proxy in
-//            Group {
-//                if isShowingYearView {
-//                    YearView(
-//                        year: currentVisibleMonth, // Already correct, ensures YearView shows the year of currentVisibleMonth
-//                        onMonthTapped: { selectedMonth in
-//                            self.currentVisibleMonth = selectedMonth
-//                            withAnimation(.spring()) {
-//                                isShowingYearView = false
-//                            }
-//                            // A small delay for user-driven actions is still good practice.
-//                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-//                                proxy.scrollTo(selectedMonth.startOfMonth, anchor: .top)
-//                            }
-//                        },
-//                        onTodayTapped: {
-//                            // When tapping "Today" in YearView, we want to go back to the *current month* in the main calendar,
-//                            // and also update `currentVisibleMonth` to today.
-//                            self.currentVisibleMonth = Date() // Set to today's month
-//                            withAnimation(.spring()) {
-//                                isShowingYearView = false
-//                            }
-//                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-//                                proxy.scrollTo(Date().startOfMonth, anchor: .top)
-//                            }
-//                        }
-//                    )
-//                    .ignoresSafeArea(edges: .top)
-//                    .transition(.asymmetric(insertion: .scale(scale: 0.8).combined(with: .opacity), removal: .scale.combined(with: .opacity)))
-//                } else {
-//                    ScrollView {
-//                        LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
-//                            
-//                            Section(header: StickyHeaderView(
-//                                currentVisibleMonth: currentVisibleMonth,
-//                                onTodayTapped: {
-//                                    // User taps should still have a slight delay for robustness.
-//                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-//                                        withAnimation {
-//                                            proxy.scrollTo(Date().startOfMonth, anchor: .top)
-//                                        }
-//                                    }
-//                                },
-//                                onYearTapped: {
-//                                    withAnimation(.spring()) {
-//                                        isShowingYearView = true
-//                                    }
-//                                }
-//                            )) {
-//                                ForEach(months, id: \.self) { month in
-//                                    MonthView(monthDate: month,
-//                                              dayEntries: dayEntries,
-//                                              selectedDate: $selectedDate,
-//                                              onLongPressDay: { date in
-//                                                      self.selectedDateForNotifications = date
-//                                                      self.showingNotificationsSheet = true
-//                                                  }
-//                                    )
-//                                        .id(month.startOfMonth)
-//                                        // Report the month's offset to the preference key
-//                                        .background(
-//                                            GeometryReader { geo in
-//                                                Color.clear.preference(
-//                                                    key: MonthOffsetPreferenceKey.self,
-//                                                    value: [MonthOffset(id: month.startOfMonth, offset: geo.frame(in: .named(coordinateSpaceName)).minY)]
-//                                                )
-//                                            }
-//                                        )
-//                                }
-//                            }
-//                        }
-//                    }
-//                    // We remove all failed scroll-tracking logic from the ScrollView itself.
-//                    .coordinateSpace(name: coordinateSpaceName)
-//                    .ignoresSafeArea(edges: .top)
-//                    .background(Color.black)
-//                    .transition(.asymmetric(insertion: .scale(scale: 0.8).combined(with: .opacity), removal: .scale(scale: 0.8).combined(with: .opacity)))
-//                    // React to changes in month offsets to update currentVisibleMonth
-//                    .onPreferenceChange(MonthOffsetPreferenceKey.self) { preferences in
-//                        // Find the month that is currently closest to the top (minY around 0 or positive)
-//                        if let visibleMonth = preferences
-//                            .filter({ $0.offset <= 150 }) // Consider months whose top is within the sticky header's height (150)
-//                            .sorted(by: { $0.offset > $1.offset }) // Get the one closest to 0 from the positive side
-//                            .first?
-//                            .id
-//                        {
-//                            if !Calendar.current.isDate(currentVisibleMonth, equalTo: visibleMonth, toGranularity: .month) {
-//                                currentVisibleMonth = visibleMonth
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//
-//            .onAppear {
-//                if months.isEmpty {
-//                    months = generateMonths()
-//                }
-//                
-//                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-//                    currentVisibleMonth = Date().startOfMonth
-//                    // 👇 Removed selectedDate assignment to prevent auto sheet open
-//                    proxy.scrollTo(Date().startOfMonth, anchor: .top)
-//                }
-//            }
-//            .onChange(of: months) {
-//                // ✅ Only scroll when months are populated for the first time
-//                if !months.isEmpty {
-//                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-//                        proxy.scrollTo(Date().startOfMonth, anchor: .top)
-//                    }
-//                }
-//            }
-//            // Pass the currentVisibleMonth to YearView as well
-//            .onChange(of: isShowingYearView) { oldValue, newValue in
-//                if newValue == false { // When YearView is dismissed
-//                    // Ensure currentVisibleMonth is up-to-date with the selected month from YearView
-//                    // This is handled by the onMonthTapped closure, but good to have a fallback.
-//                }
-//            }
-//        }
-//        // 👇 TAP — shows DayDetailView
-//        .sheet(item: $selectedDate) { date in
-//            DayDetailView(date: date)
-//        }
-//        
-//        // 👇 LONG PRESS — shows DayNotificationsView
-////        .sheet(isPresented: $showingNotificationsSheet) {
-////            if let date = selectedDateForNotifications {
-////                DayNotificationsView(date: date)
-////            }
-////        }
-//        .sheet(item: $selectedDateForNotifications) { date in
-//            DayNotificationsView(date: date)
-//        }
-//    }
-//
-//    private func generateMonths() -> [Date] {
-//        var result: [Date] = []
-//        let calendar = Calendar.current
-//        let today = Date() // Use the actual current date as the center point
-//        
-//        let monthRange = -120...120
-//        
-//        for i in monthRange {
-//            if let month = calendar.date(byAdding: .month, value: i, to: today) {
-//                result.append(month.startOfMonth)
-//            }
-//        }
-//        return result.sorted() // And sort the result to be sure
-//    }
-//}
-//
-//// MARK: - Scroll Tracking Helpers
-//
-//struct MonthOffset: Identifiable, Equatable {
-//    let id: Date // The startOfMonth date for this month
-//    let offset: CGFloat
-//}
-//
-//struct MonthOffsetPreferenceKey: PreferenceKey {
-//    static var defaultValue: [MonthOffset] = []
-//    
-//    static func reduce(value: inout [MonthOffset], nextValue: () -> [MonthOffset]) {
-//        value.append(contentsOf: nextValue())
-//    }
-//}
-
 import SwiftUI
 import SwiftData
 
@@ -200,7 +14,8 @@ struct CalendarView: View {
     @State private var months: [Date] = []
     @State private var selectedDate: Date? // This is used for DayDetailView, a short tap
     
-    @State private var currentVisibleMonth: Date = Date()
+    // track by index so we can scrollTo an index directly
+    @State private var currentVisibleMonthIndex: Int = 0
     @State private var isShowingYearView = false
   
     @State private var showingNotificationsSheet = false
@@ -213,38 +28,53 @@ struct CalendarView: View {
             Group {
                 if isShowingYearView {
                     YearView(
-                        year: currentVisibleMonth, // Already correct, ensures YearView shows the year of currentVisibleMonth
+                        year: months.isEmpty ? Date() : months[currentVisibleMonthIndex],
                         onMonthTapped: { selectedMonth in
-                            self.currentVisibleMonth = selectedMonth
-                            withAnimation(.spring()) {
-                                isShowingYearView = false
-                            }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-                                proxy.scrollTo(selectedMonth.startOfMonth, anchor: .top)
+                            // find index for selectedMonth and scroll to it
+                            if let idx = months.firstIndex(of: start(of: selectedMonth)) {
+                                currentVisibleMonthIndex = idx
+                                withAnimation(.spring()) {
+                                    isShowingYearView = false
+                                }
+                                DispatchQueue.main.async {
+                                    proxy.scrollTo(idx, anchor: .top)
+                                }
+                            } else {
+                                // fallback: close year view and set visible month
+                                currentVisibleMonthIndex = months.firstIndex(of: start(of: Date())) ?? 0
+                                withAnimation(.spring()) { isShowingYearView = false }
                             }
                         },
                         onTodayTapped: {
-                            self.currentVisibleMonth = Date() // Set to today's month
-                            withAnimation(.spring()) {
-                                isShowingYearView = false
-                            }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-                                proxy.scrollTo(Date().startOfMonth, anchor: .top)
+                            let todayStart = start(of: Date())
+                            if let idx = months.firstIndex(of: todayStart) {
+                                currentVisibleMonthIndex = idx
+                                withAnimation(.spring()) {
+                                    isShowingYearView = false
+                                }
+                                DispatchQueue.main.async {
+                                    proxy.scrollTo(idx, anchor: .top)
+                                }
+                            } else {
+                                // if today's month not in range, just set visibleMonth to closest
+                                currentVisibleMonthIndex = months.count / 2
+                                withAnimation(.spring()) { isShowingYearView = false }
                             }
                         }
                     )
                     .ignoresSafeArea(edges: .top)
-                    .transition(.asymmetric(insertion: .scale(scale: 0.8).combined(with: .opacity), removal: .scale.combined(with: .opacity)))
+                    .transition(.asymmetric(insertion: .scale(scale: 0.8).combined(with: .opacity),
+                                            removal: .scale.combined(with: .opacity)))
                 } else {
                     ScrollView {
                         LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
                             
                             Section(header: StickyHeaderView(
-                                currentVisibleMonth: currentVisibleMonth,
+                                currentVisibleMonth: months.isEmpty ? Date() : months[currentVisibleMonthIndex],
                                 onTodayTapped: {
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
+                                    if let todayIdx = months.firstIndex(of: start(of: Date())) {
                                         withAnimation {
-                                            proxy.scrollTo(Date().startOfMonth, anchor: .top)
+                                            proxy.scrollTo(todayIdx, anchor: .top)
                                         }
                                     }
                                 },
@@ -254,24 +84,26 @@ struct CalendarView: View {
                                     }
                                 }
                             )) {
-                                ForEach(months, id: \.self) { month in
-                                    MonthView(monthDate: month,
-                                              dayEntries: dayEntries,
-                                              selectedDate: $selectedDate,
-                                              onLongPressDay: { date in
-                                                      self.selectedDateForNotifications = date
-                                                      self.showingNotificationsSheet = true
-                                                  }
+                                // Use enumerated months so IDs are integers (stable for scrollTo)
+                                ForEach(Array(months.enumerated()), id: \.0) { index, month in
+                                    MonthView(
+                                        monthDate: month,
+                                        dayEntries: dayEntries,
+                                        selectedDate: $selectedDate,
+                                        onLongPressDay: { date in
+                                            self.selectedDateForNotifications = date
+                                            self.showingNotificationsSheet = true
+                                        }
                                     )
-                                        .id(month.startOfMonth)
-                                        .background(
-                                            GeometryReader { geo in
-                                                Color.clear.preference(
-                                                    key: MonthOffsetPreferenceKey.self,
-                                                    value: [MonthOffset(id: month.startOfMonth, offset: geo.frame(in: .named(coordinateSpaceName)).minY)]
-                                                )
-                                            }
-                                        )
+                                    .id(index) // id is index so we can scrollTo index directly
+                                    .background(
+                                        GeometryReader { geo in
+                                            Color.clear.preference(
+                                                key: MonthOffsetPreferenceKey.self,
+                                                value: [MonthOffset(id: month, offset: geo.frame(in: .named(coordinateSpaceName)).minY)]
+                                            )
+                                        }
+                                    )
                                 }
                             }
                         }
@@ -279,47 +111,57 @@ struct CalendarView: View {
                     .coordinateSpace(name: coordinateSpaceName)
                     .ignoresSafeArea(edges: .top)
                     .background(Color.black)
-                    .transition(.asymmetric(insertion: .scale(scale: 0.8).combined(with: .opacity), removal: .scale(scale: 0.8).combined(with: .opacity)))
+                    .transition(.asymmetric(insertion: .scale(scale: 0.8).combined(with: .opacity),
+                                            removal: .scale(scale: 0.8).combined(with: .opacity)))
                     .onPreferenceChange(MonthOffsetPreferenceKey.self) { preferences in
+                        // Determine visible month date and map to index
                         if let visibleMonth = preferences
                             .filter({ $0.offset <= 150 })
                             .sorted(by: { $0.offset > $1.offset })
                             .first?
                             .id
                         {
-                            if !Calendar.current.isDate(currentVisibleMonth, equalTo: visibleMonth, toGranularity: .month) {
-                                currentVisibleMonth = visibleMonth
+                            let startMonth = start(of: visibleMonth)
+                            if let idx = months.firstIndex(of: startMonth),
+                               idx != currentVisibleMonthIndex {
+                                currentVisibleMonthIndex = idx
                             }
                         }
                     }
                 }
             }
             .onAppear {
-                // Generate months only once, if empty
                 if months.isEmpty {
-                    months = generateMonths()
-                    // Set currentVisibleMonth immediately when months are first generated
-                    currentVisibleMonth = Date().startOfMonth
-                    // Scroll to today's month after a slight delay to allow layout to settle
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { // Reduced delay slightly
-                        proxy.scrollTo(Date().startOfMonth, anchor: .top)
+                    // Build 10 years back and 10 years forward (inclusive) in months
+                    let calendar = Calendar.current
+                    let today = Date()
+                    let startYearDate = calendar.date(byAdding: .year, value: -10, to: today)!
+                    let endYearDate = calendar.date(byAdding: .year, value: 10, to: today)!
+                    
+                    var tmp: [Date] = []
+                    var cursor = start(of: startYearDate)
+                    let endCursor = start(of: endYearDate)
+                    while cursor <= endCursor {
+                        tmp.append(cursor)
+                        cursor = calendar.date(byAdding: .month, value: 1, to: cursor)!
                     }
-                }
-                // If months are already populated (e.g., app returns from background),
-                // ensure currentVisibleMonth is up-to-date and scroll if needed.
-                // This handles cases where the app restarts or view reappears without full re-initialization.
-                if !Calendar.current.isDate(currentVisibleMonth, equalTo: Date(), toGranularity: .month) {
-                    currentVisibleMonth = Date().startOfMonth
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                        proxy.scrollTo(Date().startOfMonth, anchor: .top)
+                    months = tmp
+                    
+                    // compute index for current month and jump to it
+                    let currentStart = start(of: today)
+                    if let idx = months.firstIndex(of: currentStart) {
+                        currentVisibleMonthIndex = idx
+                        // Scroll to index after layout — use async to ensure LazyVStack has laid out the ID anchors.
+                        DispatchQueue.main.async {
+                            proxy.scrollTo(idx, anchor: .top)
+                        }
+                    } else {
+                        currentVisibleMonthIndex = months.count / 2
                     }
                 }
             }
-            // Removed the redundant onChange(of: months) block
             .onChange(of: isShowingYearView) { oldValue, newValue in
-                if newValue == false {
-                    // This is handled by onMonthTapped, but keeping for clarity
-                }
+                // kept for clarity (no-op)
             }
         }
         .sheet(item: $selectedDate) { date in
@@ -330,16 +172,21 @@ struct CalendarView: View {
         }
     }
 
-    private func generateMonths() -> [Date] {
+    // Helper to avoid redeclaring a Date extension in your project
+    private func start(of date: Date) -> Date {
+        let comps = Calendar.current.dateComponents([.year, .month], from: date)
+        return Calendar.current.date(from: comps)!
+    }
+
+    private func generateMonthsRange() -> [Date] {
+        // kept for compatibility if you prefer separate function
         var result: [Date] = []
         let calendar = Calendar.current
         let today = Date()
-        
         let monthRange = -120...120
-        
         for i in monthRange {
             if let month = calendar.date(byAdding: .month, value: i, to: today) {
-                result.append(month.startOfMonth)
+                result.append(start(of: month))
             }
         }
         return result.sorted()
@@ -360,4 +207,3 @@ struct MonthOffsetPreferenceKey: PreferenceKey {
         value.append(contentsOf: nextValue())
     }
 }
-
