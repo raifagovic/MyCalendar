@@ -32,6 +32,7 @@
 		DCDBCB352E9B0BCF00DB5DFD /* NotificationEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDBCB342E9B0BCF00DB5DFD /* NotificationEntry.swift */; };
 		DCDBCB372E9B0D0E00DB5DFD /* DayNotificationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDBCB362E9B0D0E00DB5DFD /* DayNotificationsView.swift */; };
 		DCDBCB392E9B0DDA00DB5DFD /* AddNotificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDBCB382E9B0DDA00DB5DFD /* AddNotificationView.swift */; };
+		DCDBCB412EBADD6300DB5DFD /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDBCB402EBADD6300DB5DFD /* Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -61,6 +62,7 @@
 		DCDBCB342E9B0BCF00DB5DFD /* NotificationEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationEntry.swift; sourceTree = "<group>"; };
 		DCDBCB362E9B0D0E00DB5DFD /* DayNotificationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayNotificationsView.swift; sourceTree = "<group>"; };
 		DCDBCB382E9B0DDA00DB5DFD /* AddNotificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddNotificationView.swift; sourceTree = "<group>"; };
+		DCDBCB402EBADD6300DB5DFD /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,6 +120,7 @@
 				DCDBCB342E9B0BCF00DB5DFD /* NotificationEntry.swift */,
 				DCDBCB362E9B0D0E00DB5DFD /* DayNotificationsView.swift */,
 				DCDBCB382E9B0DDA00DB5DFD /* AddNotificationView.swift */,
+				DCDBCB402EBADD6300DB5DFD /* Extensions.swift */,
 			);
 			path = MyCalendar;
 			sourceTree = "<group>";
@@ -219,6 +222,7 @@
 				DC3F99AE2E3BDB8800E8B7BB /* StickyHeaderView.swift in Sources */,
 				DC3F99CC2E6C97E800E8B7BB /* StickerView.swift in Sources */,
 				DC3F99BC2E4BDFCD00E8B7BB /* YearView.swift in Sources */,
+				DCDBCB412EBADD6300DB5DFD /* Extensions.swift in Sources */,
 				DC5FDE2F2E1C449E00FAB44F /* DrawingView.swift in Sources */,
 				DC3F999E2E310F4200E8B7BB /* DayCellView.swift in Sources */,
 				DC5FDE2D2E18808800FAB44F /* CalendarView.swift in Sources */,

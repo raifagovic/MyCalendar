@@ -33,9 +33,12 @@ struct MonthView: View {
         if let range = calendar.range(of: .day, in: .month, for: monthDate) {
             for dayNumber in range {
                 if let date = calendar.date(byAdding: .day, value: dayNumber - 1, to: firstDay) {
+//                    // ✅ Attach matching DayEntry if one exists
+//                    let entry = dayEntries.first(where: { Calendar.current.isDate($0.date, inSameDayAs: date) })
+//                    allDays.append(CalendarDay(date: date, entry: entry))
                     // ✅ Attach matching DayEntry if one exists
-                    let entry = dayEntries.first(where: { Calendar.current.isDate($0.date, inSameDayAs: date) })
-                    allDays.append(CalendarDay(date: date, entry: entry))
+                                      let entry = dayEntries.first(where: { Calendar.current.isDate($0.date, equalTo: date, toGranularity: .day) })
+                                      allDays.append(CalendarDay(date: date, entry: entry))
                 }
             }
         }
