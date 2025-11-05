@@ -31,7 +31,7 @@ struct CalendarView: View {
                         year: months.isEmpty ? Date() : months[currentVisibleMonthIndex],
                         onMonthTapped: { selectedMonth in
                             // find index for selectedMonth and scroll to it
-                            if let idx = months.firstIndex(of: start(of: selectedMonth)) {
+                            if let idx = months.firstIndex(of: selectedMonth.startOfMonth) {
                                 currentVisibleMonthIndex = idx
                                 withAnimation(.spring()) {
                                     isShowingYearView = false
@@ -41,12 +41,12 @@ struct CalendarView: View {
                                 }
                             } else {
                                 // fallback: close year view and set visible month
-                                currentVisibleMonthIndex = months.firstIndex(of: start(of: Date())) ?? 0
+                                currentVisibleMonthIndex = months.firstIndex(of: Date().startOfMonth) ?? 0
                                 withAnimation(.spring()) { isShowingYearView = false }
                             }
                         },
                         onTodayTapped: {
-                            let todayStart = start(of: Date())
+                            let todayStart = Date().startOfMonth
                             if let idx = months.firstIndex(of: todayStart) {
                                 currentVisibleMonthIndex = idx
                                 withAnimation(.spring()) {
@@ -72,7 +72,7 @@ struct CalendarView: View {
                             Section(header: StickyHeaderView(
                                 currentVisibleMonth: months.isEmpty ? Date() : months[currentVisibleMonthIndex],
                                 onTodayTapped: {
-                                    if let todayIdx = months.firstIndex(of: start(of: Date())) {
+                                    if let todayIdx = months.firstIndex(of: Date().startOfMonth) {
                                         withAnimation {
                                             proxy.scrollTo(todayIdx, anchor: .top)
                                         }
@@ -121,7 +121,7 @@ struct CalendarView: View {
                             .first?
                             .id
                         {
-                            let startMonth = start(of: visibleMonth)
+                            let startMonth = visibleMonth.startOfMonth
                             if let idx = months.firstIndex(of: startMonth),
                                idx != currentVisibleMonthIndex {
                                 currentVisibleMonthIndex = idx
@@ -139,8 +139,8 @@ struct CalendarView: View {
                     let endYearDate = calendar.date(byAdding: .year, value: 10, to: today)!
                     
                     var tmp: [Date] = []
-                    var cursor = start(of: startYearDate)
-                    let endCursor = start(of: endYearDate)
+                    var cursor = startYearDate.startOfMonth
+                    let endCursor = endYearDate.startOfMonth
                     while cursor <= endCursor {
                         tmp.append(cursor)
                         cursor = calendar.date(byAdding: .month, value: 1, to: cursor)!
@@ -148,7 +148,7 @@ struct CalendarView: View {
                     months = tmp
                     
                     // compute index for current month and jump to it
-                    let currentStart = start(of: today)
+                    let currentStart = today.startOfMonth
                     if let idx = months.firstIndex(of: currentStart) {
                         currentVisibleMonthIndex = idx
                         // Scroll to index after layout — use async to ensure LazyVStack has laid out the ID anchors.
@@ -170,26 +170,6 @@ struct CalendarView: View {
         .sheet(item: $selectedDateForNotifications) { date in
             DayNotificationsView(date: date)
         }
-    }
-
-    // Helper to avoid redeclaring a Date extension in your project
-    private func start(of date: Date) -> Date {
-        let comps = Calendar.current.dateComponents([.year, .month], from: date)
-        return Calendar.current.date(from: comps)!
-    }
-
-    private func generateMonthsRange() -> [Date] {
-        // kept for compatibility if you prefer separate function
-        var result: [Date] = []
-        let calendar = Calendar.current
-        let today = Date()
-        let monthRange = -120...120
-        for i in monthRange {
-            if let month = calendar.date(byAdding: .month, value: i, to: today) {
-                result.append(start(of: month))
-            }
-        }
-        return result.sorted()
     }
 }
 
