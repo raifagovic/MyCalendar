@@ -596,7 +596,7 @@ private extension DayDetailView {
     }
 
     func fetchEntry(for date: Date) async {
-        let startOfDay = Calendar.current.startOfDay(for: date)
+        let startOfDay = date.startOfDay
         let predicate = #Predicate<DayEntry> { $0.date == startOfDay }
         let descriptor = FetchDescriptor(predicate: predicate)
 
@@ -619,7 +619,7 @@ private extension DayDetailView {
 
     func createOrGetEntry() -> DayEntry {
         if let existingEntry = self.entry { return existingEntry }
-        let newEntry = DayEntry(date: Calendar.current.startOfDay(for: date))
+        let newEntry = DayEntry(date: date.startOfDay)
         modelContext.insert(newEntry)
         self.entry = newEntry
         return newEntry
