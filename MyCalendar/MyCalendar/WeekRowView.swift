@@ -58,12 +58,8 @@ struct WeekRowView: View {
                                 Text(monthAbbreviationFormatter.string(from: monthDate))
                                     .font(.title3)
                                     .fontWeight(.bold)
-//                                    .foregroundColor(
-//                                        Calendar.current.isDate(monthDate, equalTo: Date(), toGranularity: .month)
-//                                        ? .red : .primary
-//                                    )
                                     .foregroundColor(
-                                        Calendar.current.isDate(monthDate, inSameMonthAs: Date())
+                                        monthDate.isSameMonth(as: Date())
                                         ? .red : .primary
                                     )
                                     .offset(y: -22)

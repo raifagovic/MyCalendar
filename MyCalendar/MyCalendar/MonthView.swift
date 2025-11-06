@@ -72,8 +72,8 @@ struct MonthView: View {
     }
 
     private var isCurrentMonth: Bool {
-        Calendar.current.isDate(monthDate, equalTo: Date(), toGranularity: .month)
-    }
+            monthDate.isSameMonth(as: Date())
+        }
 
     var body: some View {
         VStack(spacing: 0) {
