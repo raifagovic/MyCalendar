@@ -89,12 +89,11 @@ struct DayCellView: View {
             
             // Day number overlay
             VStack {
-                Text("\(Calendar.current.component(.day, from: day))")
+                Text("\(day.day)") // Using the new `day` extension property
                     .font(.headline)
                     .padding(.top, 4)
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .foregroundColor(Calendar.current.isDateInToday(day) ? .red : .white)
-                
+                    .foregroundColor(day.isSameDay(as: Date()) ? .red : .white)
                 Spacer()
             }
             .padding(4)
