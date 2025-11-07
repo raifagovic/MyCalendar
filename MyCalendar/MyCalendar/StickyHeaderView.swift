@@ -26,17 +26,20 @@ struct StickyHeaderView: View {
         return StickyHeaderView.cachedWeekdaySymbols
     }
     
-    private var yearFormatter: DateFormatter {
+    private static let yearFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy"
         return formatter
-    }
+    }()
     
-    private var monthFormatter: DateFormatter {
+    private static let monthFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM"
         return formatter
-    }
+    }()
+    
+    private var yearFormatter: DateFormatter { StickyHeaderView.yearFormatter }
+    private var monthFormatter: DateFormatter { StickyHeaderView.monthFormatter }
     
     var body: some View {
         VStack(spacing: 0) {
