@@ -12,24 +12,18 @@ struct StickyHeaderView: View {
     let onTodayTapped: () -> Void
     let onYearTapped: () -> Void
     
-    private var weekdaySymbols: [String] {
+    private static let cachedWeekdaySymbols: [String] = {
         let formatter = DateFormatter()
+        guard let symbols = formatter.veryShortWeekdaySymbols else { return [] }
         
-        // --- THE FIX: Safely unwrap the optional array ---
-        // Use `guard let` to make sure the symbols are not nil.
-        guard let symbols = formatter.veryShortWeekdaySymbols else {
-            // If for some reason we can't get the symbols, return an empty
-            // array to prevent a crash.
-            return []
-        }
-        
-        // Now, `symbols` is a non-optional [String], and the rest of the
-        // logic will work perfectly.
         let calendar = Calendar.current
         let firstWeekdayIndex = calendar.firstWeekday - 1
         let orderedSymbols = Array(symbols[firstWeekdayIndex...]) + Array(symbols[..<firstWeekdayIndex])
-        
         return orderedSymbols
+    }()
+    
+    private var weekdaySymbols: [String] {
+        return StickyHeaderView.cachedWeekdaySymbols
     }
     
     private var yearFormatter: DateFormatter {
