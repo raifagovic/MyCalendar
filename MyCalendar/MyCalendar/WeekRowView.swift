@@ -19,12 +19,14 @@ struct WeekRowView: View {
     let firstDayOfCurrentMonth: CalendarDay?
     let onLongPressDay: (Date) -> Void  // 👈 callback to MonthView
     
-    private var monthAbbreviationFormatter: DateFormatter {
+    private static let monthAbbreviationFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM"
         return formatter
-    }
-
+    }()
+    
+    private var monthAbbreviationFormatter: DateFormatter { WeekRowView.monthAbbreviationFormatter }
+    
     @ViewBuilder
     private func dayCell(for day: CalendarDay) -> some View {
         if day.date == Date.distantPast {
