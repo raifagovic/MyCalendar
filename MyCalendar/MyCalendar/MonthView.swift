@@ -14,38 +14,44 @@ struct MonthView: View {
     @Binding var selectedDate: Date?
     let onLongPressDay: (Date) -> Void
     
-    private var weeks: [[CalendarDay]] {
+    @State private var weeks: [[CalendarDay]] = []
+    
+    // Add an initializer to compute weeks once or update when dependencies change
+    init(monthDate: Date, dayEntries: [DayEntry], selectedDate: Binding<Date?>, onLongPressDay: @escaping (Date) -> Void) {
+        self.monthDate = monthDate
+        self.dayEntries = dayEntries
+        self._selectedDate = selectedDate
+        self.onLongPressDay = onLongPressDay
+        _weeks = State(initialValue: Self.generateWeeks(monthDate: monthDate, dayEntries: dayEntries))
+    }
+    
+    // Add a static helper to generate weeks to be called from init and onChange
+    private static func generateWeeks(monthDate: Date, dayEntries: [DayEntry]) -> [[CalendarDay]] {
         let calendar = Calendar.current
         guard let monthInterval = calendar.dateInterval(of: .month, for: monthDate) else { return [] }
-
+        
         var allDays: [CalendarDay] = []
         let firstDay = monthInterval.start
-
-        // how many blank cells before the first of the month
+        
         let emptyDays = (calendar.component(.weekday, from: firstDay) - calendar.firstWeekday + 7) % 7
-
-        // Add leading blanks
+        
         for _ in 0..<emptyDays {
             allDays.append(CalendarDay(date: .distantPast, entry: nil))
         }
-
-        // Add real days, linked to their DayEntry
+        
         if let range = calendar.range(of: .day, in: .month, for: monthDate) {
             for dayNumber in range {
                 if let date = calendar.date(byAdding: .day, value: dayNumber - 1, to: firstDay) {
-                    // ✅ Attach matching DayEntry if one exists
                     let entry = dayEntries.first(where: { $0.date.isSameDay(as: date) })
                     allDays.append(CalendarDay(date: date, entry: entry))
                 }
             }
         }
-
-        // Fill trailing blanks to make full weeks
+        
         while allDays.count % 7 != 0 {
             allDays.append(CalendarDay(date: .distantPast, entry: nil))
         }
-
-        // Split into 6 weeks (so grid is stable)
+        
         var resultWeeks: [[CalendarDay]] = []
         for chunk in stride(from: 0, to: allDays.count, by: 7) {
             resultWeeks.append(Array(allDays[chunk..<min(chunk + 7, allDays.count)]))
@@ -53,9 +59,9 @@ struct MonthView: View {
         while resultWeeks.count < 6 {
             resultWeeks.append(Array(repeating: CalendarDay(date: .distantPast, entry: nil), count: 7))
         }
-
         return resultWeeks
     }
+
 
     private var firstDayOfCurrentMonth: CalendarDay? {
         weeks.flatMap { $0 }.first { day in
