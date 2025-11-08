@@ -62,6 +62,7 @@ struct DayDetailView: View {
             }
             .navigationTitle("Edit Day")
             .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
                 // Back button (left side)
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -90,7 +91,7 @@ struct DayDetailView: View {
                         
                         typingFieldFocused = false
                         isTyping = false
-                        dismiss() // Directly dismiss, and onDisappear will handle the final save for all states.
+                        isDrawing = false
                     }
                 }
             }
