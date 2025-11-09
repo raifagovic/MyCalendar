@@ -83,11 +83,6 @@ struct DayDetailView: View {
                         commitTypingIfNeeded(containerSize: CGSize(width: AppConstants.editorPreviewWidth,
                                                                    height: AppConstants.editorPreviewHeight))
                         saveBackgroundState()
-                        // The drawing data is automatically saved by the DrawingView's binding
-                        // when `entry.drawingData` is set. No explicit modelContext.save()
-                        // is needed here for drawing data.
-                        // The onDisappear handler also includes a final save for drawing data
-                        // if it's not nil. So this block can be safely removed.
                         
                         typingFieldFocused = false
                         isTyping = false
@@ -97,7 +92,6 @@ struct DayDetailView: View {
             }
         }
         .task(id: date) { await fetchEntry(for: date) }
-//        .onDisappear { saveBackgroundState() }
         .onDisappear {
             saveBackgroundState() // Saves background image scale/offset
             // Also save drawing data if present
@@ -126,10 +120,7 @@ private extension DayDetailView {
                 // Always show saved drawing
                 if let data = entry?.drawingData,
                    let drawing = try? PKDrawing(data: data) {
-                    Canvas { context, _ in // Ignore `size` from Canvas, use known editor dimensions
-                        // When drawing a PKDrawing in the canvas, we need to specify the *source*
-                        // rectangle and the desired *scale*.
-                        // The drawing was created in the editor's coordinate space.
+                    Canvas { context, _ in
                         let drawingSize = CGSize(width: AppConstants.editorPreviewWidth,
                                                  height: AppConstants.editorPreviewHeight)
                         let image = drawing.image(from: CGRect(origin: .zero, size: drawingSize), scale: 1)
@@ -162,7 +153,6 @@ private extension DayDetailView {
                         .zIndex(1)
                     }
                 }
-
 
                 Rectangle()
                     .fill(Color.white.opacity(0.01)) // Invisible touch area
@@ -264,10 +254,20 @@ private extension DayDetailView {
             Button(role: .destructive) {
                 if let entry = entry {
                     withAnimation {
-                        entry.backgroundImageData = nil
-                        entry.backgroundImageScale = 1.0
-                        entry.backgroundImageOffsetX = 0
-                        entry.backgroundImageOffsetY = 0
+                        if let selectedStickerID = selectedStickerID {
+                            // Delete selected sticker
+                            entry.stickers.removeAll { $0.id == selectedStickerID }
+                            self.selectedStickerID = nil // Deselect after deleting
+                        } else {
+                            // Delete background image
+                            entry.backgroundImageData = nil
+                            entry.backgroundImageScale = 1.0
+                            entry.backgroundImageOffsetX = 0
+                            entry.backgroundImageOffsetY = 0
+                            // Reset current state variables for background
+                            currentScale = 1.0
+                            currentOffset = .zero
+                        }
                     }
                     try? modelContext.save()
                 }
@@ -319,11 +319,6 @@ private extension DayDetailView {
         }
     }
 
-    // ---------------------------------------------------------------------
-    // Stickers layer: render stickers using editor-space base font sizes.
-    // This replaces the previous StickerView usage so the base font is
-    // consistent with DayCellView's downscaling logic.
-    // ---------------------------------------------------------------------
     func stickersLayer(containerSize: CGSize) -> some View {
         Group {
             if let entry = entry {
@@ -514,8 +509,6 @@ private extension DayDetailView {
                 entry?.stickers[index].rotationDegrees = initial.rot + value.degrees
                 try? modelContext.save()
             }
-            // No 'else' block needed here because the background doesn't rotate.
-            // We only save the sticker's rotation if it was selected.
             initialStickerState = nil // Reset
         }
 
@@ -566,7 +559,7 @@ private extension DayDetailView {
         let newSticker = StickerInfo(type: .text, content: currentTypingText)
         entryToUpdate.stickers.append(newSticker)
         try? modelContext.save()
-        selectedStickerID = newSticker.id // Select the newly created text sticker
+        selectedStickerID = newSticker.id
         currentTypingText = ""
         isTyping = false
     }
