@@ -616,8 +616,8 @@ private extension DayDetailView {
         let newEntry = DayEntry(date: date.startOfDay)
         modelContext.insert(newEntry)
         self.entry = newEntry
+        try? modelContext.save()
         return newEntry
     }
 }
-
 

@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct CalendarView: View {
+    @Environment(\.modelContext) private var modelContext
     @Query(sort: \DayEntry.date) private var dayEntries: [DayEntry]
     
     @State private var months: [Date] = []
@@ -166,9 +167,11 @@ struct CalendarView: View {
         }
         .sheet(item: $selectedDate) { date in
             DayDetailView(date: date)
+                .environment(\.modelContext, modelContext)// ✅ share the same context
         }
         .sheet(item: $selectedDateForNotifications) { date in
             DayNotificationsView(date: date)
+                .environment(\.modelContext, modelContext) // <-- ADD THIS
         }
     }
 }
