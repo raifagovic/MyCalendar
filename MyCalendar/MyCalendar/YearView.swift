@@ -51,8 +51,6 @@ struct YearView: View {
                         withAnimation {
                             proxy.scrollTo(currentYearDate, anchor: .top)
                         }
-                        // Then call the parent's onTodayTapped to dismiss and reset main calendar
-                        onTodayTapped()
                     })) { // <--- MODIFIED LINE
                         // This VStack no longer has spacing, giving us full manual control.
                         VStack(spacing: 0) {
