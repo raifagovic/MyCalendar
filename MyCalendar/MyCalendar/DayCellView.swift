@@ -11,10 +11,8 @@ import PencilKit
 struct DayCellView: View {
     let day: Date
     let dayEntry: DayEntry?
-    var onTap: (() -> Void)? = nil // 👈 callback for short tap
+    var onTap: (() -> Void)? = nil
     var onLongPress: (() -> Void)? = nil
-    
-    private let editorWidth: CGFloat = 300.0
     
     var body: some View {
         ZStack {
@@ -22,7 +20,9 @@ struct DayCellView: View {
                 let w = geometry.size.width
                 let h = geometry.size.height
                 
-                let editorHeight = editorWidth / AppConstants.calendarCellAspectRatio
+                // Use AppConstants for editor dimensions
+                let editorWidth = AppConstants.editorPreviewWidth // ✅ Use constant
+                let editorHeight = AppConstants.editorPreviewHeight // ✅ Use constant
                 let scaleX = w / editorWidth
                 let scaleY = h / editorHeight
                 
@@ -52,7 +52,8 @@ struct DayCellView: View {
                         let contentScaleFactor = w / AppConstants.editorPreviewWidth
                         
                         ForEach(stickers) { sticker in
-                            let editorBaseFontSize: CGFloat = (sticker.type == .emoji) ? 24 : 12
+                            // Use AppConstants for base font sizes
+                            let editorBaseFontSize: CGFloat = (sticker.type == .emoji) ? AppConstants.stickerEmojiBaseFontSize : AppConstants.stickerTextBaseFontSize // ✅ Use constants
                             let finalFontSize = editorBaseFontSize * sticker.scale * contentScaleFactor
                             
                             Text(sticker.content.isEmpty ? " " : sticker.content)
@@ -86,11 +87,12 @@ struct DayCellView: View {
                     }
                 }
             }
-            .aspectRatio(AppConstants.calendarCellAspectRatio, contentMode: .fit)
+            // Use AppConstants for aspect ratio
+            .aspectRatio(AppConstants.calendarCellAspectRatio, contentMode: .fit) // ✅ Use constant
             
             // Day number overlay
             VStack {
-                Text("\(day.day)") // Using the new `day` extension property
+                Text("\(day.day)")
                     .font(.headline)
                     .padding(.top, 4)
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -101,13 +103,11 @@ struct DayCellView: View {
         }
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .contentShape(Rectangle())
-        // 👇 Gestures
         .onTapGesture {
-            onTap?() // Short tap opens DayDetailView
+            onTap?()
         }
         .onLongPressGesture(minimumDuration: 0.5) {
-            onLongPress?() // 👈 Call callback instead of showing sheet directly
+            onLongPress?()
         }
     }
 }
-
