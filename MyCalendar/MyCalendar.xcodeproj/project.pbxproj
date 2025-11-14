@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DC039DAF2EC7204E00157759 /* CalendarCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC039DAE2EC7204E00157759 /* CalendarCache.swift */; };
 		DC3F999E2E310F4200E8B7BB /* DayCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F999D2E310F4200E8B7BB /* DayCellView.swift */; };
 		DC3F99A02E31104800E8B7BB /* DayDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F999F2E31104800E8B7BB /* DayDetailView.swift */; };
 		DC3F99A22E3353D600E8B7BB /* ImageCropperView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3F99A12E3353D600E8B7BB /* ImageCropperView.swift */; };
@@ -35,6 +36,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		DC039DAE2EC7204E00157759 /* CalendarCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarCache.swift; sourceTree = "<group>"; };
 		DC3F999D2E310F4200E8B7BB /* DayCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCellView.swift; sourceTree = "<group>"; };
 		DC3F999F2E31104800E8B7BB /* DayDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayDetailView.swift; sourceTree = "<group>"; };
 		DC3F99A12E3353D600E8B7BB /* ImageCropperView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCropperView.swift; sourceTree = "<group>"; };
@@ -118,6 +120,7 @@
 				DCDBCB362E9B0D0E00DB5DFD /* DayNotificationsView.swift */,
 				DCDBCB382E9B0DDA00DB5DFD /* AddNotificationView.swift */,
 				DCDBCB402EBADD6300DB5DFD /* Extensions.swift */,
+				DC039DAE2EC7204E00157759 /* CalendarCache.swift */,
 			);
 			path = MyCalendar;
 			sourceTree = "<group>";
@@ -212,6 +215,7 @@
 				DC3F99CA2E6C95DF00E8B7BB /* StickerInfo.swift in Sources */,
 				DC3F99BE2E4C690300E8B7BB /* MiniMonthView.swift in Sources */,
 				DC5FDE1F2E16AA1900FAB44F /* ContentView.swift in Sources */,
+				DC039DAF2EC7204E00157759 /* CalendarCache.swift in Sources */,
 				DC5FDE212E16AA1900FAB44F /* DayEntry.swift in Sources */,
 				DC3F99B02E40EE7400E8B7BB /* CalendarDay.swift in Sources */,
 				DCDBCB372E9B0D0E00DB5DFD /* DayNotificationsView.swift in Sources */,
