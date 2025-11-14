@@ -216,83 +216,30 @@ struct CalendarView: View {
         ScrollViewReader { proxy in
             Group {
                 if isShowingYearView {
-                    YearView(
-                        year: months.isEmpty ? Date() : months[currentVisibleMonthIndex],
-                        onMonthTapped: { selectedMonth in
-                            if let idx = months.firstIndex(of: selectedMonth.startOfMonth) {
-                                currentVisibleMonthIndex = idx
-                                withAnimation(.spring()) { isShowingYearView = false }
-                                DispatchQueue.main.async { proxy.scrollTo(idx, anchor: .top) }
-                            } else {
-                                currentVisibleMonthIndex = months.firstIndex(of: Date().startOfMonth) ?? 0
-                                withAnimation(.spring()) { isShowingYearView = false }
-                            }
-                        },
-                        onTodayTapped: {
-                            let todayStart = Date().startOfMonth
-                            if let idx = months.firstIndex(of: todayStart) {
-                                currentVisibleMonthIndex = idx
-                                withAnimation(.spring()) { isShowingYearView = false }
-                                DispatchQueue.main.async { proxy.scrollTo(idx, anchor: .top) }
-                            } else {
-                                currentVisibleMonthIndex = months.count / 2
-                                withAnimation(.spring()) { isShowingYearView = false }
-                            }
-                        }
+                    YearModeContainer(
+                        months: months,
+                        currentVisibleMonthIndex: $currentVisibleMonthIndex,
+                        isShowingYearView: $isShowingYearView,
+                        proxy: proxy
                     )
-                    .ignoresSafeArea(edges: .top)
-                    .transition(.asymmetric(insertion: .scale(scale: 0.8).combined(with: .opacity),
-                                            removal: .scale.combined(with: .opacity)))
                 } else {
-                    ScrollView {
-                        LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
-                            Section(header: StickyHeaderView(
-                                currentVisibleMonth: months.isEmpty ? Date() : months[currentVisibleMonthIndex],
-                                onTodayTapped: {
-                                    if let todayIdx = months.firstIndex(of: Date().startOfMonth) {
-                                        withAnimation { proxy.scrollTo(todayIdx, anchor: .top) }
-                                    }
-                                }, onYearTapped: {
-                                    withAnimation(.spring()) { isShowingYearView = true }
-                                })
-                            ) {
-                                ForEach(Array(months.enumerated()), id: \.0) { index, month in
-                                    MonthView(
-                                        monthDate: month,
-                                        entriesByDate: entriesByDate,
-                                        selectedDate: $selectedDate,
-                                        onLongPressDay: { date in
-                                            self.selectedDateForNotifications = date
-                                            self.showingNotificationsSheet = true
-                                        }
-                                    )
-                                    .id(index)
-                                    .background(
-                                        GeometryReader { geo in
-                                            Color.clear.preference(
-                                                key: MonthOffsetPreferenceKey.self,
-                                                // only send a single offset per MonthView (not an array)
-                                                value: MonthOffset(id: month.startOfMonth, offset: geo.frame(in: .named(coordinateSpaceName)).minY)
-                                            )
-                                        }
-                                        .frame(height: 0) // avoid affecting layout
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    .coordinateSpace(name: coordinateSpaceName)
-                    .ignoresSafeArea(edges: .top)
-                    .background(Color.black)
-                    .transition(.asymmetric(insertion: .scale(scale: 0.8).combined(with: .opacity),
-                                            removal: .scale(scale: 0.8).combined(with: .opacity)))
+                    MonthScrollContainer(
+                        months: months,
+                        entriesByDate: entriesByDate,
+                        selectedDate: $selectedDate,
+                        currentVisibleMonthIndex: $currentVisibleMonthIndex,
+                        isShowingYearView: $isShowingYearView,
+                        selectedDateForNotifications: $selectedDateForNotifications,
+                        showingNotificationsSheet: $showingNotificationsSheet,
+                        coordinateSpaceName: coordinateSpaceName,
+                        proxy: proxy
+                    )
                     .onPreferenceChange(MonthOffsetPreferenceKey.self) { monthOffset in
-                        // Only one value per reduce now — find visible month using a lightweight check.
-                        // Prefer the closest offset >= 0 (top of scroll)
-                        let visibleCandidates = monthOffset.filter { $0.offset <= 150 }
-                        if let visibleMonth = visibleCandidates.sorted(by: { $0.offset > $1.offset }).first?.id {
+                        let candidates = monthOffset.filter { $0.offset <= 150 }
+                        if let visibleMonth = candidates.sorted(by: { $0.offset > $1.offset }).first?.id {
                             let startMonth = visibleMonth.startOfMonth
-                            if let idx = months.firstIndex(of: startMonth), idx != currentVisibleMonthIndex {
+                            if let idx = months.firstIndex(of: startMonth),
+                               idx != currentVisibleMonthIndex {
                                 currentVisibleMonthIndex = idx
                             }
                         }
@@ -300,10 +247,8 @@ struct CalendarView: View {
                 }
             }
             .onAppear {
-                // Ensure months is populated and current month scrolled to (only the first time)
-                if months.isEmpty {
-                    months = CalendarCache.months
-                }
+                if months.isEmpty { months = CalendarCache.months }
+                
                 let todayStart = Date().startOfMonth
                 if let idx = months.firstIndex(of: todayStart) {
                     currentVisibleMonthIndex = idx
@@ -311,15 +256,9 @@ struct CalendarView: View {
                 } else {
                     currentVisibleMonthIndex = months.count / 2
                 }
-                
-                // Build dictionary from dayEntries
                 rebuildEntriesByDate()
             }
-            .onChange(of: dayEntries) { _ in
-                // Rebuild the dictionary only when dayEntries change
-                rebuildEntriesByDate()
-            }
-            .onChange(of: isShowingYearView) { _, _ in /* no-op kept for clarity */ }
+            .onChange(of: dayEntries) { _ in rebuildEntriesByDate() }
         }
         .sheet(item: $selectedDate) { date in
             DayDetailView(date: date)
@@ -338,6 +277,112 @@ struct CalendarView: View {
             temp[entry.date.startOfDay] = entry
         }
         entriesByDate = temp
+    }
+}
+
+// ===============================================
+// MARK: Subview: Year Mode Container
+// ===============================================
+private struct YearModeContainer: View {
+    let months: [Date]
+    @Binding var currentVisibleMonthIndex: Int
+    @Binding var isShowingYearView: Bool
+    let proxy: ScrollViewProxy
+
+    var body: some View {
+        YearView(
+            year: months.isEmpty ? Date() : months[currentVisibleMonthIndex],
+            onMonthTapped: { selectedMonth in
+                if let idx = months.firstIndex(of: selectedMonth.startOfMonth) {
+                    currentVisibleMonthIndex = idx
+                    withAnimation(.spring()) { isShowingYearView = false }
+                    DispatchQueue.main.async { proxy.scrollTo(idx, anchor: .top) }
+                } else {
+                    currentVisibleMonthIndex = months.firstIndex(of: Date().startOfMonth) ?? 0
+                    withAnimation(.spring()) { isShowingYearView = false }
+                }
+            },
+            onTodayTapped: {
+                let todayStart = Date().startOfMonth
+                if let idx = months.firstIndex(of: todayStart) {
+                    currentVisibleMonthIndex = idx
+                    withAnimation(.spring()) { isShowingYearView = false }
+                    DispatchQueue.main.async { proxy.scrollTo(idx, anchor: .top) }
+                } else {
+                    currentVisibleMonthIndex = months.count / 2
+                    withAnimation(.spring()) { isShowingYearView = false }
+                }
+            }
+        )
+        .ignoresSafeArea(edges: .top)
+        .transition(.asymmetric(
+            insertion: .scale(scale: 0.8).combined(with: .opacity),
+            removal: .scale.combined(with: .opacity)
+        ))
+    }
+}
+
+
+// ===============================================
+// MARK: Subview: Month Scroll Container
+// ===============================================
+private struct MonthScrollContainer: View {
+    let months: [Date]
+    let entriesByDate: [Date: DayEntry]
+    @Binding var selectedDate: Date?
+    @Binding var currentVisibleMonthIndex: Int
+    @Binding var isShowingYearView: Bool
+    @Binding var selectedDateForNotifications: Date?
+    @Binding var showingNotificationsSheet: Bool
+    let coordinateSpaceName: String
+    let proxy: ScrollViewProxy
+
+    var body: some View {
+        ScrollView {
+            LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
+                Section(header: StickyHeaderView(
+                    currentVisibleMonth: months.isEmpty ? Date() : months[currentVisibleMonthIndex],
+                    onTodayTapped: {
+                        if let todayIdx = months.firstIndex(of: Date().startOfMonth) {
+                            withAnimation { proxy.scrollTo(todayIdx, anchor: .top) }
+                        }
+                    },
+                    onYearTapped: {
+                        withAnimation(.spring()) { isShowingYearView = true }
+                    }
+                )) {
+                    ForEach(Array(months.enumerated()), id: \.0) { index, month in
+                        MonthView(
+                            monthDate: month,
+                            entriesByDate: entriesByDate,
+                            selectedDate: $selectedDate,
+                            onLongPressDay: { date in
+                                selectedDateForNotifications = date
+                                showingNotificationsSheet = true
+                            }
+                        )
+                        .id(index)
+                        .background(
+                            GeometryReader { geo in
+                                Color.clear.preference(
+                                    key: MonthOffsetPreferenceKey.self,
+                                    value: MonthOffset(id: month.startOfMonth,
+                                                       offset: geo.frame(in: .named(coordinateSpaceName)).minY)
+                                )
+                            }
+                            .frame(height: 0)
+                        )
+                    }
+                }
+            }
+        }
+        .coordinateSpace(name: coordinateSpaceName)
+        .ignoresSafeArea(edges: .top)
+        .background(Color.black)
+        .transition(.asymmetric(
+            insertion: .scale(scale: 0.8).combined(with: .opacity),
+            removal: .scale(scale: 0.8).combined(with: .opacity)
+        ))
     }
 }
 
