@@ -366,8 +366,12 @@ private struct MonthScrollContainer: View {
                             GeometryReader { geo in
                                 Color.clear.preference(
                                     key: MonthOffsetPreferenceKey.self,
-                                    value: MonthOffset(id: month.startOfMonth,
-                                                       offset: geo.frame(in: .named(coordinateSpaceName)).minY)
+                                    value: [
+                                        MonthOffset(
+                                            id: month.startOfMonth,
+                                            offset: geo.frame(in: .named(coordinateSpaceName)).minY
+                                        )
+                                    ]
                                 )
                             }
                             .frame(height: 0)
